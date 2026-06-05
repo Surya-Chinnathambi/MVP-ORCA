@@ -6,7 +6,7 @@ from app.config import settings
 from app.api import (
     auth, users, roles, permissions,
     clients, projects, scope, approvals,
-    methodology, requirements, tasks, evidence_requests, evidence_items,
+    methodology, requirements, tasks, evidence_requests, evidence_items, findings,
 )
 
 app = FastAPI(
@@ -30,6 +30,7 @@ app.include_router(requirements.router)
 app.include_router(tasks.router)
 app.include_router(evidence_requests.router)
 app.include_router(evidence_items.router)
+app.include_router(findings.router)
 
 app.mount("/static", StaticFiles(directory="app/web/static"), name="static")
 
