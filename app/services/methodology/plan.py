@@ -124,5 +124,12 @@ def _framework_title(key: str) -> str:
         "owasp_asvs": "OWASP Application Security Verification Standard v4",
         "owasp_api10":"OWASP API Security Top 10 (2023)",
         "ptes":       "Penetration Testing Execution Standard v1.1",
+        "iso_27001":  "ISO/IEC 27001:2022 Information Security Management",
+        "iso_27002":  "ISO/IEC 27002:2022 Information Security Controls",
+        "iso_27701":  "ISO/IEC 27701:2019 Privacy Information Management",
+        "eu_gdpr":    "EU General Data Protection Regulation 2016/679",
+        "nist":       "NIST Cybersecurity Framework 2.0",
+        "isaca":      "ISACA COBIT 2019 / CMMI Cybersecurity",
+        "tg_baseline":"TechGuard Baseline Security Standard v2.0",
     }
     return _titles.get(key, key)

@@ -1,0 +1,96 @@
+{
+  "key": "cyber_strategy",
+  "title": "Cyber Strategy and Roadmap Advisory Pack",
+  "frameworks": ["tg_baseline", "isaca", "nist"],
+  "intake_questions": [
+    {"id": "cs1", "text": "Does the organisation have a documented cybersecurity strategy or roadmap?"},
+    {"id": "cs2", "text": "Is cybersecurity aligned to the broader business strategy and investment planning?"},
+    {"id": "cs3", "text": "Has the board received a cybersecurity briefing in the last 12 months?"},
+    {"id": "cs4", "text": "What is the target cybersecurity maturity level the organisation is working towards?"},
+    {"id": "cs5", "text": "Is there a multi-year cybersecurity investment plan with budget allocation?"}
+  ],
+  "scope_template": [
+    {"kind": "business_unit", "prompt": "Identify business units whose strategic priorities must be reflected in the cyber strategy"},
+    {"kind": "asset", "prompt": "List strategic business assets and digital transformation initiatives that inform security priorities"},
+    {"kind": "exclusion", "prompt": "Confirm any strategic domains or initiatives excluded from this advisory engagement"}
+  ],
+  "requirements": [
+    {
+      "ref_code": "CS-STRATEGY-01",
+      "category": "strategy",
+      "text": "A documented cybersecurity strategy aligned to business objectives must exist with defined outcomes, timeframes, and executive ownership.",
+      "evidence_expectation": "Cybersecurity strategy document; business objective alignment matrix; executive ownership assignment; board endorsement"
+    },
+    {
+      "ref_code": "CS-MATURITY-01",
+      "category": "maturity",
+      "text": "A baseline maturity assessment against a recognised framework (NIST CSF, CMMI, or equivalent) must underpin the strategy with target states and gap analysis.",
+      "evidence_expectation": "Maturity assessment report; baseline vs target scores by domain; gap analysis; prioritised remediation roadmap"
+    },
+    {
+      "ref_code": "CS-INVEST-01",
+      "category": "investment",
+      "text": "A multi-year cybersecurity investment plan with budget allocation by capability domain must be linked to strategic objectives and risk reduction outcomes.",
+      "evidence_expectation": "Cybersecurity investment plan; budget allocation by domain; ROI/risk-reduction mapping; approval records"
+    },
+    {
+      "ref_code": "CS-GOVERN-01",
+      "category": "governance",
+      "text": "Cybersecurity governance structures must provide board-level visibility, strategic decision-making authority, and accountability for strategy execution.",
+      "evidence_expectation": "Board cybersecurity briefing materials; governance committee minutes; CISO reporting structure; KPI/KRI dashboard"
+    },
+    {
+      "ref_code": "CS-ROADMAP-01",
+      "category": "roadmap",
+      "text": "A phased security roadmap with milestones, owners, and measurable success criteria must be maintained and reviewed at least annually.",
+      "evidence_expectation": "Security roadmap with phases and milestones; owner assignments; progress review records; roadmap update history"
+    }
+  ],
+  "evidence_requests": [
+    {"requirement_ref": "CS-STRATEGY-01", "title": "Cybersecurity Strategy Document", "description": "Current cybersecurity strategy with business objective alignment, executive ownership, and board endorsement"},
+    {"requirement_ref": "CS-MATURITY-01", "title": "Maturity Assessment Report", "description": "Baseline maturity assessment against NIST CSF or equivalent; target state definition; gap analysis"},
+    {"requirement_ref": "CS-INVEST-01", "title": "Cybersecurity Investment Plan", "description": "Multi-year investment plan with budget allocation by domain and risk-reduction outcome mapping"},
+    {"requirement_ref": "CS-GOVERN-01", "title": "Board Cybersecurity Reporting Evidence", "description": "Recent board/committee briefing materials and minutes showing cybersecurity strategic oversight"},
+    {"requirement_ref": "CS-ROADMAP-01", "title": "Security Roadmap with Progress Evidence", "description": "Current roadmap with milestones, owners, and most recent progress review results"}
+  ],
+  "task_templates": [
+    {"kind": "review", "title": "Review cybersecurity strategy alignment to business objectives"},
+    {"kind": "review", "title": "Assess maturity baseline methodology and current scores"},
+    {"kind": "review", "title": "Evaluate cybersecurity investment plan for completeness and linkage to risk"},
+    {"kind": "review", "title": "Review board governance structures and reporting quality"},
+    {"kind": "review", "title": "Assess roadmap feasibility, prioritisation, and progress tracking"},
+    {"kind": "interview", "title": "Interview CISO and board sponsor on strategy direction and constraints"},
+    {"kind": "analysis", "title": "Benchmark maturity and investment against sector peers"}
+  ],
+  "finding_templates": [
+    {"category": "strategy", "title_pattern": "Cybersecurity strategy gap: {gap_area}"},
+    {"category": "maturity", "title_pattern": "Maturity baseline not established for domain: {domain}"},
+    {"category": "investment", "title_pattern": "Investment gap for capability area: {capability}"},
+    {"category": "governance", "title_pattern": "Board governance gap: {specific_gap}"},
+    {"category": "roadmap", "title_pattern": "Roadmap milestone overdue: {milestone_description}"}
+  ],
+  "qa_rules": [
+    "every_finding_has_evidence",
+    "all_requirements_assessed",
+    "open_evidence_requests_flagged",
+    "evidence_lifecycle_ready"
+  ],
+  "severity_model": {
+    "critical": "No cybersecurity strategy; board unaware of cyber risk; investment entirely reactive",
+    "high": "Strategy exists but not board-endorsed or not linked to business objectives; major gaps",
+    "medium": "Strategy present but outdated or roadmap stalled; investment plan not maintained",
+    "low": "Minor strategy improvement; roadmap needs refresh or metric quality to improve",
+    "informational": "Best-practice enhancement for strategy maturity and board engagement"
+  },
+  "review_gates": [
+    {"id": "G1", "label": "Scope approved", "required_role": "partner"},
+    {"id": "G2", "label": "Evidence complete", "required_role": "qa"},
+    {"id": "G4", "label": "Findings approved", "required_role": "partner"},
+    {"id": "G6", "label": "Report approved", "required_role": "partner"}
+  ],
+  "advisory_clinic_templates": [
+    {"category": "strategy", "title": "Cyber Strategy Design Workshop", "guidance": "Facilitate board and CISO workshop to define 3-year cybersecurity outcomes aligned to business strategy"},
+    {"category": "maturity", "title": "NIST CSF Maturity Scoring Session", "guidance": "Walk through NIST CSF 2.0 domains; score baseline and target; produce heat map for roadmap prioritisation"},
+    {"category": "governance", "title": "Board Cyber Briefing Preparation", "guidance": "Develop board-level cyber risk briefing materials; present in language of business risk and regulatory obligation"}
+  ]
+}

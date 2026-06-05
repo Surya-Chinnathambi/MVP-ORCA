@@ -22,11 +22,21 @@ class ScopeItemKind(str, enum.Enum):
 
 
 class FrameworkKey(str, enum.Enum):
+    # Phase 1 (MVP)
     dpdp_act = "dpdp_act"
     owasp_asvs = "owasp_asvs"
     owasp_wstg = "owasp_wstg"
     owasp_api10 = "owasp_api10"
     ptes = "ptes"
+    # Phase 2 — Stage 24 (ISO / GDPR batch)
+    iso_27001 = "iso_27001"
+    iso_27002 = "iso_27002"
+    iso_27701 = "iso_27701"
+    eu_gdpr = "eu_gdpr"
+    nist = "nist"
+    # Phase 2 — Stage 25 (GRC / strategy / cloud / AI packs)
+    isaca = "isaca"
+    tg_baseline = "tg_baseline"
 
 
 class ScopeItem(TimestampMixin, Base):
