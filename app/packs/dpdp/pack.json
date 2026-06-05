@@ -1,1 +1,131 @@
-{}
+{
+  "key": "dpdp",
+  "title": "DPDP Readiness Pack",
+  "frameworks": ["dpdp_act"],
+  "intake_questions": [
+    {"id": "q1", "text": "List all business units that process personal data"},
+    {"id": "q2", "text": "Which categories of personal data are processed (name, email, biometric, health, financial)?"},
+    {"id": "q3", "text": "Do you transfer personal data outside India?"},
+    {"id": "q4", "text": "Are you a Significant Data Fiduciary (>1 lakh users or sensitive data)?"},
+    {"id": "q5", "text": "What is the primary lawful basis for processing (consent or legitimate use)?"}
+  ],
+  "scope_template": [
+    {"kind": "business_unit", "prompt": "Identify each business unit processing personal data"},
+    {"kind": "asset",         "prompt": "List systems and applications storing or transmitting personal data"},
+    {"kind": "exclusion",     "prompt": "Confirm any systems explicitly excluded from the DPDP scope"}
+  ],
+  "requirements": [
+    {
+      "ref_code": "DPDP-NOTICE-01",
+      "category": "notice",
+      "text": "A notice must be provided to data principals at or before collection, stating the purpose and personal data being collected.",
+      "evidence_expectation": "Current privacy notice document; screenshot of notice at collection point"
+    },
+    {
+      "ref_code": "DPDP-NOTICE-02",
+      "category": "notice",
+      "text": "The notice must be available in English and at least one language listed in the Eighth Schedule upon request.",
+      "evidence_expectation": "Language versions of the privacy notice; process for providing translated notice"
+    },
+    {
+      "ref_code": "DPDP-CONSENT-01",
+      "category": "consent",
+      "text": "Consent must be free, specific, informed, unconditional, and unambiguous via a clear affirmative action.",
+      "evidence_expectation": "Consent UI screenshots; consent log samples; affirmative action mechanism description"
+    },
+    {
+      "ref_code": "DPDP-CONSENT-02",
+      "category": "consent",
+      "text": "Data principals must be able to withdraw consent as easily as it was given; withdrawal must not affect prior lawful processing.",
+      "evidence_expectation": "Consent withdrawal UI or API; withdrawal audit log; user journey documentation"
+    },
+    {
+      "ref_code": "DPDP-CONSENT-03",
+      "category": "consent",
+      "text": "Consent records must demonstrate who consented, when, and for which purpose.",
+      "evidence_expectation": "Consent database schema or log extract; retention policy for consent records"
+    },
+    {
+      "ref_code": "DPDP-RIGHTS-01",
+      "category": "rights",
+      "text": "Data principals have the right to access a summary of personal data being processed and the processing activities.",
+      "evidence_expectation": "Data access request SOP; SLA for responding to requests; sample fulfilled request"
+    },
+    {
+      "ref_code": "DPDP-RIGHTS-02",
+      "category": "rights",
+      "text": "Data principals have the right to correction, completion, updating, and erasure of personal data no longer necessary.",
+      "evidence_expectation": "Correction/erasure workflow; technical deletion mechanism; SLA for fulfilment"
+    },
+    {
+      "ref_code": "DPDP-RIGHTS-03",
+      "category": "rights",
+      "text": "A grievance redressal mechanism must be established and grievances addressed within the prescribed period.",
+      "evidence_expectation": "Grievance officer contact details; portal/email; SLA; sample resolved grievance"
+    },
+    {
+      "ref_code": "DPDP-SEC-01",
+      "category": "security",
+      "text": "Reasonable security safeguards must be implemented to prevent personal data breach, including technical and organisational measures.",
+      "evidence_expectation": "Information security policy; penetration test report (last 12 months); encryption evidence"
+    },
+    {
+      "ref_code": "DPDP-SEC-02",
+      "category": "security",
+      "text": "Contracts with Data Processors must obligate equivalent security safeguards.",
+      "evidence_expectation": "Data Processing Agreements with key vendors; vendor security assessment reports"
+    },
+    {
+      "ref_code": "DPDP-BREACH-01",
+      "category": "breach",
+      "text": "In case of a personal data breach, the DPBI and affected data principals must be notified without delay.",
+      "evidence_expectation": "Incident response and breach notification procedure; templates; tabletop exercise record"
+    },
+    {
+      "ref_code": "DPDP-GOVERNANCE-01",
+      "category": "governance",
+      "text": "A Data Protection Officer or point of contact must be designated and made publicly accessible.",
+      "evidence_expectation": "DPO appointment letter; public-facing DPO contact details"
+    }
+  ],
+  "evidence_requests": [
+    {"requirement_ref": "DPDP-NOTICE-01",     "title": "Privacy Notice — current version",              "description": "Current privacy notice shown to data principals at or before collection"},
+    {"requirement_ref": "DPDP-NOTICE-02",     "title": "Multilingual notice evidence",                  "description": "Available language versions or process documentation for translated notices"},
+    {"requirement_ref": "DPDP-CONSENT-01",    "title": "Consent mechanism screenshots",                 "description": "Screenshots/recordings of consent UI confirming affirmative action"},
+    {"requirement_ref": "DPDP-CONSENT-02",    "title": "Consent withdrawal mechanism",                  "description": "Demo or docs of withdrawal process plus sample audit log"},
+    {"requirement_ref": "DPDP-CONSENT-03",    "title": "Consent records extract",                       "description": "Sample consent log showing who, when, purpose; retention policy"},
+    {"requirement_ref": "DPDP-RIGHTS-01",     "title": "Data access request SOP and sample",            "description": "SOP for access requests and a sample fulfilled response"},
+    {"requirement_ref": "DPDP-RIGHTS-02",     "title": "Erasure and correction workflow",               "description": "Technical and procedural docs for erasure/correction fulfilment"},
+    {"requirement_ref": "DPDP-RIGHTS-03",     "title": "Grievance portal and SLA",                      "description": "Grievance officer details, portal/email, SLA, and resolved sample"},
+    {"requirement_ref": "DPDP-SEC-01",        "title": "Security safeguards evidence pack",             "description": "IS policy, encryption policy, latest pentest report, patch management evidence"},
+    {"requirement_ref": "DPDP-SEC-02",        "title": "Data Processing Agreements",                    "description": "Signed DPAs with data processors; vendor security questionnaire results"},
+    {"requirement_ref": "DPDP-BREACH-01",     "title": "Incident response and breach notification plan","description": "IRP document, notification templates, most recent tabletop/drill record"},
+    {"requirement_ref": "DPDP-GOVERNANCE-01", "title": "DPO appointment and public contact",            "description": "DPO designation record and evidence of public-facing contact details"}
+  ],
+  "task_templates": [
+    {"kind": "interview",  "title": "DPO/CISO interview — data processing overview and governance"},
+    {"kind": "interview",  "title": "Legal/compliance interview — consent and rights fulfilment"},
+    {"kind": "workshop",   "title": "Data mapping workshop — personal data flows and systems"},
+    {"kind": "review",     "title": "Privacy notice and consent mechanism review"},
+    {"kind": "review",     "title": "Security safeguards and vendor DPA review"},
+    {"kind": "review",     "title": "Breach response and grievance process review"},
+    {"kind": "workshop",   "title": "Rights fulfilment process walkthrough"},
+    {"kind": "test",       "title": "Consent withdrawal and access request functional test"}
+  ],
+  "finding_templates": [
+    {"category": "notice",     "title_pattern": "Privacy notice gap: {area}"},
+    {"category": "consent",    "title_pattern": "Consent mechanism deficiency: {area}"},
+    {"category": "rights",     "title_pattern": "Rights fulfilment gap: {area}"},
+    {"category": "security",   "title_pattern": "Security safeguard weakness: {area}"},
+    {"category": "breach",     "title_pattern": "Breach response gap: {area}"},
+    {"category": "governance", "title_pattern": "Governance gap: {area}"}
+  ],
+  "report_templates": ["gap_matrix", "roadmap", "summary"],
+  "qa_rules": [
+    "every_finding_has_evidence",
+    "severity_consistent",
+    "all_requirements_assessed",
+    "open_evidence_requests_flagged"
+  ],
+  "approval_triggers": ["scope_change", "severity_change", "report_release"]
+}

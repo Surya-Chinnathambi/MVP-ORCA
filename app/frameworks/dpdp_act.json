@@ -1,0 +1,18 @@
+{
+  "key": "dpdp_act",
+  "title": "Digital Personal Data Protection Act 2023",
+  "version": "1.0",
+  "jurisdiction": "India",
+  "categories": {
+    "notice":        "Sections 5-6 — Notice obligations to data principals",
+    "consent":       "Section 6-7 — Consent collection, management, and withdrawal",
+    "rights":        "Sections 11-14 — Data principal rights (access, correction, erasure, nomination)",
+    "purpose":       "Section 4 — Purpose limitation and lawful processing bases",
+    "security":      "Section 8 — Security safeguards and data processor obligations",
+    "breach":        "Section 8(6) — Breach intimation to Board and data principals",
+    "transfer":      "Section 16 — Cross-border transfer restrictions",
+    "grievance":     "Section 13 — Grievance redressal mechanism",
+    "governance":    "Section 8-10 — Data fiduciary and processor obligations",
+    "sdf":           "Section 10 — Significant data fiduciary obligations (DPIA, DPO)"
+  }
+}
