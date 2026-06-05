@@ -60,5 +60,29 @@ def require_project_access(project_id: str, role_name: str, db: Session, user: U
     return perm is not None
 
 
+def check_evidence_access(item, user: User, db: Session) -> bool:
+    """Return True if user may access a restricted EvidenceItem.
+
+    Non-restricted items are always accessible.
+    Restricted items require an evidence_item or organization scope-level Permission.
+    """
+    if not getattr(item, "is_restricted", False):
+        return True
+    from app.models.users import ScopeLevel
+    ALLOWED = {ScopeLevel.evidence_item.value, ScopeLevel.organization.value}
+    perms = (
+        db.query(Permission)
+        .filter(
+            Permission.user_id == user.id,
+            Permission.scope_level.in_(ALLOWED),
+        )
+        .all()
+    )
+    for perm in perms:
+        if perm.scope_id is None or perm.scope_id == str(item.id):
+            return True
+    return False
+
+
 # Common pre-built dependency aliases
 require_admin = require_role(RoleName.admin.value)

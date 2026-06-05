@@ -2,7 +2,7 @@ import enum
 from datetime import date, datetime
 from typing import TYPE_CHECKING, Any, Optional
 
-from sqlalchemy import Date, DateTime, Enum, ForeignKey, JSON, String, Text
+from sqlalchemy import Boolean, Date, DateTime, Enum, ForeignKey, JSON, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
@@ -90,6 +90,7 @@ class EvidenceItem(TimestampMixin, Base):
     )
     extracted_text: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     item_metadata: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
+    is_restricted: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     internal_lifecycle_state: Mapped[str] = mapped_column(
         String(50), default=EvidenceLifecycleState.intake.value, nullable=False
     )

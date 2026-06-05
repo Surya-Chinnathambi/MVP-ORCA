@@ -12,6 +12,7 @@ if TYPE_CHECKING:
 
 
 class RoleName(str, enum.Enum):
+    # Original MVP roles (kept — do not remove)
     admin = "admin"
     partner = "partner"
     pm = "pm"
@@ -20,11 +21,22 @@ class RoleName(str, enum.Enum):
     qa = "qa"
     client = "client"
     readonly = "readonly"
+    # Phase 2 extended roles (Stage 20)
+    platform_admin = "platform_admin"
+    lead_consultant = "lead_consultant"
+    senior_reviewer = "senior_reviewer"
+    client_approver = "client_approver"
+    client_contributor = "client_contributor"
 
 
 class ScopeLevel(str, enum.Enum):
+    # Original MVP levels (kept)
     client = "client"
     project = "project"
+    # Phase 2 extended levels (Stage 20)
+    organization = "organization"
+    evidence_item = "evidence_item"
+    deliverable = "deliverable"
 
 
 class User(TimestampMixin, Base):
