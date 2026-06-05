@@ -133,12 +133,39 @@ def _check_critical_findings_have_remediation(db: Session, project_id: str) -> O
     return None
 
 
+def _check_evidence_lifecycle_ready(db: Session, project_id: str) -> Optional[QAIssue]:
+    """Warn if accepted evidence items are not yet in 'classified' lifecycle state."""
+    from app.models.evidence import EvidenceItem, EvidenceLifecycleState, ReviewerStatus
+    not_classified = [
+        i.id for i in db.query(EvidenceItem)
+        .filter(
+            EvidenceItem.project_id == project_id,
+            EvidenceItem.reviewer_status == ReviewerStatus.accepted.value,
+            EvidenceItem.internal_lifecycle_state.notin_([
+                EvidenceLifecycleState.classified.value,
+                EvidenceLifecycleState.packaged.value,
+                EvidenceLifecycleState.delivered.value,
+                EvidenceLifecycleState.archived.value,
+            ]),
+        ).all()
+    ]
+    if not_classified:
+        return QAIssue(
+            rule="evidence_lifecycle_ready",
+            severity="warning",
+            message=f"{len(not_classified)} accepted evidence item(s) not yet classified for release.",
+            item_ids=not_classified,
+        )
+    return None
+
+
 _RULE_HANDLERS = {
     "every_finding_has_evidence":       _check_every_finding_has_evidence,
     "open_evidence_requests_flagged":   _check_open_evidence_requests_flagged,
     "all_requirements_assessed":        _check_all_requirements_assessed,
     "severity_consistent":              _check_severity_consistent,
     "critical_findings_have_remediation": _check_critical_findings_have_remediation,
+    "evidence_lifecycle_ready":         _check_evidence_lifecycle_ready,
 }
 
 

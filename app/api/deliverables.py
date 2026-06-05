@@ -192,6 +192,10 @@ def release_deliverable(
         gates["G6_report"] = True
         project.gates = gates
 
+    # Promote all packaged evidence to delivered (Stage 18 release gating)
+    from app.services.evidence.lifecycle import mark_project_evidence_delivered
+    mark_project_evidence_delivered(db, project_id, current_user.id)
+
     db.commit()
     db.refresh(deliverable)
     return deliverable

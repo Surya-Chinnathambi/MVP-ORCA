@@ -14,6 +14,15 @@ if TYPE_CHECKING:
     from app.models.users import User
 
 
+class EvidenceLifecycleState(str, enum.Enum):
+    intake = "intake"
+    verified = "verified"
+    classified = "classified"
+    packaged = "packaged"
+    delivered = "delivered"
+    archived = "archived"
+
+
 class EvidenceRequestStatus(str, enum.Enum):
     open = "open"
     received = "received"
@@ -81,8 +90,47 @@ class EvidenceItem(TimestampMixin, Base):
     )
     extracted_text: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     item_metadata: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
+    internal_lifecycle_state: Mapped[str] = mapped_column(
+        String(50), default=EvidenceLifecycleState.intake.value, nullable=False
+    )
+    supersedes_id: Mapped[Optional[str]] = mapped_column(
+        String(36), ForeignKey("evidence_items.id"), nullable=True
+    )
 
     project: Mapped["Project"] = relationship(back_populates="evidence_items")
     evidence_request: Mapped[Optional["EvidenceRequest"]] = relationship(
         back_populates="evidence_items"
     )
+    lifecycle_events: Mapped[list["EvidenceLifecycleEvent"]] = relationship(
+        back_populates="evidence_item",
+        foreign_keys="EvidenceLifecycleEvent.evidence_item_id",
+        cascade="all, delete-orphan",
+    )
+    supersedes: Mapped[Optional["EvidenceItem"]] = relationship(
+        "EvidenceItem", remote_side="EvidenceItem.id", foreign_keys=[supersedes_id]
+    )
+
+
+class EvidenceLifecycleEvent(TimestampMixin, Base):
+    """Append-only internal lifecycle event log for an EvidenceItem."""
+    __tablename__ = "evidence_lifecycle_events"
+
+    evidence_item_id: Mapped[str] = mapped_column(
+        String(36), ForeignKey("evidence_items.id"), nullable=False
+    )
+    from_state: Mapped[str] = mapped_column(String(50), nullable=False)
+    to_state: Mapped[str] = mapped_column(String(50), nullable=False)
+    actor_id: Mapped[Optional[str]] = mapped_column(
+        String(36), ForeignKey("users.id"), nullable=True
+    )
+    reason: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    ts: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_utcnow, nullable=False
+    )
+
+    evidence_item: Mapped["EvidenceItem"] = relationship(
+        "EvidenceItem",
+        back_populates="lifecycle_events",
+        foreign_keys=[evidence_item_id],
+    )
+    actor: Mapped[Optional["User"]] = relationship("User", foreign_keys=[actor_id])

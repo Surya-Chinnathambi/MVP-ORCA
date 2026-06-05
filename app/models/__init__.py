@@ -7,6 +7,7 @@ from app.models.scope import ScopeItem, Framework, Requirement  # noqa: F401
 from app.models.scope import ScopeItemKind, FrameworkKey  # noqa: F401
 from app.models.evidence import EvidenceRequest, EvidenceItem  # noqa: F401
 from app.models.evidence import EvidenceRequestStatus, ReviewerStatus  # noqa: F401
+from app.models.evidence import EvidenceLifecycleEvent, EvidenceLifecycleState  # noqa: F401
 from app.models.tasks import Task, Finding  # noqa: F401
 from app.models.tasks import TaskKind, FindingSeverity, FindingStatus, FindingSource  # noqa: F401
 from app.models.workflow import ApprovalRequest, AuditTrailEvent, ApprovalStatus  # noqa: F401
@@ -25,6 +26,7 @@ __all__ = [
     "Client", "Project", "ServiceType",
     "ScopeItem", "Framework", "Requirement", "ScopeItemKind", "FrameworkKey",
     "EvidenceRequest", "EvidenceItem", "EvidenceRequestStatus", "ReviewerStatus",
+    "EvidenceLifecycleEvent", "EvidenceLifecycleState",
     "Task", "Finding", "TaskKind", "FindingSeverity", "FindingStatus", "FindingSource",
     "ApprovalRequest", "AuditTrailEvent", "ApprovalStatus",
     "AdvisoryClinic", "Deliverable", "RemediationAction", "DeliverableKind",
