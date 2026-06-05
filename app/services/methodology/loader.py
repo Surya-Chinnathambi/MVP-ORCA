@@ -40,6 +40,26 @@ class FindingTemplate(BaseModel):
     title_pattern: str
 
 
+class SeverityModel(BaseModel):
+    critical: Optional[str] = None
+    high: Optional[str] = None
+    medium: Optional[str] = None
+    low: Optional[str] = None
+    informational: Optional[str] = None
+
+
+class ReviewGate(BaseModel):
+    id: str
+    label: str
+    required_role: Optional[str] = None
+
+
+class AdvisoryClinicTemplate(BaseModel):
+    category: str
+    title: str
+    guidance: Optional[str] = None
+
+
 class Pack(BaseModel):
     key: str
     title: str
@@ -53,6 +73,10 @@ class Pack(BaseModel):
     report_templates: List[str] = []
     qa_rules: List[str] = []
     approval_triggers: List[str] = []
+    # Phase 2 extensions (Stage 24)
+    severity_model: Optional[SeverityModel] = None
+    review_gates: List[ReviewGate] = []
+    advisory_clinic_templates: List[AdvisoryClinicTemplate] = []
 
 
 # ── Loader ────────────────────────────────────────────────────────────────────
