@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Remediation — {{ project.id[:8] }}{% endblock %}
+{% block content %}
+<div class="mb-2 text-sm text-gray-500">
+  <a href="/ui/projects/{{ project.id }}" class="hover:underline">← Project</a>
+</div>
+<h1 class="text-xl font-bold text-gray-800 mb-5">Remediation Tracker</h1>
+
+{% if actions %}
+<div class="bg-white rounded-lg shadow overflow-hidden">
+  <table class="w-full">
+    <thead class="bg-gray-50 border-b">
+      <tr>
+        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">Action</th>
+        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">Status</th>
+        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">Target Date</th>
+        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">Residual Risk</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-100">
+      {% for a in actions %}
+      <tr class="hover:bg-gray-50">
+        <td class="px-4 py-3 font-medium max-w-sm">
+          <div class="truncate">{{ a.action }}</div>
+          <div class="text-xs text-gray-400 mt-0.5">Finding: {{ a.finding_id[:8] }}…</div>
+        </td>
+        <td class="px-4 py-3">
+          {% set sc = {'open': 'bg-yellow-100 text-yellow-700', 'closed': 'bg-green-100 text-green-700', 'in_progress': 'bg-blue-100 text-blue-700'} %}
+          <span class="px-2 py-0.5 rounded-full text-xs {{ sc.get(a.status, 'bg-gray-100 text-gray-500') }}">
+            {{ a.status }}
+          </span>
+        </td>
+        <td class="px-4 py-3 text-gray-400 text-xs">{{ a.target_date or "—" }}</td>
+        <td class="px-4 py-3 text-gray-500 text-xs max-w-xs truncate">{{ a.residual_risk or "—" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p class="text-gray-500">No remediation actions recorded.</p>
+{% endif %}
+{% endblock %}

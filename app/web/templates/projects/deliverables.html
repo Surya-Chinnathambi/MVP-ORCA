@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Deliverables — {{ project.id[:8] }}{% endblock %}
+{% block content %}
+<div class="mb-2 text-sm text-gray-500">
+  <a href="/ui/projects/{{ project.id }}" class="hover:underline">← Project</a>
+</div>
+<h1 class="text-xl font-bold text-gray-800 mb-5">Report Builder</h1>
+
+<!-- Generate buttons -->
+<div class="grid grid-cols-3 gap-4 mb-6">
+  <form action="/ui/projects/{{ project.id }}/deliverables/gap-matrix" method="post">
+    <button type="submit"
+      class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded text-sm font-medium">
+      Generate Gap Matrix
+    </button>
+  </form>
+  <form action="/ui/projects/{{ project.id }}/deliverables/roadmap" method="post">
+    <button type="submit"
+      class="w-full bg-purple-600 hover:bg-purple-700 text-white py-3 rounded text-sm font-medium">
+      Generate Roadmap
+    </button>
+  </form>
+  <form action="/ui/projects/{{ project.id }}/deliverables/report" method="post">
+    <button type="submit"
+      class="w-full bg-green-600 hover:bg-green-700 text-white py-3 rounded text-sm font-medium">
+      Generate Report (Draft)
+    </button>
+  </form>
+</div>
+
+<p class="text-xs text-gray-400 mb-5">
+  Note: Report release (Gate 6) requires partner approval via the Approvals queue.
+</p>
+
+<!-- Deliverables list -->
+{% if deliverables %}
+<div class="bg-white rounded-lg shadow overflow-hidden">
+  <table class="w-full">
+    <thead class="bg-gray-50 border-b">
+      <tr>
+        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">Kind</th>
+        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">Format</th>
+        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">Version</th>
+        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">Generated</th>
+        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">File</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-100">
+      {% for d in deliverables %}
+      <tr class="hover:bg-gray-50">
+        <td class="px-4 py-3 font-medium">{{ d.kind }}</td>
+        <td class="px-4 py-3 text-gray-500 text-xs">{{ d.format or "—" }}</td>
+        <td class="px-4 py-3 text-gray-500 text-xs">v{{ d.version }}</td>
+        <td class="px-4 py-3 text-gray-400 text-xs">
+          {{ d.generated_at.strftime('%Y-%m-%d %H:%M') if d.generated_at else "—" }}
+        </td>
+        <td class="px-4 py-3 text-gray-400 text-xs truncate max-w-xs">
+          {{ d.file_path.split('/')[-1] if d.file_path else "—" }}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p class="text-gray-500">No deliverables generated yet.</p>
+{% endif %}
+{% endblock %}

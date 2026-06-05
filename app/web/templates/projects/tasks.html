@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Tasks — {{ project.id[:8] }}{% endblock %}
+{% block content %}
+<div class="mb-2 text-sm text-gray-500">
+  <a href="/ui/projects/{{ project.id }}" class="hover:underline">← Project</a>
+</div>
+<h1 class="text-xl font-bold text-gray-800 mb-5">Task Board</h1>
+
+{% if tasks %}
+<div class="bg-white rounded-lg shadow overflow-hidden">
+  <table class="w-full">
+    <thead class="bg-gray-50 border-b">
+      <tr>
+        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">Title</th>
+        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">Kind</th>
+        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">Status</th>
+        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">Assignee</th>
+        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">Due</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-100">
+      {% for task in tasks %}
+      <tr class="hover:bg-gray-50">
+        <td class="px-4 py-3 font-medium">{{ task.title }}</td>
+        <td class="px-4 py-3 text-gray-500 text-xs">{{ task.kind }}</td>
+        <td class="px-4 py-3">
+          {% set sc = {'open': 'bg-yellow-100 text-yellow-700', 'done': 'bg-green-100 text-green-700', 'in_progress': 'bg-blue-100 text-blue-700', 'cancelled': 'bg-gray-100 text-gray-500'} %}
+          <span class="px-2 py-0.5 rounded-full text-xs {{ sc.get(task.status, 'bg-gray-100 text-gray-500') }}">
+            {{ task.status }}
+          </span>
+        </td>
+        <td class="px-4 py-3 text-gray-400 text-xs">{{ task.assignee_id[:8] + "…" if task.assignee_id else "—" }}</td>
+        <td class="px-4 py-3 text-gray-400 text-xs">{{ task.due_date or "—" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p class="text-gray-500">No tasks yet. Generate a plan to create tasks.</p>
+{% endif %}
+{% endblock %}

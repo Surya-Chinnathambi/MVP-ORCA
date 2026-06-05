@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Pack — {{ project.id[:8] }}{% endblock %}
+{% block content %}
+<div class="mb-2 text-sm text-gray-500">
+  <a href="/ui/projects/{{ project.id }}" class="hover:underline">← Project</a>
+</div>
+<h1 class="text-xl font-bold text-gray-800 mb-5">Methodology Pack</h1>
+
+{% if pack_data %}
+<div class="bg-white rounded-lg shadow p-5 mb-5">
+  <div class="flex justify-between items-start">
+    <div>
+      <h2 class="font-semibold text-gray-800 text-lg">{{ pack_data.title }}</h2>
+      <p class="text-sm text-gray-500 mt-1">Pack key: <code>{{ pack_data.key }}</code></p>
+    </div>
+    <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+      {{ pack_data.key | upper }}
+    </span>
+  </div>
+  <div class="grid grid-cols-3 gap-4 mt-4 text-sm">
+    <div>
+      <div class="font-bold text-gray-700">{{ pack_data.requirements | length }}</div>
+      <div class="text-gray-500">Requirements</div>
+    </div>
+    <div>
+      <div class="font-bold text-gray-700">{{ pack_data.evidence_requests | length }}</div>
+      <div class="text-gray-500">Evidence Requests</div>
+    </div>
+    <div>
+      <div class="font-bold text-gray-700">{{ pack_data.task_templates | length }}</div>
+      <div class="text-gray-500">Task Templates</div>
+    </div>
+  </div>
+</div>
+
+<div class="bg-white rounded-lg shadow p-5 mb-5">
+  <h3 class="font-semibold text-gray-700 mb-3">Generated Plan</h3>
+  <p class="text-sm text-gray-600 mb-4">
+    {{ requirements_count }} requirement(s) currently in project.
+    Generating the plan will create requirements, evidence requests, and tasks from the pack.
+  </p>
+  <form action="/ui/projects/{{ project.id }}/pack/generate" method="post">
+    <button type="submit"
+      class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm font-medium">
+      {% if requirements_count > 0 %}Regenerate Plan{% else %}Generate Plan{% endif %}
+    </button>
+  </form>
+</div>
+
+{% else %}
+<div class="bg-yellow-50 border border-yellow-200 text-yellow-800 p-4 rounded-lg text-sm">
+  No pack loaded for this project. Set <code>pack_id</code> via the project API.
+</div>
+{% endif %}
+{% endblock %}
