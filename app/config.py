@@ -17,5 +17,13 @@ class Settings(BaseSettings):
     # Phase 2 — background workers
     redis_url: str = "redis://localhost:6379/0"
 
+    # Stage 21 — security hardening
+    encryption_key: str = ""          # Fernet 32-byte URL-safe base64 key
+    session_idle_timeout: int = 1800  # seconds before idle session expires
+    sso_enabled: bool = False
+    sso_client_id: str = ""
+    sso_client_secret: str = ""
+    sso_tenant_id: str = ""
+
 
 settings = Settings()

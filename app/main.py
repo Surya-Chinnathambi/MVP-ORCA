@@ -9,7 +9,7 @@ from app.api import (
     methodology, requirements, tasks, evidence_requests, evidence_items, findings, gates,
     deliverables, packs,
 )
-from app.api import workmode
+from app.api import workmode, security
 from app.web.router import router as web_router
 
 app = FastAPI(
@@ -38,6 +38,7 @@ app.include_router(gates.router)
 app.include_router(deliverables.router)
 app.include_router(packs.router)
 app.include_router(workmode.router)
+app.include_router(security.router)
 app.include_router(web_router)
 
 app.mount("/static", StaticFiles(directory="app/web/static"), name="static")
