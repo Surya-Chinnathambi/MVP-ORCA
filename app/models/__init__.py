@@ -17,6 +17,7 @@ from app.models.engagement import EngagementState, EngagementObjective  # noqa: 
 from app.models.methodology import MethodologyPack, PackLifecycle  # noqa: F401
 from app.models.workmode import WorkMode, UserLastContext, WorkModeName  # noqa: F401
 from app.models.notification import Notification, NotificationChannel, NotificationEventType  # noqa: F401
+from app.models.agent import AgentDraft, AgentType, DraftStatus  # noqa: F401
 
 # Activate auto-create listener: fires after every Project insert
 from app.engagementcore.state import register_listeners as _rl
@@ -36,4 +37,5 @@ __all__ = [
     "MethodologyPack", "PackLifecycle",
     "WorkMode", "UserLastContext", "WorkModeName",
     "Notification", "NotificationChannel", "NotificationEventType",
+    "AgentDraft", "AgentType", "DraftStatus",
 ]
