@@ -2,7 +2,7 @@ import enum
 from datetime import date, datetime
 from typing import TYPE_CHECKING, Any, Optional
 
-from sqlalchemy import Date, DateTime, Enum, ForeignKey, Integer, JSON, String, Text
+from sqlalchemy import Boolean, Date, DateTime, Enum, ForeignKey, Integer, JSON, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
@@ -20,6 +20,11 @@ class DeliverableKind(str, enum.Enum):
     report = "report"
     summary = "summary"
     tracker = "tracker"
+    # Stage 27 — new deliverable kinds
+    retest_report = "retest_report"
+    advisory_clinic_deck = "advisory_clinic_deck"
+    management_summary = "management_summary"
+    client_action_plan = "client_action_plan"
 
 
 class AdvisoryClinic(TimestampMixin, Base):
@@ -53,6 +58,7 @@ class Deliverable(TimestampMixin, Base):
         DateTime(timezone=True), nullable=True
     )
     version: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
+    is_released: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     project: Mapped["Project"] = relationship(back_populates="deliverables")
 

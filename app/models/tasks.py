@@ -8,6 +8,12 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db import Base
 from app.models.base import TimestampMixin
 
+# Re-export for convenience
+__all__ = [
+    "TaskKind", "TaskStatus", "FindingSeverity", "FindingStatus", "FindingSource",
+    "Task", "Finding",
+]
+
 if TYPE_CHECKING:
     from app.models.clients import Project
     from app.models.scope import Requirement
@@ -33,11 +39,29 @@ class FindingSeverity(str, enum.Enum):
 
 
 class FindingStatus(str, enum.Enum):
-    open = "open"
+    # Stage 27 — full spec state machine
+    draft = "draft"
     in_review = "in_review"
     approved = "approved"
+    client_shared = "client_shared"
+    remediation_planned = "remediation_planned"
+    retest_pending = "retest_pending"
+    closed = "closed"
+    risk_accepted = "risk_accepted"
+    # Legacy (kept for migration backfill)
+    open = "open"
     remediated = "remediated"
     accepted = "accepted"
+
+
+class TaskStatus(str, enum.Enum):
+    planned = "planned"
+    assigned = "assigned"
+    in_progress = "in_progress"
+    blocked = "blocked"
+    review = "review"
+    complete = "complete"
+    cancelled = "cancelled"
 
 
 class FindingSource(str, enum.Enum):
