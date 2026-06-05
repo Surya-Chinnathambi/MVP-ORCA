@@ -23,7 +23,7 @@ from app.models.engagement import EngagementObjective, EngagementState
 from app.models.organization import Organization
 from app.models.users import Role, RoleName, User
 from app.services.auth import hash_password
-from tests.conftest import make_client, make_org, make_project
+from conftest import make_client, make_org, make_project
 
 
 # ── DB fixture ────────────────────────────────────────────────────────────────

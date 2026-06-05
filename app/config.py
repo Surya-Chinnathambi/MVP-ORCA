@@ -14,5 +14,8 @@ class Settings(BaseSettings):
     telegram_bot_token: str = ""
     claude_api_key: str = ""
 
+    # Phase 2 — background workers
+    redis_url: str = "redis://localhost:6379/0"
+
 
 settings = Settings()

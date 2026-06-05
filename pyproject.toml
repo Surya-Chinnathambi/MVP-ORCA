@@ -44,6 +44,12 @@ dependencies = [
     "anthropic==0.105.2",
     # ── HTTP client ──────────────────────────────────────────────────────────
     "httpx==0.28.1",
+    # ── Phase 2: Postgres ────────────────────────────────────────────────────
+    "psycopg[binary]==3.3.4",
+    # ── Phase 2: Background workers ──────────────────────────────────────────
+    "rq==2.3.3",
+    "rq-scheduler==0.14.0",
+    "redis==8.0.0",
 ]
 
 [project.optional-dependencies]
@@ -51,11 +57,12 @@ dev = [
     "pytest==8.3.4",
     "pytest-asyncio==0.24.0",
     "ruff==0.9.6",
+    "fakeredis==2.36.0",
 ]
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["app*", "ptorc_adapter*"]
+include = ["app*", "ptorc_adapter*", "workers*"]
 
 [tool.ruff]
 line-length = 100
