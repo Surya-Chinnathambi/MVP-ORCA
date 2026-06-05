@@ -81,11 +81,53 @@ G4 findings approved · G5 draft report QA complete · G6 final report approved 
 
 ---
 
-## Session prompt template
+## Session prompt template (Phase 1, Stages 0–13)
 
 ```
 Read CLAUDE.md and BUILD_INSTRUCTIONS.md.
 Implement Stage <N> ONLY, using the frozen stack and data model.
 Do not modify earlier stages unless a test fails.
+Finish when tests/test_stage<N>.py passes. Then summarize what you built and stop.
+```
+
+---
+
+## Phase 2 additional rules (Stages 14–30, from BUILD_INSTRUCTIONS_PHASE2.md)
+
+9. **Stages 0–13 are frozen.** Do not refactor MVP code unless a Phase 2 stage explicitly says to.
+10. **Phase 1 frozen stack still holds** plus Phase 2 additions (Postgres, Redis/RQ, pyotp, cryptography, Authlib, anthropic SDK, smtplib). See pyproject.toml for pinned versions.
+11. **Migrations are forward-only.** Every schema change ships an Alembic migration with explicit backfills. Never drop a column that holds delivery data.
+12. **The audit/approval gateway from Stage 2 is the single chokepoint.** New mutating paths route through `record_event` / `request_approval` — never ad-hoc.
+13. **EngagementCore boundary is a hard rule.** Generic execution primitives go in `app/engagementcore/`. Anything VAPT/offensive-specific goes in the VAPT pack only.
+14. **AI agents never approve.** No agent may approve scope, set/confirm severity, release reports, or read restricted evidence. Every agent action writes an AuditTrailEvent tagged `actor=agent`.
+
+## Phase 2 3-layer architecture
+
+```
+┌─────────────────────────────────────────────┐
+│  Methodology Packs (DPDP / VAPT / ISO / …)  │  Service-specific depth
+│  pack.json → requirements, findings, tasks  │  Offensive concepts ONLY here
+└───────────────────┬─────────────────────────┘
+                    │ drives
+┌───────────────────▼─────────────────────────┐
+│  EngagementCore (app/engagementcore/)        │  Generic execution layer
+│  EngagementState · Objectives · Context      │  Service-neutral, no VAPT specifics
+└───────────────────┬─────────────────────────┘
+                    │ persists via
+┌───────────────────▼─────────────────────────┐
+│  Platform Core (models / api / services/)    │  17 MVP objects + 7 Phase 2 objects
+│  Auth · Audit · Evidence · Approvals · UI   │  Org tenant · RBAC · Deliverables
+└─────────────────────────────────────────────┘
+```
+
+## Phase 2 session prompt template (Stages 14–30)
+
+```
+Read CLAUDE.md and BUILD_INSTRUCTIONS_PHASE2.md.
+Implement Stage <N> ONLY, using the frozen stack (Phase 1 + Phase 2 Section 1)
+and data model (17 MVP objects + Phase 2 Section 2).
+Do not modify Stages 0–13 unless this stage explicitly says so or a test fails.
+Keep offensive/VAPT-specific concepts inside the VAPT pack, never in EngagementCore or core.
+Route every trigger-bound change through the audit/approval gateway.
 Finish when tests/test_stage<N>.py passes. Then summarize what you built and stop.
 ```

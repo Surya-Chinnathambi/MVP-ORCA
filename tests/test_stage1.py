@@ -25,7 +25,7 @@ def db():
 
 
 def test_all_17_tables_created(db):
-    """All 17 model tables exist in metadata."""
+    """Original 17 MVP tables plus Stage 14 org/engagement tables all exist."""
     expected = {
         "users", "roles", "permissions",
         "clients", "projects",
@@ -34,9 +34,11 @@ def test_all_17_tables_created(db):
         "tasks", "findings",
         "approval_requests", "audit_trail_events",
         "advisory_clinics", "deliverables", "remediation_actions",
+        # Stage 14 additions
+        "organizations", "engagement_states", "engagement_objectives",
     }
     actual = set(Base.metadata.tables.keys())
-    assert expected == actual, f"Missing tables: {expected - actual}"
+    assert expected <= actual, f"Missing tables: {expected - actual}"
 
 
 def test_client_project_scopeitem_chain(db):

@@ -14,6 +14,8 @@ if TYPE_CHECKING:
     from app.models.workflow import ApprovalRequest, AuditTrailEvent
     from app.models.delivery import AdvisoryClinic, Deliverable, RemediationAction
     from app.models.users import User
+    from app.models.organization import Organization
+    from app.models.engagement import EngagementState, EngagementObjective
 
 
 class ServiceType(str, enum.Enum):
@@ -30,8 +32,12 @@ class Client(TimestampMixin, Base):
     business_units: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
     reusable_context: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
     regulatory_context: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    organization_id: Mapped[Optional[str]] = mapped_column(
+        String(36), ForeignKey("organizations.id"), nullable=True
+    )
 
     projects: Mapped[list["Project"]] = relationship(back_populates="client")
+    organization: Mapped[Optional["Organization"]] = relationship(back_populates="clients")
 
 
 class Project(TimestampMixin, Base):
@@ -88,5 +94,11 @@ class Project(TimestampMixin, Base):
         back_populates="project", cascade="all, delete-orphan"
     )
     remediation_actions: Mapped[list["RemediationAction"]] = relationship(
+        back_populates="project", cascade="all, delete-orphan"
+    )
+    engagement_state: Mapped[Optional["EngagementState"]] = relationship(
+        back_populates="project", uselist=False, cascade="all, delete-orphan"
+    )
+    objectives: Mapped[list["EngagementObjective"]] = relationship(
         back_populates="project", cascade="all, delete-orphan"
     )
