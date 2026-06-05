@@ -3,7 +3,11 @@ from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.config import settings
-from app.api import auth, users, roles, permissions, clients, projects, scope, approvals, methodology
+from app.api import (
+    auth, users, roles, permissions,
+    clients, projects, scope, approvals,
+    methodology, requirements, tasks, evidence_requests,
+)
 
 app = FastAPI(
     title="TG Audit Orchestrator",
@@ -22,6 +26,9 @@ app.include_router(projects.router)
 app.include_router(scope.router)
 app.include_router(approvals.router)
 app.include_router(methodology.router)
+app.include_router(requirements.router)
+app.include_router(tasks.router)
+app.include_router(evidence_requests.router)
 
 app.mount("/static", StaticFiles(directory="app/web/static"), name="static")
 
