@@ -84,5 +84,22 @@ def check_evidence_access(item, user: User, db: Session) -> bool:
     return False
 
 
+def require_portal_role(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> User:
+    """Reject users who hold no portal role (client_approver / client_contributor / readonly)."""
+    from app.models.users import Permission, Role
+    _PORTAL = {RoleName.client_approver.value, RoleName.client_contributor.value, RoleName.readonly.value}
+    role_ids = [r.id for r in db.query(Role).filter(Role.name.in_(_PORTAL)).all()]
+    perm = db.query(Permission).filter(
+        Permission.user_id == current_user.id,
+        Permission.role_id.in_(role_ids),
+    ).first()
+    if perm is None:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Client portal access required")
+    return current_user
+
+
 # Common pre-built dependency aliases
 require_admin = require_role(RoleName.admin.value)

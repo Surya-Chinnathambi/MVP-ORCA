@@ -10,7 +10,7 @@ from app.api import (
     deliverables, packs,
 )
 from app.api import workmode, security, notifications, agents
-from app.web.router import router as web_router
+from app.web.router import portal_router, router as web_router
 
 app = FastAPI(
     title="TG Audit Orchestrator",
@@ -42,6 +42,7 @@ app.include_router(security.router)
 app.include_router(notifications.router)
 app.include_router(agents.router)
 app.include_router(web_router)
+app.include_router(portal_router)
 
 app.mount("/static", StaticFiles(directory="app/web/static"), name="static")
 

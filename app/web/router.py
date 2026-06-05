@@ -9,11 +9,15 @@ from app.web.views import (
     client_views,
     deliverable_views,
     evidence_views,
+    portal_views,
     project_views,
     task_views,
 )
 
 router = APIRouter(prefix="/ui")
+
+# Separate top-level router (no /ui prefix) for client portal
+portal_router = portal_views.router
 
 router.include_router(auth_views.router)
 router.include_router(client_views.router)
