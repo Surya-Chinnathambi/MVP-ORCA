@@ -22,8 +22,8 @@ class ApprovalStatus(str, enum.Enum):
 class ApprovalRequest(TimestampMixin, Base):
     __tablename__ = "approval_requests"
 
-    project_id: Mapped[str] = mapped_column(
-        String(36), ForeignKey("projects.id"), nullable=False
+    project_id: Mapped[Optional[str]] = mapped_column(
+        String(36), ForeignKey("projects.id"), nullable=True
     )
     target_type: Mapped[str] = mapped_column(String(100), nullable=False)
     target_id: Mapped[str] = mapped_column(String(36), nullable=False)
@@ -46,7 +46,7 @@ class ApprovalRequest(TimestampMixin, Base):
         DateTime(timezone=True), nullable=True
     )
 
-    project: Mapped["Project"] = relationship(back_populates="approval_requests")
+    project: Mapped[Optional["Project"]] = relationship(back_populates="approval_requests")
     requester: Mapped[Optional["User"]] = relationship(
         "User", foreign_keys=[requested_by]
     )

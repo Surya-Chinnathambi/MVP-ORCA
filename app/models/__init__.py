@@ -13,6 +13,7 @@ from app.models.workflow import ApprovalRequest, AuditTrailEvent, ApprovalStatus
 from app.models.delivery import AdvisoryClinic, Deliverable, RemediationAction  # noqa: F401
 from app.models.delivery import DeliverableKind  # noqa: F401
 from app.models.engagement import EngagementState, EngagementObjective  # noqa: F401
+from app.models.methodology import MethodologyPack, PackLifecycle  # noqa: F401
 
 # Activate auto-create listener: fires after every Project insert
 from app.engagementcore.state import register_listeners as _rl
@@ -28,4 +29,5 @@ __all__ = [
     "ApprovalRequest", "AuditTrailEvent", "ApprovalStatus",
     "AdvisoryClinic", "Deliverable", "RemediationAction", "DeliverableKind",
     "EngagementState", "EngagementObjective",
+    "MethodologyPack", "PackLifecycle",
 ]

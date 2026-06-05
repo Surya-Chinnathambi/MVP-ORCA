@@ -16,6 +16,7 @@ if TYPE_CHECKING:
     from app.models.users import User
     from app.models.organization import Organization
     from app.models.engagement import EngagementState, EngagementObjective
+    from app.models.methodology import MethodologyPack
 
 
 class ServiceType(str, enum.Enum):
@@ -55,7 +56,9 @@ class Project(TimestampMixin, Base):
     status: Mapped[str] = mapped_column(String(50), default="setup", nullable=False)
     scope_summary: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     timeline: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
-    pack_id: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    pack_id: Mapped[Optional[str]] = mapped_column(
+        String(36), ForeignKey("methodology_packs.id"), nullable=True
+    )
     framework_ids: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
     gates: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
 
@@ -101,4 +104,7 @@ class Project(TimestampMixin, Base):
     )
     objectives: Mapped[list["EngagementObjective"]] = relationship(
         back_populates="project", cascade="all, delete-orphan"
+    )
+    methodology_pack: Mapped[Optional["MethodologyPack"]] = relationship(
+        "MethodologyPack", back_populates="projects", foreign_keys=[pack_id]
     )

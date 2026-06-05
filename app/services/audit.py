@@ -45,7 +45,7 @@ def record_event(
 def request_approval(
     db: Session,
     *,
-    project_id: str,
+    project_id: Optional[str] = None,
     target_type: str,
     target_id: str,
     reason: str,
