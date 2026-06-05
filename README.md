@@ -115,6 +115,90 @@ Both pilots demonstrate the full chain:
 
 ---
 
+## Deployment (TechGuard Labs internal)
+
+### Environment profiles
+
+Set `APP_ENV` in `.env`:
+
+| Value | Meaning |
+|---|---|
+| `dev` | Local development — no strict secret enforcement |
+| `test` | Automated test runs — SQLite, fakeredis |
+| `prod` | Production — enforces `SECRET_KEY` + `ENCRYPTION_KEY` at startup |
+
+### Production checklist
+
+```bash
+# 1. Generate secrets
+python -c "import secrets; print(secrets.token_hex(32))"          # → SECRET_KEY
+python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"  # → ENCRYPTION_KEY
+
+# 2. Set APP_ENV=prod in .env
+
+# 3. Run DB migrations from a clean state
+alembic upgrade head
+
+# 4. Seed roles + admin user
+python scripts/seed.py
+
+# 5. Start app
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 2
+```
+
+The application performs a startup self-check and will **refuse to start** in `prod`
+mode if `SECRET_KEY` is the placeholder value or `ENCRYPTION_KEY` is not set.
+
+### Backup & restore (SQLite)
+
+```bash
+# Create a timestamped archive of the DB + evidence store
+python scripts/backup.py --label "pre-release"
+# → data/backups/backup_20260605_120000.tar.gz
+
+# Restore (stops the app first, then run):
+python scripts/restore.py data/backups/backup_20260605_120000.tar.gz
+```
+
+For PostgreSQL, use `pg_dump` / `pg_restore`; the script prints the equivalent
+command automatically when a Postgres `DATABASE_URL` is detected.
+
+### Access review
+
+Run periodically (or schedule via RQ) to produce a permission audit report:
+
+```python
+from app.services.ops.access_review import generate_access_report
+report = generate_access_report(settings.database_url)
+# report["permissions"] — full list; report["summary"]["roles"] — counts per role
+```
+
+### Audit-log retention
+
+Old `AuditTrailEvent` rows are pruned by the retention job:
+
+```python
+from app.services.ops.retention import apply_retention_policy
+deleted = apply_retention_policy(settings.database_url, retention_days=365)
+```
+
+Schedule via RQ-scheduler in `workers/worker.py` or run as a nightly cron.
+
+### Alembic migration verification
+
+```bash
+# Verify migrations apply cleanly from a fresh database
+alembic upgrade head
+
+# Check current revision
+alembic current
+
+# Show pending migrations
+alembic history --indicate-current
+```
+
+---
+
 ## Licence
 
 Internal — TechGuard Labs

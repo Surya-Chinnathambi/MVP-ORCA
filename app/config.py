@@ -25,5 +25,10 @@ class Settings(BaseSettings):
     sso_client_secret: str = ""
     sso_tenant_id: str = ""
 
+    # Stage 29 — deployment & operations
+    environment: str = "dev"          # dev | test | prod
+    backup_dir: str = "data/backups"
+    audit_retention_days: int = 365
+
 
 settings = Settings()

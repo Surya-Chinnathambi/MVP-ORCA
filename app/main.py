@@ -47,6 +47,12 @@ app.include_router(portal_router)
 app.mount("/static", StaticFiles(directory="app/web/static"), name="static")
 
 
+@app.on_event("startup")
+def _startup_check() -> None:
+    from app.services.ops.health import startup_check
+    startup_check(settings)
+
+
 @app.get("/health")
 def health():
     return {"status": "ok", "version": "0.1.0"}
