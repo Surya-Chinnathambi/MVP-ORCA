@@ -7,6 +7,7 @@ from app.api import (
     auth, users, roles, permissions,
     clients, projects, scope, approvals,
     methodology, requirements, tasks, evidence_requests, evidence_items, findings, gates,
+    deliverables,
 )
 
 app = FastAPI(
@@ -32,6 +33,7 @@ app.include_router(evidence_requests.router)
 app.include_router(evidence_items.router)
 app.include_router(findings.router)
 app.include_router(gates.router)
+app.include_router(deliverables.router)
 
 app.mount("/static", StaticFiles(directory="app/web/static"), name="static")
 
