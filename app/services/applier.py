@@ -7,10 +7,11 @@ Registered handlers (approval.target_type → function):
   scope_item              → ScopeItem.approved = True
   evidence_request_waiver → EvidenceRequest.status = "waived"
   task_cancellation       → Task.status = "cancelled"
+  evidence_rejection      → EvidenceItem.reviewer_status = "rejected"
 """
 from sqlalchemy.orm import Session
 
-from app.models.evidence import EvidenceRequest, EvidenceRequestStatus
+from app.models.evidence import EvidenceItem, EvidenceRequest, EvidenceRequestStatus, ReviewerStatus
 from app.models.scope import ScopeItem
 from app.models.tasks import Task
 from app.models.workflow import ApprovalRequest, ApprovalStatus
@@ -28,6 +29,7 @@ def apply_approval(db: Session, approval: ApprovalRequest) -> None:
         "scope_item":              _apply_scope_item,
         "evidence_request_waiver": _apply_er_waiver,
         "task_cancellation":       _apply_task_cancel,
+        "evidence_rejection":      _apply_evidence_rejection,
     }
     handler = handlers.get(approval.target_type)
     if handler:
@@ -50,3 +52,9 @@ def _apply_task_cancel(db: Session, approval: ApprovalRequest) -> None:
     task = db.get(Task, approval.target_id)
     if task:
         task.status = "cancelled"
+
+
+def _apply_evidence_rejection(db: Session, approval: ApprovalRequest) -> None:
+    item = db.get(EvidenceItem, approval.target_id)
+    if item:
+        item.reviewer_status = ReviewerStatus.rejected
