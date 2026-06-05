@@ -95,6 +95,11 @@ class Finding(TimestampMixin, Base):
         default=FindingSource.manual,
         nullable=False,
     )
+    # Stage 26 — PT-Orc v2 import fields
+    retest_status: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    phase_tag: Mapped[Optional[str]] = mapped_column(String(50), nullable=True)
+    ptorc_run_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    pack_scoped_data: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
 
     project: Mapped["Project"] = relationship(back_populates="findings")
     requirement: Mapped[Optional["Requirement"]] = relationship("Requirement")

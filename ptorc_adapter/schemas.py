@@ -1,13 +1,37 @@
-"""Pydantic schemas for the PT-Orc export contract.
+"""Pydantic schemas for the PT-Orc export contract v2.
 
-These are the four files 12_report_pack.sh must produce.
-Both sides (PT-Orc and this adapter) depend on this contract — treat as frozen.
+v2 additions:
+- ScopeImport: engagement_profile validated against known profiles
+- FindingRecord: retest_status, residual_risk, pack_scoped_data (offensive narrative quarantine)
+- EvidenceRecord: phase now accepts new phases 08_app_api, 09_ai_llm
+- ReportBundle: retest_status, residual_risk (already present, now validated)
 """
 from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, field_validator
 
 _VALID_SEVERITIES = {"info", "low", "medium", "high", "critical"}
+
+_VALID_PROFILES = {
+    "external", "internal", "web", "api", "ai_llm", "cloud", "ad", "hybrid",
+}
+
+_VALID_RETEST_STATUSES = {"n/a", "pending", "in_progress", "passed", "failed", "partial"}
+
+# Phases from PT-Orc — v1 + v2 new phases
+_VALID_PHASES = {
+    "01_recon", "02_enum", "03_vuln_scan", "04_exploitation",
+    "05_post_exploit", "06_exfil", "07_report",
+    # v2
+    "08_app_api", "09_ai_llm",
+}
+
+# Offensive narrative keys that must never be promoted to core models.
+# Stored in pack_scoped_data on the Finding, never in title/description/recommendation.
+_OFFENSIVE_NARRATIVE_KEYS = frozenset({
+    "attack_chain", "payload_details", "c2_config", "opsec_notes",
+    "exploit_code", "killchain_step", "lateral_path",
+})
 
 
 class WindowSchema(BaseModel):
@@ -24,6 +48,15 @@ class ScopeImport(BaseModel):
     rules_of_engagement: str = ""
     window: Dict[str, Any] = {}
 
+    @field_validator("engagement_profile")
+    @classmethod
+    def _check_profile(cls, v: str) -> str:
+        if v not in _VALID_PROFILES:
+            raise ValueError(
+                f"engagement_profile must be one of {sorted(_VALID_PROFILES)}, got '{v}'"
+            )
+        return v
+
 
 class EvidenceRecord(BaseModel):
     id: str
@@ -31,6 +64,15 @@ class EvidenceRecord(BaseModel):
     source_file: str
     sha256: str
     summary: str = ""
+
+    @field_validator("phase")
+    @classmethod
+    def _check_phase(cls, v: str) -> str:
+        if v not in _VALID_PHASES:
+            raise ValueError(
+                f"phase must be one of {sorted(_VALID_PHASES)}, got '{v}'"
+            )
+        return v
 
 
 class FindingRecord(BaseModel):
@@ -41,6 +83,10 @@ class FindingRecord(BaseModel):
     evidence_ids: List[str] = []
     description: str = ""
     recommendation: str = ""
+    retest_status: str = "n/a"
+    residual_risk: str = ""
+    # Offensive narrative — quarantined; stored in pack_scoped_data only
+    pack_scoped_data: Dict[str, Any] = {}
 
     @field_validator("severity")
     @classmethod
@@ -49,6 +95,29 @@ class FindingRecord(BaseModel):
             raise ValueError(f"severity must be one of {sorted(_VALID_SEVERITIES)}, got '{v}'")
         return v
 
+    @field_validator("phase")
+    @classmethod
+    def _check_phase(cls, v: str) -> str:
+        if v not in _VALID_PHASES:
+            raise ValueError(
+                f"phase must be one of {sorted(_VALID_PHASES)}, got '{v}'"
+            )
+        return v
+
+    @field_validator("retest_status")
+    @classmethod
+    def _check_retest(cls, v: str) -> str:
+        if v not in _VALID_RETEST_STATUSES:
+            raise ValueError(
+                f"retest_status must be one of {sorted(_VALID_RETEST_STATUSES)}, got '{v}'"
+            )
+        return v
+
+    def extract_offensive_narrative(self) -> Dict[str, Any]:
+        """Return only the known offensive narrative keys from pack_scoped_data."""
+        return {k: v for k, v in self.pack_scoped_data.items()
+                if k in _OFFENSIVE_NARRATIVE_KEYS}
+
 
 class ReportBundle(BaseModel):
     project_ref: str
@@ -56,3 +125,21 @@ class ReportBundle(BaseModel):
     retest_status: str = "n/a"
     residual_risk: str = ""
     counts: Dict[str, Any] = {}
+
+    @field_validator("profile")
+    @classmethod
+    def _check_profile(cls, v: str) -> str:
+        if v not in _VALID_PROFILES:
+            raise ValueError(
+                f"profile must be one of {sorted(_VALID_PROFILES)}, got '{v}'"
+            )
+        return v
+
+    @field_validator("retest_status")
+    @classmethod
+    def _check_retest(cls, v: str) -> str:
+        if v not in _VALID_RETEST_STATUSES:
+            raise ValueError(
+                f"retest_status must be one of {sorted(_VALID_RETEST_STATUSES)}, got '{v}'"
+            )
+        return v
