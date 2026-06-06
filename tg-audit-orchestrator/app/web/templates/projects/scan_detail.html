@@ -1,35 +1,149 @@
 {% extends "base.html" %}
-{% block title %}Scan {{ job.id[:8] }}{% endblock %}
+{% block title %}Import Detail — {{ job.host }}{% endblock %}
 {% block content %}
-<div class="mb-2 text-sm text-gray-500">
-  <a href="/ui/projects/{{ project.id }}/scans" class="hover:underline">← Scans</a>
+
+<div class="flex items-center gap-3 mb-5">
+  <a href="/ui/projects/{{ project.id }}/scans"
+    class="text-sm text-blue-500 hover:text-blue-700">← Back to Commands</a>
+  <span class="text-gray-300">/</span>
+  <span class="text-sm text-gray-600 font-mono">{{ job.id[:12] }}…</span>
 </div>
 
-<!-- Header -->
-<div class="flex items-center justify-between mb-4">
-  <div>
-    <h1 class="text-xl font-bold text-gray-800">
-      Scan <span class="font-mono">{{ job.id[:8] }}…</span>
-    </h1>
-    <p class="text-sm text-gray-500">
-      Target: <span class="font-mono font-medium">{{ job.host }}</span>
-      · Phases: {{ job.phases | join(', ') if job.phases else '—' }}
-      · Tier: {{ job.tier }}
-    </p>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+  {# ── Job summary card ────────────────────────────────────────────────── #}
+  <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 lg:col-span-1">
+    <h2 class="font-semibold text-gray-700 mb-4">Import Summary</h2>
+
+    <dl class="space-y-3 text-sm">
+      <div>
+        <dt class="text-xs text-gray-400 uppercase tracking-wide">Status</dt>
+        <dd class="mt-0.5">
+          {% if job.status == 'completed' %}
+          <span class="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-xs font-medium">✓ Imported</span>
+          {% elif job.status == 'failed' %}
+          <span class="px-2 py-0.5 rounded-full bg-red-100 text-red-700 text-xs font-medium">✗ Failed</span>
+          {% else %}
+          <span class="px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 text-xs">{{ job.status }}</span>
+          {% endif %}
+        </dd>
+      </div>
+      <div>
+        <dt class="text-xs text-gray-400 uppercase tracking-wide">Host</dt>
+        <dd class="font-mono text-gray-800">{{ job.host }}</dd>
+      </div>
+      <div>
+        <dt class="text-xs text-gray-400 uppercase tracking-wide">Tier</dt>
+        <dd class="capitalize">{{ job.tier }}</dd>
+      </div>
+      <div>
+        <dt class="text-xs text-gray-400 uppercase tracking-wide">Phases Run</dt>
+        <dd class="flex flex-wrap gap-1 mt-1">
+          {% for p in (job.phases or []) %}
+          {% set label = PHASE_SCRIPTS.get(p, ('','Unknown',''))[1] %}
+          <span class="px-1.5 py-0.5 bg-gray-100 rounded text-xs font-mono" title="{{ label }}">{{ p }}</span>
+          {% endfor %}
+        </dd>
+      </div>
+      <div>
+        <dt class="text-xs text-gray-400 uppercase tracking-wide">Run Directory</dt>
+        <dd class="font-mono text-xs text-gray-600 break-all">{{ job.run_dir or '—' }}</dd>
+      </div>
+      <div>
+        <dt class="text-xs text-gray-400 uppercase tracking-wide">Imported</dt>
+        <dd class="text-gray-600">{{ job.finished_at.strftime('%d %b %Y %H:%M') if job.finished_at else '—' }}</dd>
+      </div>
+    </dl>
+
+    {% if job.error_message %}
+    <div class="mt-4 bg-red-50 border border-red-200 rounded-lg p-3">
+      <div class="text-xs font-semibold text-red-700 mb-1">Error</div>
+      <code class="text-xs text-red-600 break-all">{{ job.error_message }}</code>
+    </div>
+    {% endif %}
   </div>
-  {% set sc = {
-    'queued':    ('bg-gray-100 text-gray-600',    '⏳ Queued'),
-    'running':   ('bg-yellow-100 text-yellow-700','⟳ Running'),
-    'completed': ('bg-green-100 text-green-700',  '✓ Completed'),
-    'failed':    ('bg-red-100 text-red-600',      '✗ Failed'),
-  } %}
-  {% set cls, label = sc.get(job.status, ('', job.status)) %}
-  <span class="px-3 py-1 rounded-full text-sm font-semibold {{ cls }}" id="status-badge">
-    {{ label }}
-  </span>
-</div>
 
-<!-- Live status card — fragment handles its own HTMX polling -->
-{% set active = job.status in ('queued', 'running') %}
-{% include "projects/scan_status_fragment.html" %}
+  {# ── Import results ──────────────────────────────────────────────────── #}
+  <div class="lg:col-span-2 space-y-5">
+
+    {% if job.import_result %}
+    {# KPI strip #}
+    <div class="grid grid-cols-3 gap-3">
+      <div class="bg-white rounded-xl border border-gray-200 p-4 text-center">
+        <div class="text-3xl font-bold text-red-600">{{ job.import_result.get('findings_created', 0) }}</div>
+        <div class="text-xs text-gray-500 mt-1">New Findings</div>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 p-4 text-center">
+        <div class="text-3xl font-bold text-blue-600">{{ job.import_result.get('findings_updated', 0) }}</div>
+        <div class="text-xs text-gray-500 mt-1">Updated (Retest)</div>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-200 p-4 text-center">
+        <div class="text-3xl font-bold text-teal-600">{{ job.import_result.get('evidence_items', 0) }}</div>
+        <div class="text-xs text-gray-500 mt-1">Evidence Items</div>
+      </div>
+    </div>
+
+    {# What happens next #}
+    <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800">
+      <strong>What was imported:</strong>
+      <ul class="mt-2 space-y-1 list-disc ml-4 text-xs">
+        <li>Findings are created with status <code>in_review</code> — a Senior Reviewer must approve them</li>
+        <li>Evidence items are linked to findings for report generation</li>
+        <li>Scope items from the scan require PM approval before going live</li>
+        <li>Run ID: <code class="font-mono">{{ job.import_result.get('run_id', '—') }}</code></li>
+      </ul>
+    </div>
+
+    <div class="flex gap-3">
+      <a href="/ui/projects/{{ project.id }}/findings"
+        class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium">
+        Review Findings →
+      </a>
+      <a href="/ui/projects/{{ project.id }}/report"
+        class="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-lg text-sm font-medium">
+        View Full Report →
+      </a>
+    </div>
+    {% endif %}
+
+    {# Phases coverage table #}
+    <div class="bg-white rounded-xl border border-gray-200">
+      <div class="px-4 py-3 border-b border-gray-100">
+        <h3 class="font-medium text-gray-700 text-sm">Phase Coverage</h3>
+      </div>
+      <table class="w-full text-xs">
+        <thead class="bg-gray-50">
+          <tr>
+            <th class="px-4 py-2 text-left text-gray-500 font-semibold">Phase</th>
+            <th class="px-4 py-2 text-left text-gray-500 font-semibold">Name</th>
+            <th class="px-4 py-2 text-left text-gray-500 font-semibold">Role</th>
+            <th class="px-4 py-2 text-left text-gray-500 font-semibold">Script</th>
+            <th class="px-4 py-2 text-center text-gray-500 font-semibold">Run?</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-50">
+          {% for key, (script, label, role) in PHASE_SCRIPTS.items() %}
+          {% set was_run = key in (job.phases or []) %}
+          <tr class="{{ 'bg-white' if was_run else 'bg-gray-50 opacity-60' }}">
+            <td class="px-4 py-2 font-bold text-gray-600">{{ key }}</td>
+            <td class="px-4 py-2 text-gray-700">{{ label }}</td>
+            <td class="px-4 py-2">
+              {% if role == 'lead' %}
+              <span class="px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-600">Lead</span>
+              {% else %}
+              <span class="px-1.5 py-0.5 rounded bg-teal-50 text-teal-600">Analyst</span>
+              {% endif %}
+            </td>
+            <td class="px-4 py-2 font-mono text-gray-400">{{ script }}</td>
+            <td class="px-4 py-2 text-center">
+              {{ '✅' if was_run else '○' }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
 {% endblock %}

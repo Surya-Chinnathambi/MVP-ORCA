@@ -1,4 +1,4 @@
-"""Web views — Scan runner (trigger PT-Orc phases from the UI)."""
+"""Web views — PT-Orc command reference and manual result import."""
 from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
@@ -7,24 +7,17 @@ from sqlalchemy.orm import Session
 from app.db import get_db
 from app.models.clients import Project
 from app.models.scan import ScanJob, ScanJobStatus
-from app.services.scan_runner import PHASE_SCRIPTS, tail_log, trigger_scan
-from app.web.deps import LOGIN_REDIRECT, base_ctx, get_web_user
+from app.services.scan_runner import (
+    PHASE_SCRIPTS, ROLE_DEFAULT_PHASES,
+    build_command, build_report_pack_command, register_import,
+)
+from app.web.deps import LOGIN_REDIRECT, base_ctx, get_highest_role, get_web_user
 
 router = APIRouter(tags=["web-scans"])
 templates = Jinja2Templates(directory="app/web/templates")
 
-_ALL_PHASES = [
-    ("01", "DNS Recon",           "Passive / active DNS enumeration"),
-    ("02", "IP Analysis",         "Whois, ASN, geo-IP lookup"),
-    ("03", "Comprehensive Scan",  "Full port scan (needs sudo for raw sockets)"),
-    ("04", "TLS Review",          "TLS version, cipher, certificate checks"),
-    ("05", "Web Enumeration",     "Directory brute-force, tech detection"),
-    ("06", "WordPress Scan",      "WPScan plugin / theme enumeration"),
-    ("07", "Service Verification","Banner grab, CVE check on open ports"),
-    ("08", "App / API Review",    "OWASP API Top-10, auth bypass, CORS, rate-limit"),
-    ("09", "AI / LLM Review",     "LLM endpoint discovery, prompt injection"),
-]
-
+# Where PT-Orc scripts live on this machine
+_SCRIPTS_DIR = "/home/kali/MVP_ORCA/pt-orc/scripts"
 _TIERS = ["baseline", "standard", "deep"]
 
 
@@ -32,6 +25,8 @@ _TIERS = ["baseline", "standard", "deep"]
 def scans_page(
     project_id: str,
     request: Request,
+    host: str = "",
+    tier: str = "standard",
     db: Session = Depends(get_db),
     user=Depends(get_web_user),
 ):
@@ -40,32 +35,71 @@ def scans_page(
     project = db.get(Project, project_id)
     if not project:
         return RedirectResponse("/ui/clients", status_code=302)
-    jobs = (
+
+    user_role = get_highest_role(user, db) or "default"
+    # Normalise RoleName enum → string
+    if hasattr(user_role, "value"):
+        user_role = user_role.value
+
+    default_phases = ROLE_DEFAULT_PHASES.get(user_role, ROLE_DEFAULT_PHASES["default"])
+
+    # Build per-phase command blocks (only when host is supplied)
+    phase_commands: list[dict] = []
+    if host.strip():
+        for phase_key, (script, label, role) in PHASE_SCRIPTS.items():
+            cmd = build_command(_SCRIPTS_DIR, phase_key, host.strip(), tier)
+            phase_commands.append({
+                "key": phase_key,
+                "label": label,
+                "script": script,
+                "role": role,
+                "cmd": cmd,
+                "selected": phase_key in default_phases,
+            })
+
+    report_cmd = ""
+    if host.strip():
+        report_cmd = build_report_pack_command(_SCRIPTS_DIR, project_id)
+
+    import_jobs = (
         db.query(ScanJob)
         .filter_by(project_id=project_id)
         .order_by(ScanJob.created_at.desc())
+        .limit(20)
         .all()
     )
+
     return templates.TemplateResponse(
         request, "projects/scans.html",
         {
             **base_ctx(user, db),
             "project": project,
-            "jobs": jobs,
-            "all_phases": _ALL_PHASES,
+            "host": host.strip(),
+            "tier": tier,
             "tiers": _TIERS,
+            "all_phases": PHASE_SCRIPTS,
+            "default_phases": default_phases,
+            "phase_commands": phase_commands,
+            "report_cmd": report_cmd,
+            "import_jobs": import_jobs,
+            "user_role": user_role,
             "ScanJobStatus": ScanJobStatus,
+            "scripts_dir": _SCRIPTS_DIR,
         },
     )
 
 
-@router.post("/projects/{project_id}/scans")
-async def create_scan(
+@router.post("/projects/{project_id}/scans/import")
+async def import_results(
     project_id: str,
     request: Request,
+    run_dir: str = Form(...),
+    host: str = Form(""),
+    tier: str = Form("standard"),
     db: Session = Depends(get_db),
     user=Depends(get_web_user),
 ):
+    """Register a completed PT-Orc run directory and import its findings."""
     if user is None:
         return LOGIN_REDIRECT
     project = db.get(Project, project_id)
@@ -73,23 +107,15 @@ async def create_scan(
         return RedirectResponse("/ui/clients", status_code=302)
 
     form = await request.form()
-    host = form.get("host", "").strip()
-    tier = form.get("tier", "standard")
-    api_key = form.get("api_key", "").strip() or None
-    phases: list[str] = form.getlist("phases")
+    phases = list(form.getlist("phases")) or list(PHASE_SCRIPTS.keys())
 
-    if not host:
-        return RedirectResponse(f"/ui/projects/{project_id}/scans", status_code=302)
-    if not phases:
-        phases = ["08", "09"]
-
-    job = trigger_scan(
+    job = register_import(
         db,
         project_id=project_id,
-        host=host,
+        run_dir=run_dir.strip(),
+        host=host.strip() or "unknown",
         phases=phases,
         tier=tier,
-        api_key=api_key,
         user_id=user.id,
     )
     return RedirectResponse(
@@ -98,7 +124,7 @@ async def create_scan(
 
 
 @router.get("/projects/{project_id}/scans/{job_id}", response_class=HTMLResponse)
-def scan_detail(
+def import_detail(
     project_id: str,
     job_id: str,
     request: Request,
@@ -111,46 +137,14 @@ def scan_detail(
     job = db.get(ScanJob, job_id)
     if not project or not job or job.project_id != project_id:
         return RedirectResponse(f"/ui/projects/{project_id}/scans", status_code=302)
-    log_text = tail_log(job, lines=120)
+
     return templates.TemplateResponse(
         request, "projects/scan_detail.html",
         {
             **base_ctx(user, db),
             "project": project,
             "job": job,
-            "log_text": log_text,
-            "ScanJobStatus": ScanJobStatus,
             "PHASE_SCRIPTS": PHASE_SCRIPTS,
-        },
-    )
-
-
-@router.get(
-    "/projects/{project_id}/scans/{job_id}/status",
-    response_class=HTMLResponse,
-)
-def scan_status_fragment(
-    project_id: str,
-    job_id: str,
-    request: Request,
-    db: Session = Depends(get_db),
-    user=Depends(get_web_user),
-):
-    """HTMX polling endpoint — returns a status+log fragment."""
-    if user is None:
-        return HTMLResponse("", status_code=200)
-    db.expire_all()  # ensure fresh read
-    job = db.get(ScanJob, job_id)
-    if not job:
-        return HTMLResponse("<p class='text-red-500'>Job not found</p>")
-    log_text = tail_log(job, lines=80)
-    active = job.status in (ScanJobStatus.queued.value, ScanJobStatus.running.value)
-    return templates.TemplateResponse(
-        request, "projects/scan_status_fragment.html",
-        {
-            "job": job,
-            "log_text": log_text,
-            "active": active,
             "ScanJobStatus": ScanJobStatus,
         },
     )
