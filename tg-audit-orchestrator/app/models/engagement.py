@@ -22,7 +22,7 @@ class EngagementState(TimestampMixin, Base):
     project_id: Mapped[str] = mapped_column(
         String(36), ForeignKey("projects.id"), nullable=False, unique=True
     )
-    phase: Mapped[str] = mapped_column(String(50), default="setup", nullable=False)
+    phase: Mapped[str] = mapped_column(String(50), default="draft", nullable=False)
     progress: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
     blockers: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
     context_snapshot: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)

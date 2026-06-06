@@ -79,7 +79,11 @@ class Task(TimestampMixin, Base):
         Enum(TaskKind, name="task_kind_enum"), nullable=False
     )
     title: Mapped[str] = mapped_column(String(255), nullable=False)
-    status: Mapped[str] = mapped_column(String(50), default="open", nullable=False)
+    status: Mapped[str] = mapped_column(
+        Enum(TaskStatus, name="task_status_enum"),
+        default=TaskStatus.planned.value,
+        nullable=False,
+    )
     assignee_id: Mapped[Optional[str]] = mapped_column(
         String(36), ForeignKey("users.id"), nullable=True
     )
@@ -107,7 +111,7 @@ class Finding(TimestampMixin, Base):
     )
     status: Mapped[str] = mapped_column(
         Enum(FindingStatus, name="finding_status_enum"),
-        default=FindingStatus.open,
+        default=FindingStatus.draft.value,
         nullable=False,
     )
     owner_id: Mapped[Optional[str]] = mapped_column(
