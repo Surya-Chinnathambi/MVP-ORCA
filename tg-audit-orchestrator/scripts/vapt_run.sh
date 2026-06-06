@@ -107,13 +107,69 @@ done
 [[ -z "$CLIENT" ]] && die "--client is required"
 [[ -z "$DOMAINS" && -z "$IPS" ]] && die "Provide --domains and/or --ips"
 
-# ── Preflight checks ──────────────────────────────────────────────────────────
+# ── Preflight: filesystem ─────────────────────────────────────────────────────
 [[ -d "$PTORC_DIR" ]]      || die "PT-Orc not found at $PTORC_DIR"
 [[ -f "$PTORC_CONF" ]]     || die "pt-orc.conf not found at $PTORC_CONF"
 [[ -f "${PTORC_DIR}/00_pt-orc.sh" ]] || die "00_pt-orc.sh not found"
 [[ -d "$TG_DIR" ]]         || die "TG Orchestrator not found at $TG_DIR"
-
 command -v python3 >/dev/null 2>&1 || die "python3 not found"
+[[ $EUID -eq 0 ]] || die "Run as root (sudo scripts/vapt_run.sh …)"
+
+# ── Preflight: MSF PostgreSQL database ───────────────────────────────────────
+echo -e "${BOLD}── Preflight: MSF database ──${NC}"
+
+MSF_DB_CONF="/usr/share/metasploit-framework/config/database.yml"
+MSF_DB_NEEDS_INIT=0
+
+if [[ ! -f "$MSF_DB_CONF" ]]; then
+    warn "database.yml missing — MSF database has never been initialised"
+    MSF_DB_NEEDS_INIT=1
+fi
+
+if ! systemctl is-active --quiet postgresql; then
+    log "PostgreSQL is not running — starting..."
+    if [[ $MSF_DB_NEEDS_INIT -eq 1 ]]; then
+        log "Running 'msfdb init' (first-time setup — this takes ~30 s)..."
+        msfdb init
+    else
+        log "Running 'msfdb start'..."
+        msfdb start
+    fi
+    # Give postgres a moment to accept connections
+    sleep 3
+fi
+
+# Verify the connection is live using the credentials from database.yml
+_msf_db_check() {
+    local yml="$MSF_DB_CONF"
+    [[ -f "$yml" ]] || { warn "database.yml still missing after init"; return 1; }
+    local user pass db port
+    user=$(grep -m1 'username:' "$yml" | awk '{print $2}' | tr -d "'\"")
+    pass=$(grep -m1 'password:' "$yml" | awk '{print $2}' | tr -d "'\"")
+    db=$(grep -m1 'database:'  "$yml" | awk '{print $2}' | tr -d "'\"")
+    port=$(grep -m1 'port:'    "$yml" | awk '{print $2}' | tr -d "'\"")
+    port="${port:-5432}"
+    local result
+    result=$(PGPASSWORD="$pass" psql -h 127.0.0.1 -p "$port" -U "$user" -d "$db" \
+             -t -A -c "SELECT 1;" 2>&1)
+    [[ "$result" == *"1"* ]] && ! [[ "$result" == *"error"* || "$result" == *"FATAL"* ]]
+}
+
+if _msf_db_check; then
+    ok "MSF database connected (PostgreSQL up, database.yml valid)"
+else
+    # One retry: try reinit if init was skipped
+    warn "DB connection test failed — attempting msfdb reinit..."
+    msfdb reinit <<< "yes"
+    sleep 5
+    if _msf_db_check; then
+        ok "MSF database connected after reinit"
+    else
+        warn "MSF database still not reachable — PT-Orc will run but db_nmap results"
+        warn "won't persist between phases. Scan output files (.xml) will still be written."
+        warn "To fix manually: sudo msfdb init && sudo msfdb start"
+    fi
+fi
 
 echo ""
 echo -e "${BOLD}═══════════════════════════════════════════════════════════${NC}"
