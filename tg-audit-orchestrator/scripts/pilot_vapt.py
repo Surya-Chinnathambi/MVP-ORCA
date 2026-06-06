@@ -161,7 +161,7 @@ def run_pilot() -> None:
         client_id=client.id,
         service_type=ServiceType.vapt,
         owner_id=admin.id,
-        status="setup",
+        status="draft",
         scope_summary="External VAPT of Skyline Commerce web application and API layer.",
     )
     db.add(project)
@@ -279,7 +279,7 @@ def run_pilot() -> None:
             project_id=project.id,
             action=f"Remediate: {finding.title}",
             owner_id=admin.id,
-            status="open",
+            status="planned",
             residual_risk="low",
         )
         db.add(rem)

@@ -27,7 +27,7 @@ from app.models.delivery import RemediationAction
 from app.models.evidence import EvidenceItem, EvidenceRequest, EvidenceRequestStatus
 from app.models.scope import ScopeItem, ScopeItemKind
 from app.models.tasks import Finding, FindingSeverity, FindingSource, FindingStatus, Task
-from app.models.users import Role, RoleName, User
+from app.models.users import Permission, Role, RoleName, User
 from app.models.workflow import ApprovalRequest, ApprovalStatus, AuditTrailEvent
 from app.services.audit import decide_approval, record_event, request_approval
 from app.services.auth import hash_password
@@ -68,20 +68,26 @@ def run_pilot() -> None:
         is_active=True,
     )
     db.add(admin)
+    db.flush()
+    # Grant admin all roles needed to approve in the pilot
+    for role_name in ["partner", "pm", "qa", "reviewer", "platform_admin", "lead_consultant", "senior_reviewer"]:
+        role = db.query(Role).filter_by(name=role_name).first()
+        if role:
+            db.add(Permission(user_id=admin.id, role_id=role.id, scope_level="organization", scope_id="0"))
     db.commit()
     db.refresh(admin)
     print(f"  Admin user:  {admin.email}  (id={admin.id[:8]}…)")
 
     # ── 1. Client + project ───────────────────────────────────────────────────
     _sep("1. Client + project setup")
-    client = Client(name="Acme Fintech Pvt Ltd", sector="fintech")
+    client = Client(entity_name="Acme Fintech Pvt Ltd", sector="fintech")
     db.add(client)
     db.flush()
     project = Project(
         client_id=client.id,
         service_type=ServiceType.dpdp,
         owner_id=admin.id,
-        status="setup",
+        status="draft",
         scope_summary="DPDP readiness assessment for Acme Fintech data processing operations.",
     )
     db.add(project)
@@ -156,7 +162,7 @@ def run_pilot() -> None:
     # ── 5. Ingest sample evidence + G3 ────────────────────────────────────────
     _sep("5. Ingest sample evidence + G3")
     sample_text = (
-        b"Privacy Notice v2.3 — Acme Fintech\n"
+        b"Privacy Notice v2.3 - Acme Fintech\n"
         b"We collect personal data for KYC, payment processing, and onboarding.\n"
         b"Data is retained for 7 years per RBI guidelines.\n"
         b"Data subjects may request deletion via privacy@acmefintech.com.\n"
@@ -224,7 +230,7 @@ def run_pilot() -> None:
         project_id=project.id,
         action="Add grievance officer name, email, and response timeline to privacy notice.",
         owner_id=admin.id,
-        status="open",
+        status="planned",
         residual_risk="low",
     )
     db.add(rem)
