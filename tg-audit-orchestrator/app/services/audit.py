@@ -4,9 +4,8 @@ Every mutating path in the application uses these three functions.
 This module is the single enforcement point — never bypass it.
 
 record_event   → writes one AuditTrailEvent (append-only)
-request_approval → creates ApprovalRequest(status=requested), returns it
-decide_approval  → resolves a requested approval, records an audit event
-cancel_approval  → moves an approval to cancelled (e.g. withdrawn request)
+request_approval → creates ApprovalRequest(status=pending), returns it
+decide_approval  → resolves a pending approval, records an audit event
 """
 import uuid
 from datetime import datetime, timezone
@@ -14,12 +13,7 @@ from typing import Any, Optional
 
 from sqlalchemy.orm import Session
 
-from app.models.workflow import (
-    APPROVAL_FINAL_STATES,
-    ApprovalRequest,
-    ApprovalStatus,
-    AuditTrailEvent,
-)
+from app.models.workflow import ApprovalRequest, ApprovalStatus, AuditTrailEvent
 
 
 def record_event(
@@ -60,6 +54,8 @@ def request_approval(
     change_after: Optional[Any] = None,
     requested_by: Optional[str] = None,
 ) -> ApprovalRequest:
+    # Pre-generate the ID so we can reference it in the audit event
+    # without requiring a flush first.
     approval_id = str(uuid.uuid4())
     approval = ApprovalRequest(
         id=approval_id,
@@ -71,7 +67,7 @@ def request_approval(
         reason=reason,
         approver_role=approver_role,
         requested_by=requested_by,
-        status=ApprovalStatus.requested.value,
+        status=ApprovalStatus.pending,
     )
     db.add(approval)
     record_event(
@@ -97,31 +93,33 @@ def decide_approval(
     approval = db.get(ApprovalRequest, approval_id)
     if approval is None:
         raise ValueError(f"ApprovalRequest {approval_id!r} not found")
+    if approval.status != ApprovalStatus.pending:
+        raise ValueError(f"Cannot decide approval with status {approval.status!r}")
 
-    current = ApprovalStatus(approval.status)
-    if current in APPROVAL_FINAL_STATES:
-        raise ValueError(
-            f"Cannot decide approval {approval_id!r}: already finalized ({current.value})"
-        )
-    if current not in (ApprovalStatus.requested, ApprovalStatus.pending):
-        raise ValueError(
-            f"Cannot decide approval {approval_id!r}: status is {current.value!r}, expected 'requested'"
-        )
-
-    # RBAC check: decider must hold the required approver_role
-    from app.models.users import Permission, Role
-    required_role = db.query(Role).filter_by(name=approval.approver_role).first()
-    if required_role is not None:
-        has_role = db.query(Permission).filter_by(
-            user_id=decider_id, role_id=required_role.id
-        ).first()
-        if has_role is None:
-            raise ValueError(
-                f"Decider does not hold required approver role: {approval.approver_role!r}"
-            )
+    # Verify the decider holds the required approver_role (RBAC.md §4)
+    # platform_admin and partner bypass all role checks
+    from app.models.users import Permission, Role, RoleName, User as UserModel
+    _BYPASS_ROLES = {RoleName.platform_admin, RoleName.partner}
+    decider_roles = set(
+        row[0] for row in
+        db.query(Role.name)
+        .join(Permission, Permission.role_id == Role.id)
+        .filter(Permission.user_id == decider_id)
+        .all()
+    )
+    if not (decider_roles & _BYPASS_ROLES):
+        required_role = db.query(Role).filter_by(name=approval.approver_role).first()
+        if required_role is not None:
+            has_role = db.query(Permission).filter_by(
+                user_id=decider_id, role_id=required_role.id
+            ).first()
+            if has_role is None:
+                raise ValueError(
+                    f"Decider does not hold required approver role: {approval.approver_role!r}"
+                )
 
     new_status = ApprovalStatus.approved if approved else ApprovalStatus.rejected
-    approval.status = new_status.value
+    approval.status = new_status
     approval.decided_by = decider_id
     approval.decided_at = datetime.now(timezone.utc)
 
@@ -132,41 +130,8 @@ def decide_approval(
         target_id=approval_id,
         actor_id=decider_id,
         project_id=approval.project_id,
-        before={"status": current.value},
+        before={"status": "pending"},
         after={"status": new_status.value},
-        reason=reason,
-    )
-    return approval
-
-
-def cancel_approval(
-    db: Session,
-    *,
-    approval_id: str,
-    actor_id: str,
-    reason: Optional[str] = None,
-) -> ApprovalRequest:
-    """Cancel a requested approval that was withdrawn or has no applicable handler."""
-    approval = db.get(ApprovalRequest, approval_id)
-    if approval is None:
-        raise ValueError(f"ApprovalRequest {approval_id!r} not found")
-
-    current = ApprovalStatus(approval.status)
-    if current in APPROVAL_FINAL_STATES:
-        raise ValueError(
-            f"Cannot cancel approval {approval_id!r}: already finalized ({current.value})"
-        )
-
-    approval.status = ApprovalStatus.cancelled.value
-    record_event(
-        db,
-        action="approval.cancelled",
-        target_type="approval_request",
-        target_id=approval_id,
-        actor_id=actor_id,
-        project_id=approval.project_id,
-        before={"status": current.value},
-        after={"status": "cancelled"},
         reason=reason,
     )
     return approval

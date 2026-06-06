@@ -1,279 +1,308 @@
 {
   "key": "vapt",
-  "title": "VAPT Assessment Pack",
-  "version": "1.0.0",
-  "lifecycle": "active",
-  "service_description": "Comprehensive Vulnerability Assessment and Penetration Testing service covering web application, API, network, and business logic security. Follows OWASP ASVS, WSTG, API Security Top 10, PTES, and NIST frameworks to deliver actionable findings with severity-graded remediation guidance.",
+  "title": "VAPT Assessment Pack v2",
   "frameworks": ["owasp_asvs", "owasp_wstg", "owasp_api10", "ptes", "nist"],
   "intake_questions": [
-    {"id": "q1", "text": "List all in-scope IP ranges, domains, and applications"},
-    {"id": "q2", "text": "What is the authentication model (SSO, OAuth2, API keys, basic auth)?"},
-    {"id": "q3", "text": "Are there any WAF, IDS/IPS, or rate-limiting controls in front of targets?"},
-    {"id": "q4", "text": "What is the testing window (start datetime, end datetime, timezone)?"},
-    {"id": "q5", "text": "Are staging or production systems in scope? Who is the emergency contact?"}
+    {"id": "q1", "text": "List all in-scope IP ranges, domains, sub-domains, and applications with their production/staging status"},
+    {"id": "q2", "text": "What is the authentication model in use (SSO, OAuth2/OIDC, API keys, JWT, Basic Auth, SAML)?"},
+    {"id": "q3", "text": "Are there WAF, IDS/IPS, rate-limiting, or bot-detection controls in front of in-scope targets?"},
+    {"id": "q4", "text": "What is the agreed testing window (start/end datetime, timezone) and is there a blackout period during business hours?"},
+    {"id": "q5", "text": "Are staging or production systems in scope? Who is the emergency contact for critical findings during the test?"},
+    {"id": "q6", "text": "Are there any cloud environments (AWS/Azure/GCP) or container platforms (Kubernetes/Docker) in scope?"},
+    {"id": "q7", "text": "What mobile platforms (iOS/Android) or thick-client applications are in scope and are API endpoints shared with the web app?"},
+    {"id": "q8", "text": "Have any previous penetration tests been conducted? If so, were all critical/high findings from the last test remediated?"}
   ],
   "scope_template": [
-    {"kind": "asset",      "prompt": "Add each in-scope domain or IP range"},
-    {"kind": "inclusion",  "prompt": "Define what is explicitly in scope"},
-    {"kind": "exclusion",  "prompt": "List systems or paths explicitly excluded from testing"},
-    {"kind": "assumption", "prompt": "Document agreed testing depth and credential access levels"},
-    {"kind": "constraint", "prompt": "Record rules of engagement, rate-limit constraints, and notification requirements"}
-  ],
-  "role_responsibility_model": [
-    {
-      "role": "Lead Consultant",
-      "responsibilities": [
-        "Own overall VAPT engagement delivery and rules of engagement",
-        "Lead reconnaissance and high-complexity exploit validation",
-        "Review and approve all findings before client sharing"
-      ]
-    },
-    {
-      "role": "Analyst",
-      "responsibilities": [
-        "Execute test phases 01–07 per the task plan",
-        "Document findings with PoC evidence and CVSS scores",
-        "Perform retesting after remediation"
-      ]
-    },
-    {
-      "role": "QA Reviewer",
-      "responsibilities": [
-        "Validate finding severity and evidence quality",
-        "Confirm QA gates G4 and G5 before report release",
-        "Review final deliverables for completeness"
-      ]
-    },
-    {
-      "role": "Client Contact",
-      "responsibilities": [
-        "Confirm scope and rules of engagement",
-        "Provide emergency contact availability during testing window",
-        "Review draft findings and initiate remediation"
-      ]
-    }
+    {"kind": "asset",      "prompt": "Add each in-scope domain, sub-domain, or IP range (one per entry)"},
+    {"kind": "inclusion",  "prompt": "Define what is explicitly in scope (web app, API, mobile, infrastructure, cloud)"},
+    {"kind": "exclusion",  "prompt": "List systems, paths, or attack types explicitly excluded from testing (e.g. DoS, social engineering)"},
+    {"kind": "assumption", "prompt": "Document agreed testing depth, credential access level, and any white/grey/black-box status"},
+    {"kind": "constraint", "prompt": "Record rules of engagement: rate-limit tolerance, maximum request rate, notification requirements"},
+    {"kind": "constraint", "prompt": "Note any compliance requirements that constrain testing (PCI DSS, DPDP data handling during test)"}
   ],
   "requirements": [
     {
+      "ref_code": "VAPT-PRE-01",
+      "category": "pre_engagement",
+      "text": "Pre-engagement: Written authorisation, rules of engagement, scope document, emergency contacts, and testing window must all be confirmed and signed before testing begins.",
+      "evidence_expectation": "Signed scope document; rules of engagement; written authorisation; emergency contact sheet; testing window confirmation"
+    },
+    {
       "ref_code": "VAPT-RECON-01",
       "category": "recon",
-      "text": "Perform passive and active information gathering: DNS enumeration, WHOIS, certificate transparency, service fingerprinting.",
-      "evidence_expectation": "Recon output (dns.txt, cert_transparency.txt, nmap service scan)"
+      "text": "Passive and active information gathering: DNS enumeration, WHOIS, certificate transparency, sub-domain enumeration, Shodan/Censys exposure, BGP/ASN lookup, and service fingerprinting.",
+      "evidence_expectation": "dns.txt, cert_transparency.txt, subdomain_enum.txt, shodan_results.txt, nmap service scan output"
+    },
+    {
+      "ref_code": "VAPT-RECON-02",
+      "category": "recon",
+      "text": "Technology stack identification and CVE correlation: identify all web servers, frameworks, CMS versions, JavaScript libraries, and third-party components; correlate with NVD/Exploit-DB.",
+      "evidence_expectation": "Technology fingerprint report (Wappalyzer/whatweb output); CVE correlation table for identified versions; dependency scan results"
     },
     {
       "ref_code": "VAPT-CONFIG-01",
       "category": "config",
-      "text": "Review server and application configuration: HTTP security headers, default credentials, unnecessary services, directory listing.",
-      "evidence_expectation": "Security headers report; nikto or automated scanner output"
+      "text": "HTTP security headers review: verify presence and correctness of HSTS, CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy on all in-scope endpoints.",
+      "evidence_expectation": "Security headers audit report; CSP policy review; curl response header dump for all tested endpoints"
     },
     {
       "ref_code": "VAPT-CONFIG-02",
       "category": "config",
-      "text": "Review TLS/SSL configuration: protocol versions, cipher suites, certificate validity, and HSTS.",
-      "evidence_expectation": "testssl.sh or SSLyze output; certificate details"
+      "text": "TLS/SSL configuration review: protocol versions, cipher suites, certificate validity, certificate chain trust, HSTS max-age, OCSP stapling, and certificate pinning where applicable.",
+      "evidence_expectation": "testssl.sh or SSLyze full output for all HTTPS endpoints; certificate details; grading result"
+    },
+    {
+      "ref_code": "VAPT-CONFIG-03",
+      "category": "config",
+      "text": "Server and application configuration: identify default credentials, unnecessary services, exposed admin/debug interfaces, directory listing, HTTP methods allowed, and verbose error messages.",
+      "evidence_expectation": "Service enumeration output; admin interface discovery; HTTP method test results; nikto or automated scanner output"
+    },
+    {
+      "ref_code": "VAPT-CONFIG-04",
+      "category": "cloud",
+      "text": "Cloud and container security: assess cloud storage bucket permissions (public S3/GCS/Blob), misconfigured IAM roles, exposed cloud metadata endpoints, and container registry security.",
+      "evidence_expectation": "Cloud misconfiguration scan output (ScoutSuite, Prowler, or manual); bucket policy review; IAM permission review; metadata endpoint test results"
     },
     {
       "ref_code": "VAPT-AUTH-01",
       "category": "auth",
-      "text": "Test authentication mechanisms: brute-force protection, lockout policy, credential stuffing resilience, MFA bypass.",
-      "evidence_expectation": "Authentication test results; login attempt logs; MFA bypass test evidence"
+      "text": "Authentication mechanism testing: brute-force protection, account lockout policy, credential stuffing resilience, password complexity enforcement, and common/breached password rejection.",
+      "evidence_expectation": "Authentication test results; lockout policy verification; credential stuffing resilience test; breached password check evidence"
     },
     {
       "ref_code": "VAPT-AUTH-02",
       "category": "auth",
-      "text": "Test password reset and account recovery flows for insecure token generation, predictability, and expiry enforcement.",
-      "evidence_expectation": "Password reset flow screenshots; token entropy analysis"
+      "text": "Password reset and account recovery: insecure token generation, token entropy, token expiry enforcement, host header injection in reset emails, and account enumeration via reset flow.",
+      "evidence_expectation": "Password reset flow test results; token entropy analysis; host header injection test; account enumeration test evidence"
+    },
+    {
+      "ref_code": "VAPT-AUTH-03",
+      "category": "auth",
+      "text": "Multi-factor authentication security: MFA bypass techniques (code reuse, response manipulation, backup code abuse), session handling after MFA, and out-of-band verifier security (OTP SMS/email).",
+      "evidence_expectation": "MFA bypass test results; OTP reuse test; response manipulation test; backup code security review"
+    },
+    {
+      "ref_code": "VAPT-AUTH-04",
+      "category": "auth",
+      "text": "OAuth 2.0 / OIDC / JWT security: state parameter validation, redirect_uri whitelist bypass, implicit flow token leakage, JWT algorithm confusion (none/RS256 to HS256), weak JWT secrets, token replay.",
+      "evidence_expectation": "OAuth flow test results; JWT analysis (jwt.io/token inspection); algorithm confusion test; weak secret brute-force attempt"
     },
     {
       "ref_code": "VAPT-AUTHZ-01",
       "category": "authz",
-      "text": "Test horizontal and vertical privilege escalation: IDOR, missing function-level access control, and role boundary enforcement.",
-      "evidence_expectation": "IDOR test cases with results; role-based access control verification evidence"
+      "text": "Horizontal and vertical privilege escalation: IDOR/BOLA (cross-account object access), BFLA (admin function access by low-privilege user), role boundary enforcement, and insecure direct object references.",
+      "evidence_expectation": "IDOR test cases with cross-account access proof; admin function access test results; privilege escalation evidence; role comparison matrix"
+    },
+    {
+      "ref_code": "VAPT-AUTHZ-02",
+      "category": "authz",
+      "text": "Mass assignment and object property exposure: test whether API endpoints accept and persist non-whitelisted properties (role, admin, balance) via additional body parameters in PUT/PATCH/POST requests.",
+      "evidence_expectation": "Mass assignment test cases; response comparison showing property persistence; role elevation via mass assignment proof-of-concept"
     },
     {
       "ref_code": "VAPT-INPUT-01",
       "category": "input",
-      "text": "Test for injection vulnerabilities: SQL injection, command injection, LDAP injection, and template injection.",
-      "evidence_expectation": "SQLMap/manual injection test output; affected endpoints and payloads"
+      "text": "SQL injection testing: classic, blind (boolean and time-based), out-of-band, and second-order injection across all user-controlled inputs in forms, URL parameters, headers, and JSON/XML bodies.",
+      "evidence_expectation": "SQLMap output or manual SQLi proof; database version/schema extracted; affected parameters list; payloads used"
     },
     {
       "ref_code": "VAPT-INPUT-02",
       "category": "input",
-      "text": "Test for cross-site scripting (Reflected, Stored, DOM-based XSS) and HTML injection.",
-      "evidence_expectation": "XSS test results; affected parameters; proof-of-concept payloads"
+      "text": "Cross-site scripting: reflected, stored, and DOM-based XSS across all user-controlled inputs. Test CSP bypass and document all affected parameters with proof-of-concept payloads.",
+      "evidence_expectation": "XSS test results with PoC payloads; CSP bypass attempts; DOM XSS source-sink analysis; affected parameter list"
+    },
+    {
+      "ref_code": "VAPT-INPUT-03",
+      "category": "input",
+      "text": "Command injection and template injection: OS command injection (blind and direct), SSTI across all template engines (Jinja2, Twig, FreeMarker, Smarty), and expression language injection.",
+      "evidence_expectation": "Command injection test results; SSTI payload responses; affected template/parameter identification"
+    },
+    {
+      "ref_code": "VAPT-INPUT-04",
+      "category": "xxe",
+      "text": "XML External Entity (XXE) injection: test all XML-accepting endpoints and document upload features for external entity processing, blind XXE via out-of-band channels, and XXE-based SSRF.",
+      "evidence_expectation": "XXE test payloads and responses; file read proof-of-concept (/etc/passwd); blind XXE DNS/HTTP callback confirmation"
+    },
+    {
+      "ref_code": "VAPT-INPUT-05",
+      "category": "input",
+      "text": "Deserialization vulnerabilities: test for insecure object deserialization in Java (ysoserial), .NET (YSoSerial.net), PHP (POP chains), and Python pickle to identify RCE or DoS vectors.",
+      "evidence_expectation": "Deserialization test payloads; evidence of deserialized objects in traffic; RCE proof-of-concept where applicable"
+    },
+    {
+      "ref_code": "VAPT-SSRF-01",
+      "category": "ssrf",
+      "text": "Server-Side Request Forgery (SSRF): test all URL-accepting inputs (webhooks, file import, PDF generators, image fetch) for SSRF to internal services, cloud metadata endpoints, and blind SSRF.",
+      "evidence_expectation": "SSRF test results; internal service access proof; cloud metadata access (169.254.169.254); Burp Collaborator/interactsh DNS/HTTP callbacks"
+    },
+    {
+      "ref_code": "VAPT-UPLOAD-01",
+      "category": "upload",
+      "text": "File upload security: web shell upload bypass (extension filtering, MIME-type spoofing, double extension), storage location verification, file execution prevention, malware upload capability, and zip-slip.",
+      "evidence_expectation": "File upload test results; bypass technique evidence; storage path disclosure; web shell upload proof-of-concept (non-executed)"
     },
     {
       "ref_code": "VAPT-SESSION-01",
       "category": "session",
-      "text": "Test session token entropy, fixation, hijacking, and proper invalidation on logout and timeout.",
-      "evidence_expectation": "Session token analysis (Burp sequencer or similar); logout/timeout test results"
+      "text": "Session token security: entropy analysis (Burp Sequencer), secure/httponly/samesite flag configuration, logout invalidation, session fixation, idle timeout, and concurrent session handling.",
+      "evidence_expectation": "Session token analysis report; Burp Sequencer output; flag verification; logout invalidation test; fixation test results"
+    },
+    {
+      "ref_code": "VAPT-CORS-01",
+      "category": "cors",
+      "text": "CORS policy testing: verify that Access-Control-Allow-Origin does not reflect arbitrary origins, does not use wildcards with credentials, and that pre-flight requests are validated server-side.",
+      "evidence_expectation": "CORS test results showing reflected origin; credentials with CORS misconfiguration PoC; pre-flight bypass attempts"
     },
     {
       "ref_code": "VAPT-API-01",
       "category": "api",
-      "text": "Test API authentication and authorization: broken object-level auth (BOLA/IDOR), broken function-level auth (BFLA), mass assignment.",
-      "evidence_expectation": "API test results with endpoint inventory; BOLA and BFLA test evidence"
+      "text": "API authentication and authorisation: BOLA (cross-account object access), BFLA (function-level privilege), broken object property-level auth, and mass assignment across all API endpoints.",
+      "evidence_expectation": "API endpoint inventory; BOLA/BFLA test cases; mass assignment results; cross-account access proof"
     },
     {
       "ref_code": "VAPT-API-02",
       "category": "api",
-      "text": "Test API for rate limiting, excessive data exposure, and security misconfiguration.",
-      "evidence_expectation": "Rate limiting test results; data exposure findings; API schema review notes"
+      "text": "API rate limiting, resource consumption, and excessive data exposure: verify rate limits enforced per endpoint, excessive data fields not returned, and no unrestricted bulk data export possible.",
+      "evidence_expectation": "Rate limiting test results; data exposure analysis comparing response fields against minimum required; bulk export test"
+    },
+    {
+      "ref_code": "VAPT-API-03",
+      "category": "api",
+      "text": "API versioning and shadow API discovery: enumerate all API versions accessible, test whether deprecated versions are still active, and fuzz for undocumented endpoints via path discovery.",
+      "evidence_expectation": "API version inventory; deprecated version access test; undocumented endpoint discovery results (path fuzzing output)"
+    },
+    {
+      "ref_code": "VAPT-GRAPHQL-01",
+      "category": "graphql",
+      "text": "GraphQL security: introspection enabled in production, nested query DoS (deep recursion), field suggestion abuse, GraphQL injection, unauthorised mutation access, and batching attacks.",
+      "evidence_expectation": "Introspection query results; deep query test; mutation authorisation test; GraphQL injection test; batching abuse test"
+    },
+    {
+      "ref_code": "VAPT-WS-01",
+      "category": "websocket",
+      "text": "WebSocket security: authentication enforcement on upgrade request, message-level authorisation, injection via WebSocket messages (SQLi, XSS, CSWSH), and cross-origin WebSocket hijacking.",
+      "evidence_expectation": "WebSocket upgrade auth test; message injection test results; CSWSH proof-of-concept; cross-origin hijacking attempt"
+    },
+    {
+      "ref_code": "VAPT-SECRET-01",
+      "category": "secret",
+      "text": "Credentials and secret exposure: identify hardcoded secrets in client-side JS, exposed git repositories (.git), environment files (.env), backup files, API keys in HTML/JS source, and sensitive data in responses.",
+      "evidence_expectation": "Secret scanning results (truffleHog/gitleaks output); exposed file discovery; hardcoded credential evidence in source; sensitive data in API responses"
+    },
+    {
+      "ref_code": "VAPT-REDIRECT-01",
+      "category": "input",
+      "text": "Open redirect and URL manipulation: test redirect parameters for unvalidated redirects to external domains, parameter-based open redirect in OAuth flows, and header injection via redirect parameters.",
+      "evidence_expectation": "Open redirect test results; OAuth redirect_uri bypass test; affected parameter list; redirect to attacker-controlled domain PoC"
+    },
+    {
+      "ref_code": "VAPT-INFRA-01",
+      "category": "infra",
+      "text": "Network and infrastructure security: firewall rule validation, network segmentation testing, exposed management interfaces, default service credentials, and lateral movement potential from web-tier.",
+      "evidence_expectation": "Network scan output; firewall bypass test results; management interface discovery; default credential test; segmentation verification evidence"
     },
     {
       "ref_code": "VAPT-BL-01",
       "category": "business_logic",
-      "text": "Test business logic flows for abuse: price manipulation, workflow skipping, negative value inputs, and race conditions.",
-      "evidence_expectation": "Business logic test cases and outcomes; specific workflow abuse scenarios"
+      "text": "Business logic flaws: price/quantity manipulation, workflow step skipping, negative value abuse, race conditions in critical operations (purchase, transfer, coupon redemption), and limit bypass.",
+      "evidence_expectation": "Business logic test cases and outcomes; price manipulation PoC; race condition evidence (concurrent request results); workflow bypass proof"
+    },
+    {
+      "ref_code": "VAPT-SUPPLY-01",
+      "category": "supply_chain",
+      "text": "Dependency and supply chain security: identify all third-party libraries, frameworks, and plugins; correlate versions against CVE databases; identify outdated, end-of-life, or malicious packages.",
+      "evidence_expectation": "OWASP Dependency-Check/Snyk/npm audit output; CVE table for identified packages; EOL component list; SCA scan results"
+    },
+    {
+      "ref_code": "VAPT-RETEST-01",
+      "category": "retest",
+      "text": "Remediation retest: verify that all critical and high findings from the initial assessment have been remediated. Perform targeted retesting of specific fixes and document retest status for each finding.",
+      "evidence_expectation": "Retest report per finding; fix verification screenshots; before/after comparison; updated risk status for each retested finding"
     }
   ],
   "evidence_requests": [
-    {"requirement_ref": "VAPT-RECON-01",  "title": "Reconnaissance output files",          "description": "DNS enumeration, nmap scan, certificate transparency results"},
-    {"requirement_ref": "VAPT-CONFIG-01", "title": "Security headers and config review",    "description": "Automated scanner report and manual configuration review notes"},
-    {"requirement_ref": "VAPT-CONFIG-02", "title": "TLS/SSL configuration report",          "description": "testssl.sh or SSLyze full output for all in-scope endpoints"},
-    {"requirement_ref": "VAPT-AUTH-01",   "title": "Authentication test results",           "description": "Brute-force, lockout, and MFA bypass test evidence"},
-    {"requirement_ref": "VAPT-AUTHZ-01",  "title": "Authorization and IDOR test results",   "description": "IDOR test cases, role boundary verification, privilege escalation attempts"},
-    {"requirement_ref": "VAPT-INPUT-01",  "title": "Injection test results",                "description": "SQL, command, and template injection findings with payloads"},
-    {"requirement_ref": "VAPT-INPUT-02",  "title": "XSS test results",                      "description": "Reflected, stored, and DOM XSS findings with PoC payloads"},
-    {"requirement_ref": "VAPT-SESSION-01","title": "Session management analysis",           "description": "Session token entropy report; fixation and invalidation test results"},
-    {"requirement_ref": "VAPT-API-01",    "title": "API authorization test results",        "description": "BOLA/BFLA test cases; mass assignment findings; API endpoint inventory"},
-    {"requirement_ref": "VAPT-API-02",    "title": "API rate limiting and exposure report", "description": "Rate limiting test results; excessive data exposure findings"},
-    {"requirement_ref": "VAPT-BL-01",     "title": "Business logic test cases",             "description": "Documented abuse scenarios and test outcomes"}
-  ],
-  "assessment_procedures": [
-    {
-      "ref_code": "AP-VAPT-01",
-      "title": "Reconnaissance",
-      "steps": [
-        "Conduct passive OSINT: WHOIS, DNS records, certificate transparency logs",
-        "Run active nmap service and version scan against all in-scope IP ranges",
-        "Enumerate subdomains via brute-force and zone transfer attempts",
-        "Fingerprint web server, framework, and CMS versions"
-      ]
-    },
-    {
-      "ref_code": "AP-VAPT-02",
-      "title": "Configuration and TLS review",
-      "steps": [
-        "Run nikto or similar automated scanner against web targets",
-        "Test HTTP security headers (CSP, HSTS, X-Frame-Options, etc.)",
-        "Run testssl.sh against all HTTPS endpoints",
-        "Verify no default credentials on any in-scope service"
-      ]
-    },
-    {
-      "ref_code": "AP-VAPT-03",
-      "title": "Authentication and session testing",
-      "steps": [
-        "Test for account lockout after N failed attempts",
-        "Attempt brute-force with common credential lists",
-        "Analyse session token entropy using Burp Sequencer",
-        "Test session invalidation on logout and timeout",
-        "Attempt session fixation by setting a known token before authentication"
-      ]
-    },
-    {
-      "ref_code": "AP-VAPT-04",
-      "title": "Authorisation testing",
-      "steps": [
-        "Map all object-referencing endpoints (GUIDs, IDs, usernames)",
-        "Test IDOR by accessing resources with a different authenticated user",
-        "Test vertical privilege escalation by calling privileged endpoints as a low-privilege user",
-        "Verify role-based access control enforcement at the API layer"
-      ]
-    },
-    {
-      "ref_code": "AP-VAPT-05",
-      "title": "Input validation and injection",
-      "steps": [
-        "Fuzz all input parameters with SQL injection payloads (manual + SQLMap)",
-        "Test for command injection on parameters that invoke OS commands",
-        "Test XSS on reflected, stored, and DOM-based injection points",
-        "Test for SSTI using template engine polyglot payloads"
-      ]
-    },
-    {
-      "ref_code": "AP-VAPT-06",
-      "title": "API security testing",
-      "steps": [
-        "Enumerate API endpoints from documentation, JS sources, and traffic analysis",
-        "Test BOLA/IDOR for every object-referencing endpoint",
-        "Test BFLA by invoking admin functions as a standard user",
-        "Confirm rate limiting on authentication and sensitive endpoints",
-        "Test for mass assignment on POST/PUT/PATCH endpoints"
-      ]
-    }
+    {"requirement_ref": "VAPT-PRE-01",     "title": "Signed scope and authorisation documents",    "description": "Signed scope document, rules of engagement, written authorisation, and testing window confirmation"},
+    {"requirement_ref": "VAPT-RECON-01",   "title": "Reconnaissance output files",                 "description": "DNS enumeration, nmap scan, subdomain enumeration, cert transparency, Shodan/Censys results"},
+    {"requirement_ref": "VAPT-RECON-02",   "title": "Technology fingerprint and CVE correlation",  "description": "Wappalyzer/whatweb output; identified technology versions; CVE table; dependency scan results"},
+    {"requirement_ref": "VAPT-CONFIG-01",  "title": "Security headers audit report",               "description": "Complete security headers report for all in-scope endpoints; CSP policy review"},
+    {"requirement_ref": "VAPT-CONFIG-02",  "title": "TLS/SSL configuration report",                "description": "testssl.sh or SSLyze full output for all HTTPS endpoints; certificate chain analysis"},
+    {"requirement_ref": "VAPT-CONFIG-03",  "title": "Server configuration and exposed services",   "description": "Nikto/automated scanner output; admin interface discovery; HTTP method test results"},
+    {"requirement_ref": "VAPT-CONFIG-04",  "title": "Cloud and container security assessment",     "description": "Cloud misconfiguration scan output; bucket policy review; metadata endpoint test results"},
+    {"requirement_ref": "VAPT-AUTH-01",    "title": "Authentication test results",                 "description": "Brute-force, lockout, and credential stuffing resilience test evidence"},
+    {"requirement_ref": "VAPT-AUTH-02",    "title": "Password reset flow test results",            "description": "Token entropy analysis, host header injection test, account enumeration via reset"},
+    {"requirement_ref": "VAPT-AUTH-03",    "title": "MFA security test results",                   "description": "MFA bypass attempts; OTP reuse test; backup code security review"},
+    {"requirement_ref": "VAPT-AUTH-04",    "title": "OAuth/OIDC/JWT security analysis",            "description": "OAuth flow test results; JWT token analysis; algorithm confusion test; weak secret test"},
+    {"requirement_ref": "VAPT-AUTHZ-01",   "title": "Authorization and IDOR test results",         "description": "IDOR/BOLA test cases with cross-account access proof; BFLA test results"},
+    {"requirement_ref": "VAPT-AUTHZ-02",   "title": "Mass assignment test results",                "description": "Mass assignment test cases; role elevation PoC; property persistence evidence"},
+    {"requirement_ref": "VAPT-INPUT-01",   "title": "SQL injection test results",                  "description": "SQLMap output or manual SQLi proof; database access evidence; affected parameters"},
+    {"requirement_ref": "VAPT-INPUT-02",   "title": "XSS test results",                            "description": "Reflected, stored, DOM XSS findings with PoC payloads; CSP bypass attempts"},
+    {"requirement_ref": "VAPT-INPUT-03",   "title": "Command and template injection results",      "description": "OS command injection test evidence; SSTI test results; affected endpoints"},
+    {"requirement_ref": "VAPT-INPUT-04",   "title": "XXE test results",                            "description": "XXE payloads and responses; file read PoC; blind XXE callback evidence"},
+    {"requirement_ref": "VAPT-INPUT-05",   "title": "Deserialization vulnerability test results",  "description": "Deserialization test payloads; evidence of deserialized objects in traffic"},
+    {"requirement_ref": "VAPT-SSRF-01",    "title": "SSRF test results",                           "description": "SSRF PoC; internal service access evidence; cloud metadata access; DNS/HTTP callbacks"},
+    {"requirement_ref": "VAPT-UPLOAD-01",  "title": "File upload security test results",           "description": "Upload bypass technique evidence; storage path disclosure; web shell upload PoC (non-executed)"},
+    {"requirement_ref": "VAPT-SESSION-01", "title": "Session management analysis",                 "description": "Session token entropy report; secure/httponly/samesite flag verification; logout invalidation test"},
+    {"requirement_ref": "VAPT-CORS-01",    "title": "CORS policy test results",                    "description": "Reflected origin test; credentials-with-wildcard test; pre-flight bypass attempts"},
+    {"requirement_ref": "VAPT-API-01",     "title": "API authorization test results",              "description": "BOLA/BFLA test cases; mass assignment findings; API endpoint inventory"},
+    {"requirement_ref": "VAPT-API-02",     "title": "API rate limiting and exposure report",       "description": "Rate limiting test results; excessive data exposure findings; bulk export test"},
+    {"requirement_ref": "VAPT-API-03",     "title": "API versioning and shadow endpoint discovery","description": "Version inventory; deprecated API access test; path fuzzing output"},
+    {"requirement_ref": "VAPT-GRAPHQL-01", "title": "GraphQL security test results",               "description": "Introspection results; nested query test; injection test; batching abuse results"},
+    {"requirement_ref": "VAPT-WS-01",      "title": "WebSocket security test results",             "description": "WebSocket auth test; message injection results; CSWSH PoC"},
+    {"requirement_ref": "VAPT-SECRET-01",  "title": "Secret and credential exposure findings",     "description": "Secret scanning output; exposed file discoveries; hardcoded credentials found"},
+    {"requirement_ref": "VAPT-REDIRECT-01","title": "Open redirect test results",                  "description": "Open redirect PoC; OAuth redirect_uri bypass test; affected parameters"},
+    {"requirement_ref": "VAPT-INFRA-01",   "title": "Network and infrastructure scan results",     "description": "Network scan output; firewall test; management interface discovery; lateral movement assessment"},
+    {"requirement_ref": "VAPT-BL-01",      "title": "Business logic test cases",                   "description": "Documented abuse scenarios, price manipulation PoC, race condition evidence, workflow bypass proof"},
+    {"requirement_ref": "VAPT-SUPPLY-01",  "title": "Dependency and SCA scan results",             "description": "Dependency-Check/Snyk output; CVE table; EOL component list"},
+    {"requirement_ref": "VAPT-RETEST-01",  "title": "Retest evidence pack",                        "description": "Per-finding retest screenshots; fix verification; updated risk status table"}
   ],
   "task_templates": [
-    {"kind": "interview",   "title": "Kick-off call — scope confirmation and rules of engagement"},
-    {"kind": "test",        "title": "Phase 01 — Passive and active reconnaissance"},
-    {"kind": "test",        "title": "Phase 02 — Configuration and infrastructure review"},
-    {"kind": "test",        "title": "Phase 03 — Authentication and session testing"},
-    {"kind": "test",        "title": "Phase 04 — Authorisation and access control testing"},
-    {"kind": "test",        "title": "Phase 05 — Input validation and injection testing"},
-    {"kind": "test",        "title": "Phase 06 — API security testing (OWASP API10)"},
-    {"kind": "test",        "title": "Phase 07 — Business logic testing"},
-    {"kind": "review",      "title": "Internal findings review and deduplication"},
-    {"kind": "workshop",    "title": "Findings walkthrough with client team"},
-    {"kind": "remediation", "title": "Retest of critical and high findings"}
+    {"kind": "interview",   "title": "Kick-off call — scope confirmation, rules of engagement, and emergency contacts"},
+    {"kind": "review",      "title": "Pre-engagement documentation review — authorisation, RoE, and scope sign-off"},
+    {"kind": "test",        "title": "Phase 01 — Passive OSINT and DNS reconnaissance (PT-Orc Phase 01)"},
+    {"kind": "test",        "title": "Phase 02 — IP analysis, network mapping, and service enumeration (PT-Orc Phase 02)"},
+    {"kind": "test",        "title": "Phase 03 — Comprehensive vulnerability scan — authenticated and unauthenticated (PT-Orc Phase 03)"},
+    {"kind": "test",        "title": "Phase 04 — TLS/SSL configuration review and certificate analysis (PT-Orc Phase 04)"},
+    {"kind": "test",        "title": "Phase 05 — Web enumeration — directory bruteforce, technology fingerprinting, CVE scan (PT-Orc Phase 05)"},
+    {"kind": "test",        "title": "Phase 06 — CMS and WordPress security assessment (PT-Orc Phase 06)"},
+    {"kind": "test",        "title": "Phase 07 — Service-level verification and default credential testing (PT-Orc Phase 07)"},
+    {"kind": "test",        "title": "Phase 08 — Application and API security review — auth, authz, injection, XSS, SSRF (PT-Orc Phase 08)"},
+    {"kind": "test",        "title": "Phase 09 — AI/LLM component review if applicable (PT-Orc Phase 09)"},
+    {"kind": "test",        "title": "Manual testing — IDOR/BOLA, business logic, race conditions, mass assignment"},
+    {"kind": "test",        "title": "File upload, XXE, deserialization, and SSRF targeted testing"},
+    {"kind": "test",        "title": "CORS, open redirect, WebSocket, and GraphQL security testing"},
+    {"kind": "test",        "title": "Secret scanning — client-side JS, exposed .git, .env, backup files"},
+    {"kind": "test",        "title": "Cloud and container security review — bucket permissions, IAM, metadata endpoints"},
+    {"kind": "test",        "title": "Dependency and supply chain analysis — SCA scan and CVE correlation"},
+    {"kind": "review",      "title": "Internal findings review, deduplication, and CVSS scoring"},
+    {"kind": "workshop",    "title": "Findings walkthrough with client technical team"},
+    {"kind": "remediation", "title": "Retest of critical and high severity findings post-remediation"},
+    {"kind": "review",      "title": "Final report QA — evidence completeness, CVSS accuracy, remediation guidance review"}
   ],
   "finding_templates": [
+    {"category": "pre_engagement",  "title_pattern": "Pre-engagement gap: {area}"},
     {"category": "config",          "title_pattern": "Security misconfiguration: {area}"},
     {"category": "auth",            "title_pattern": "Authentication weakness: {area}"},
     {"category": "authz",           "title_pattern": "Broken access control: {area}"},
     {"category": "input",           "title_pattern": "Injection vulnerability: {area}"},
+    {"category": "xxe",             "title_pattern": "XML External Entity (XXE) injection: {area}"},
+    {"category": "ssrf",            "title_pattern": "Server-Side Request Forgery (SSRF): {area}"},
+    {"category": "upload",          "title_pattern": "Insecure file upload: {area}"},
     {"category": "session",         "title_pattern": "Session management flaw: {area}"},
+    {"category": "cors",            "title_pattern": "CORS misconfiguration: {area}"},
     {"category": "api",             "title_pattern": "API security issue: {area}"},
+    {"category": "graphql",         "title_pattern": "GraphQL security issue: {area}"},
+    {"category": "websocket",       "title_pattern": "WebSocket vulnerability: {area}"},
     {"category": "crypto",          "title_pattern": "Cryptographic weakness: {area}"},
-    {"category": "business_logic",  "title_pattern": "Business logic flaw: {area}"}
-  ],
-  "severity_model": {
-    "critical": "Remote code execution, authentication bypass, or full data exfiltration with no user interaction",
-    "high":     "Significant impact (SQLi, stored XSS, IDOR exposing sensitive data, BFLA to admin functions)",
-    "medium":   "Limited impact requiring user interaction or specific conditions (reflected XSS, weak session tokens)",
-    "low":      "Informational or low-impact issues (missing headers, verbose error messages)",
-    "informational": "Best-practice observations with no exploitable attack vector in current context"
-  },
-  "review_gates": [
-    {"id": "G1", "label": "Scope approved",                "required_role": "pm"},
-    {"id": "G2", "label": "Evidence request list approved", "required_role": "pm"},
-    {"id": "G3", "label": "Evidence complete or exceptions approved", "required_role": "qa"},
-    {"id": "G4", "label": "Findings approved",             "required_role": "reviewer"},
-    {"id": "G5", "label": "Draft report QA complete",      "required_role": "qa"},
-    {"id": "G6", "label": "Final report approved",         "required_role": "partner"},
-    {"id": "G7", "label": "Remediation/closure accepted",  "required_role": "partner"}
-  ],
-  "approval_triggers": [
-    "scope_change",
-    "testing_window_change",
-    "exclusion_change",
-    "severity_change",
-    "finding_status_change",
-    "client_shared_finding",
-    "evidence_rejection",
-    "report_release",
-    "closure"
+    {"category": "business_logic",  "title_pattern": "Business logic flaw: {area}"},
+    {"category": "secret",          "title_pattern": "Exposed credential or secret: {area}"},
+    {"category": "infra",           "title_pattern": "Infrastructure security issue: {area}"},
+    {"category": "cloud",           "title_pattern": "Cloud misconfiguration: {area}"},
+    {"category": "supply_chain",    "title_pattern": "Vulnerable component: {area}"},
+    {"category": "retest",          "title_pattern": "Retest failure — finding not remediated: {area}"}
   ],
   "report_templates": [
     "gap_matrix", "report", "retest_report", "management_summary",
-    "roadmap", "client_action_plan", "evidence_matrix"
-  ],
-  "advisory_clinic_templates": [
-    {
-      "category": "scope_and_roe",
-      "title": "Scope & Rules of Engagement Clinic",
-      "guidance": "Review confirmed scope assets, exclusions, and testing window. Confirm emergency contact, safe-harbour clause, and rate-limit constraints with the client team."
-    },
-    {
-      "category": "findings_walkthrough",
-      "title": "Critical and High Findings Walkthrough",
-      "guidance": "Demonstrate critical and high findings to the technical team. Walk through exploitation steps, business impact, and recommended remediation for each finding."
-    },
-    {
-      "category": "remediation_planning",
-      "title": "Remediation Planning Clinic",
-      "guidance": "Prioritise findings by severity and exploitability. Assign remediation owners, agree target dates, and define acceptance criteria for retest. Identify quick wins vs. long-term fixes."
-    }
+    "roadmap", "client_action_plan", "evidence_matrix", "cvss_scoring_sheet"
   ],
   "qa_rules": [
     "every_finding_has_evidence",
@@ -282,6 +311,89 @@
     "requirements_covered",
     "remediation_has_owner",
     "scope_finding_match",
-    "no_draft_findings"
-  ]
+    "no_draft_findings",
+    "cvss_score_present",
+    "retest_status_set"
+  ],
+  "approval_triggers": [
+    "scope_change", "testing_window_change", "exclusion_change",
+    "severity_change", "finding_status_change", "client_shared_finding",
+    "evidence_rejection", "report_release", "closure",
+    "new_target_added", "retest_scope_change"
+  ],
+  "severity_model": {
+    "critical": "CVSS 9.0-10.0: Direct exploitation with no authentication, remote code execution, full data breach, or complete system compromise. Requires immediate escalation and emergency notification to the client.",
+    "high": "CVSS 7.0-8.9: Significant vulnerability that is directly exploitable, leads to substantial data exposure, privilege escalation, or authentication bypass. Must be remediated before report release.",
+    "medium": "CVSS 4.0-6.9: Exploitable vulnerability requiring specific conditions, user interaction, or limited access. Poses meaningful risk in combination with other issues. Remediate within 30 days.",
+    "low": "CVSS 0.1-3.9: Minimal direct impact. Low risk independently but may contribute to a chain attack. Remediate within 90 days.",
+    "informational": "No CVSS score. Defence-in-depth observation, best-practice enhancement, or security hygiene recommendation with no immediate exploitability."
+  },
+  "review_gates": [
+    {"id": "G1", "label": "Scope and rules of engagement approved",        "required_role": "partner"},
+    {"id": "G2", "label": "Reconnaissance and planning evidence reviewed", "required_role": "lead_consultant"},
+    {"id": "G3", "label": "Active testing evidence complete and verified", "required_role": "lead_consultant"},
+    {"id": "G4", "label": "Findings reviewed and CVSS severity confirmed", "required_role": "senior_reviewer"},
+    {"id": "G5", "label": "Draft report QA complete",                      "required_role": "qa"},
+    {"id": "G6", "label": "Final report approved for release",             "required_role": "partner"},
+    {"id": "G7", "label": "Retest evidence accepted and report updated",   "required_role": "lead_consultant"}
+  ],
+  "advisory_clinic_templates": [
+    {
+      "category": "auth",
+      "title": "Authentication Hardening Workshop",
+      "guidance": "Review current authentication architecture against OWASP ASVS Level 2. Cover MFA implementation, password policy, JWT security, and OAuth2/OIDC best practices. Produce a prioritised hardening roadmap."
+    },
+    {
+      "category": "api",
+      "title": "API Security Architecture Review",
+      "guidance": "Walk through the API design against OWASP API Security Top 10 (2023). Cover authorisation model (BOLA/BFLA prevention), rate limiting strategy, schema validation, versioning policy, and API gateway configuration."
+    },
+    {
+      "category": "config",
+      "title": "Security Headers and TLS Hardening Advisory",
+      "guidance": "Review and configure Content Security Policy, HSTS, X-Frame-Options, and remaining security headers. Review TLS cipher suite configuration and certificate management. Produce configuration snippets for each web server/platform in use."
+    },
+    {
+      "category": "input",
+      "title": "Injection Prevention and Secure Coding Workshop",
+      "guidance": "Cover parameterised queries, ORM usage, output encoding, template sandboxing, and file upload validation. Review relevant OWASP Cheat Sheets. Conduct focused code review of the highest-risk input processing areas."
+    },
+    {
+      "category": "supply_chain",
+      "title": "Dependency Management and Supply Chain Security Advisory",
+      "guidance": "Review dependency update cadence. Establish SCA tooling in CI/CD pipeline (OWASP Dependency-Check, Snyk, Dependabot). Define severity thresholds that block builds. Review container base image patching policy."
+    },
+    {
+      "category": "cloud",
+      "title": "Cloud Security Posture Review",
+      "guidance": "Review cloud IAM policies, storage bucket permissions, security group configurations, and logging coverage. Run CSPM assessment (ScoutSuite/Prowler). Produce prioritised cloud hardening checklist mapped to CIS Benchmarks."
+    },
+    {
+      "category": "business_logic",
+      "title": "Remediation Prioritisation and Roadmap Workshop",
+      "guidance": "Work through all identified findings with the development team. Prioritise by business impact and CVSS score. Assign owners, define remediation approaches, and set realistic timelines. Produce an action plan for executive review."
+    }
+  ],
+  "ptorc_phase_mapping": {
+    "recon":          ["01", "02"],
+    "config":         ["03", "04", "05"],
+    "auth":           ["08"],
+    "authz":          ["08"],
+    "input":          ["08"],
+    "xxe":            ["08"],
+    "ssrf":           ["08"],
+    "upload":         ["08"],
+    "session":        ["08"],
+    "cors":           ["08"],
+    "api":            ["08"],
+    "graphql":        ["08"],
+    "websocket":      ["08"],
+    "secret":         ["01", "02", "08"],
+    "infra":          ["01", "02", "03", "07"],
+    "cloud":          ["01", "02", "05"],
+    "supply_chain":   ["05", "08"],
+    "business_logic": ["08"],
+    "pre_engagement": [],
+    "retest":         []
+  }
 }

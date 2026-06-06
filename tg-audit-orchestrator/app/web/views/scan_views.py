@@ -8,7 +8,7 @@ from app.db import get_db
 from app.models.clients import Project
 from app.models.scan import ScanJob, ScanJobStatus
 from app.services.scan_runner import PHASE_SCRIPTS, tail_log, trigger_scan
-from app.web.deps import LOGIN_REDIRECT, get_web_user
+from app.web.deps import LOGIN_REDIRECT, base_ctx, get_web_user
 
 router = APIRouter(tags=["web-scans"])
 templates = Jinja2Templates(directory="app/web/templates")
@@ -49,7 +49,7 @@ def scans_page(
     return templates.TemplateResponse(
         request, "projects/scans.html",
         {
-            "user": user,
+            **base_ctx(user, db),
             "project": project,
             "jobs": jobs,
             "all_phases": _ALL_PHASES,
@@ -115,7 +115,7 @@ def scan_detail(
     return templates.TemplateResponse(
         request, "projects/scan_detail.html",
         {
-            "user": user,
+            **base_ctx(user, db),
             "project": project,
             "job": job,
             "log_text": log_text,

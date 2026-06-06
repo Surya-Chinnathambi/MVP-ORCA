@@ -14,23 +14,9 @@ if TYPE_CHECKING:
 
 
 class ApprovalStatus(str, enum.Enum):
-    # Full Spec §12 — 5-state lifecycle
-    draft = "draft"
-    requested = "requested"
+    pending = "pending"
     approved = "approved"
     rejected = "rejected"
-    applied = "applied"
-    cancelled = "cancelled"
-    # Legacy alias kept for backfill only — maps to 'requested'
-    pending = "pending"
-
-
-# States where no further edits are allowed (immutable after finalization)
-APPROVAL_FINAL_STATES = {
-    ApprovalStatus.applied,
-    ApprovalStatus.rejected,
-    ApprovalStatus.cancelled,
-}
 
 
 class ApprovalRequest(TimestampMixin, Base):
@@ -50,7 +36,7 @@ class ApprovalRequest(TimestampMixin, Base):
     approver_role: Mapped[str] = mapped_column(String(50), nullable=False)
     status: Mapped[str] = mapped_column(
         Enum(ApprovalStatus, name="approval_status_enum"),
-        default=ApprovalStatus.requested.value,
+        default=ApprovalStatus.pending,
         nullable=False,
     )
     decided_by: Mapped[Optional[str]] = mapped_column(
@@ -59,13 +45,6 @@ class ApprovalRequest(TimestampMixin, Base):
     decided_at: Mapped[Optional[datetime]] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
-    # C4 additions — stamped by applier after successful mutation
-    applied_at: Mapped[Optional[datetime]] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
-    applied_by: Mapped[Optional[str]] = mapped_column(
-        String(36), ForeignKey("users.id"), nullable=True
-    )
 
     project: Mapped[Optional["Project"]] = relationship(back_populates="approval_requests")
     requester: Mapped[Optional["User"]] = relationship(
@@ -73,9 +52,6 @@ class ApprovalRequest(TimestampMixin, Base):
     )
     decider: Mapped[Optional["User"]] = relationship(
         "User", foreign_keys=[decided_by]
-    )
-    applier: Mapped[Optional["User"]] = relationship(
-        "User", foreign_keys=[applied_by]
     )
 
 

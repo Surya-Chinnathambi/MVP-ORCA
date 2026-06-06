@@ -49,7 +49,7 @@ async def cmd_status(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
             db.query(ApprovalRequest)
             .filter(
                 ApprovalRequest.project_id == project_id,
-                ApprovalRequest.status == ApprovalStatus.requested,
+                ApprovalRequest.status == ApprovalStatus.pending,
             )
             .count()
         )
@@ -80,7 +80,7 @@ async def cmd_approvals(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     try:
         pending = (
             db.query(ApprovalRequest)
-            .filter(ApprovalRequest.status == ApprovalStatus.requested)
+            .filter(ApprovalRequest.status == ApprovalStatus.pending)
             .order_by(ApprovalRequest.created_at)
             .limit(10)
             .all()

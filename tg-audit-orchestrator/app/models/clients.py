@@ -24,19 +24,6 @@ class ServiceType(str, enum.Enum):
     vapt = "vapt"
 
 
-class ProjectStatus(str, enum.Enum):
-    draft = "draft"
-    scoped = "scoped"
-    active = "active"
-    review = "review"
-    client_review = "client_review"
-    final = "final"
-    closed = "closed"
-    archived = "archived"
-    # Legacy value kept only for migration backfill — never a creation default
-    setup = "setup"
-
-
 class Client(TimestampMixin, Base):
     __tablename__ = "clients"
 
@@ -66,11 +53,7 @@ class Project(TimestampMixin, Base):
     owner_id: Mapped[Optional[str]] = mapped_column(
         String(36), ForeignKey("users.id"), nullable=True
     )
-    status: Mapped[str] = mapped_column(
-        Enum(ProjectStatus, name="project_status_enum"),
-        default=ProjectStatus.draft.value,
-        nullable=False,
-    )
+    status: Mapped[str] = mapped_column(String(50), default="setup", nullable=False)
     scope_summary: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     timeline: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
     pack_id: Mapped[Optional[str]] = mapped_column(

@@ -1,0 +1,103 @@
+{
+  "key": "gdpr_gap",
+  "title": "GDPR Gap Assessment Pack",
+  "frameworks": ["eu_gdpr"],
+  "intake_questions": [
+    {"id": "g1", "text": "Does your organisation process personal data of EU/EEA residents?"},
+    {"id": "g2", "text": "Do you have a designated Data Protection Officer (DPO)?"},
+    {"id": "g3", "text": "Have you completed a Record of Processing Activities (ROPA)?"},
+    {"id": "g4", "text": "Do you transfer personal data outside the EEA?"},
+    {"id": "g5", "text": "Has a Data Protection Impact Assessment (DPIA) been conducted for high-risk processing?"}
+  ],
+  "scope_template": [
+    {"kind": "business_unit", "prompt": "Identify each business unit processing EU personal data"},
+    {"kind": "asset", "prompt": "List systems, applications, and databases storing EU personal data"},
+    {"kind": "exclusion", "prompt": "Confirm any processing activities explicitly excluded from GDPR scope"}
+  ],
+  "requirements": [
+    {
+      "ref_code": "GDPR-GAP-LAWFUL-01",
+      "category": "lawful_basis",
+      "text": "A documented lawful basis (Art.6) must exist for each processing activity in the ROPA.",
+      "evidence_expectation": "ROPA with lawful basis column populated; legal analysis for each processing purpose"
+    },
+    {
+      "ref_code": "GDPR-GAP-NOTICE-01",
+      "category": "transparency",
+      "text": "Privacy notices must comply with Art.13/14 requirements including identity of controller, purposes, legal basis, rights, and retention periods.",
+      "evidence_expectation": "Current privacy notice; notice change log; Art.13 checklist assessment"
+    },
+    {
+      "ref_code": "GDPR-GAP-RIGHTS-01",
+      "category": "data_subject_rights",
+      "text": "Processes must be in place to respond to data subject rights requests (access, rectification, erasure, portability, objection) within statutory timeframes.",
+      "evidence_expectation": "Rights request procedure; sample fulfilled requests; SLA evidence; suppression list"
+    },
+    {
+      "ref_code": "GDPR-GAP-SECURITY-01",
+      "category": "security",
+      "text": "Technical and organisational security measures appropriate to the risk must be implemented and documented per Art.32.",
+      "evidence_expectation": "Security policy; encryption evidence; access control review; penetration test summary"
+    },
+    {
+      "ref_code": "GDPR-GAP-BREACH-01",
+      "category": "breach_response",
+      "text": "A documented personal data breach response procedure must be in place enabling 72-hour supervisory authority notification per Art.33.",
+      "evidence_expectation": "Breach response procedure; breach register; detection mechanism evidence; notification template"
+    },
+    {
+      "ref_code": "GDPR-GAP-DPIA-01",
+      "category": "risk_management",
+      "text": "Data Protection Impact Assessments must be conducted for high-risk processing activities and DPO consulted where required.",
+      "evidence_expectation": "DPIA register; completed DPIAs; DPO consultation records; high-risk processing list"
+    }
+  ],
+  "evidence_requests": [
+    {"requirement_ref": "GDPR-GAP-LAWFUL-01", "title": "Record of Processing Activities (ROPA)", "description": "Complete ROPA with lawful basis, data categories, retention periods, and recipients for each processing activity"},
+    {"requirement_ref": "GDPR-GAP-NOTICE-01", "title": "Privacy Notice / Policy", "description": "Current external-facing privacy notice with version history and Art.13/14 compliance checklist"},
+    {"requirement_ref": "GDPR-GAP-RIGHTS-01", "title": "Data Subject Rights Procedure", "description": "SOP for handling SAR, erasure, portability, and objection requests including sample fulfilled requests"},
+    {"requirement_ref": "GDPR-GAP-SECURITY-01", "title": "Technical Security Measures Evidence", "description": "Encryption at rest/transit evidence, access control review, and most recent penetration test executive summary"},
+    {"requirement_ref": "GDPR-GAP-BREACH-01", "title": "Breach Response Procedure and Register", "description": "Documented breach detection-to-notification procedure and breach register (redacted as needed)"},
+    {"requirement_ref": "GDPR-GAP-DPIA-01", "title": "DPIA Register and Sample DPIA", "description": "DPIA register listing all high-risk activities and a completed DPIA for the highest-risk processing"}
+  ],
+  "task_templates": [
+    {"kind": "review", "title": "Review ROPA for completeness and lawful basis coverage"},
+    {"kind": "review", "title": "Assess privacy notice against GDPR Art.13/14 checklist"},
+    {"kind": "review", "title": "Test data subject rights request end-to-end process"},
+    {"kind": "review", "title": "Evaluate technical and organisational security measures"},
+    {"kind": "review", "title": "Verify breach detection and 72-hour notification capability"},
+    {"kind": "interview", "title": "Interview DPO on DPIA process and high-risk activities"},
+    {"kind": "analysis", "title": "Map cross-border transfers and verify adequacy mechanisms"}
+  ],
+  "finding_templates": [
+    {"category": "lawful_basis", "title_pattern": "Missing or inadequate lawful basis for {processing_activity}"},
+    {"category": "transparency", "title_pattern": "Privacy notice missing required Art.13 element: {element}"},
+    {"category": "data_subject_rights", "title_pattern": "Data subject {right_type} request process not fit for purpose"},
+    {"category": "security", "title_pattern": "Insufficient security measure for {data_category} processing"},
+    {"category": "breach_response", "title_pattern": "Breach response capability gap: {gap_area}"}
+  ],
+  "qa_rules": [
+    "every_finding_has_evidence",
+    "all_requirements_assessed",
+    "open_evidence_requests_flagged",
+    "evidence_lifecycle_ready"
+  ],
+  "severity_model": {
+    "critical": "Fundamental rights and freedoms at high risk; immediate regulatory action likely",
+    "high": "Significant non-compliance; supervisory authority likely to investigate",
+    "medium": "Partial compliance gap; remediation required within 90 days",
+    "low": "Minor gap or best-practice recommendation; 6-month remediation window",
+    "informational": "Observation for continuous improvement; no compliance risk"
+  },
+  "review_gates": [
+    {"id": "G1", "label": "Scope approved", "required_role": "partner"},
+    {"id": "G2", "label": "Evidence complete", "required_role": "qa"},
+    {"id": "G4", "label": "Findings approved", "required_role": "partner"},
+    {"id": "G6", "label": "Report approved", "required_role": "partner"}
+  ],
+  "advisory_clinic_templates": [
+    {"category": "lawful_basis", "title": "Lawful Basis Selection Advisory", "guidance": "Guide client through Art.6 basis selection for each processing purpose; document rationale"},
+    {"category": "consent", "title": "Consent Mechanism Review", "guidance": "Review consent UI, granularity, and withdrawal mechanism against GDPR requirements"},
+    {"category": "dpia", "title": "DPIA Scoping Session", "guidance": "Identify high-risk processing requiring DPIA; walk through screening criteria"}
+  ]
+}

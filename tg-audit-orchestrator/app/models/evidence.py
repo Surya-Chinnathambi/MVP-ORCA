@@ -2,7 +2,7 @@ import enum
 from datetime import date, datetime
 from typing import TYPE_CHECKING, Any, Optional
 
-from sqlalchemy import Boolean, Date, DateTime, Enum, ForeignKey, JSON, String, Text
+from sqlalchemy import Boolean, Date, DateTime, Enum, ForeignKey, Index, JSON, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
@@ -37,6 +37,7 @@ class ReviewerStatus(str, enum.Enum):
 
 class EvidenceRequest(TimestampMixin, Base):
     __tablename__ = "evidence_requests"
+    __table_args__ = (Index("ix_evidence_requests_project_id", "project_id"),)
 
     project_id: Mapped[str] = mapped_column(
         String(36), ForeignKey("projects.id"), nullable=False
@@ -62,12 +63,14 @@ class EvidenceRequest(TimestampMixin, Base):
     )
     owner: Mapped[Optional["User"]] = relationship("User", foreign_keys=[owner_id])
     evidence_items: Mapped[list["EvidenceItem"]] = relationship(
-        back_populates="evidence_request"
+        back_populates="evidence_request",
+        cascade="all, delete-orphan",
     )
 
 
 class EvidenceItem(TimestampMixin, Base):
     __tablename__ = "evidence_items"
+    __table_args__ = (Index("ix_evidence_items_project_id", "project_id"),)
 
     project_id: Mapped[str] = mapped_column(
         String(36), ForeignKey("projects.id"), nullable=False

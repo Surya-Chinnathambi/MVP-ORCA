@@ -10,6 +10,7 @@ from app.models.base import TimestampMixin
 if TYPE_CHECKING:
     from app.models.clients import Project
     from app.models.evidence import EvidenceRequest
+    from app.models.tasks import Finding
 
 
 class ScopeItemKind(str, enum.Enum):
@@ -86,4 +87,9 @@ class Requirement(TimestampMixin, Base):
     project: Mapped["Project"] = relationship(back_populates="requirements")
     evidence_requests: Mapped[list["EvidenceRequest"]] = relationship(
         back_populates="requirement"
+    )
+    findings: Mapped[list["Finding"]] = relationship(
+        "Finding",
+        back_populates="requirement",
+        foreign_keys="Finding.requirement_id",
     )

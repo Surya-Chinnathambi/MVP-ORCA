@@ -6,7 +6,10 @@ from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.models.users import Permission, Role, RoleName, ScopeLevel, User
-from app.web.deps import LOGIN_REDIRECT, get_web_user
+from app.web.deps import (
+    LOGIN_REDIRECT, FORBIDDEN_REDIRECT,
+    base_ctx, get_web_user, require_admin_role, get_highest_role,
+)
 
 router = APIRouter(tags=["web-admin"])
 templates = Jinja2Templates(directory="app/web/templates")
@@ -17,9 +20,12 @@ def users_page(
     request: Request,
     db: Session = Depends(get_db),
     user=Depends(get_web_user),
+    admin_user=Depends(require_admin_role),
 ):
     if user is None:
         return LOGIN_REDIRECT
+    if admin_user is None:
+        return FORBIDDEN_REDIRECT
     users = db.query(User).order_by(User.created_at.asc()).all()
     roles = db.query(Role).order_by(Role.name).all()
     perms = db.query(Permission).all()
@@ -29,7 +35,7 @@ def users_page(
     return templates.TemplateResponse(
         request, "admin/users.html",
         {
-            "user": user,
+            **base_ctx(user, db),
             "users": users,
             "roles": roles,
             "perms_by_user": perms_by_user,
@@ -47,9 +53,12 @@ def create_user_web(
     password: str = Form(...),
     db: Session = Depends(get_db),
     user=Depends(get_web_user),
+    admin_user=Depends(require_admin_role),
 ):
     if user is None:
         return LOGIN_REDIRECT
+    if admin_user is None:
+        return FORBIDDEN_REDIRECT
     from app.services.auth import hash_password
     existing = db.query(User).filter_by(email=email).first()
     if existing:
@@ -74,9 +83,12 @@ def assign_role_web(
     scope_id: str = Form(""),
     db: Session = Depends(get_db),
     user=Depends(get_web_user),
+    admin_user=Depends(require_admin_role),
 ):
     if user is None:
         return LOGIN_REDIRECT
+    if admin_user is None:
+        return FORBIDDEN_REDIRECT
     role = db.query(Role).filter_by(name=role_name).first()
     if not role:
         return RedirectResponse("/ui/admin/users", status_code=302)
@@ -98,9 +110,12 @@ def remove_role_web(
     request: Request,
     db: Session = Depends(get_db),
     user=Depends(get_web_user),
+    admin_user=Depends(require_admin_role),
 ):
     if user is None:
         return LOGIN_REDIRECT
+    if admin_user is None:
+        return FORBIDDEN_REDIRECT
     perm = db.get(Permission, perm_id)
     if perm and perm.user_id == target_user_id:
         db.delete(perm)
@@ -114,9 +129,12 @@ def toggle_active_web(
     request: Request,
     db: Session = Depends(get_db),
     user=Depends(get_web_user),
+    admin_user=Depends(require_admin_role),
 ):
     if user is None:
         return LOGIN_REDIRECT
+    if admin_user is None:
+        return FORBIDDEN_REDIRECT
     target = db.get(User, target_user_id)
     if target and target.id != user.id:
         target.is_active = not target.is_active

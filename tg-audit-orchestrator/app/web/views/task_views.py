@@ -8,7 +8,7 @@ from app.db import get_db
 from app.models.clients import Project
 from app.models.tasks import Finding, Task, TaskKind, TaskStatus
 from app.models.users import User
-from app.web.deps import LOGIN_REDIRECT, get_web_user
+from app.web.deps import LOGIN_REDIRECT, base_ctx, get_web_user
 
 router = APIRouter(tags=["web-tasks"])
 templates = Jinja2Templates(directory="app/web/templates")
@@ -36,7 +36,7 @@ def tasks_page(
     return templates.TemplateResponse(
         request, "projects/tasks.html",
         {
-            "user": user,
+            **base_ctx(user, db),
             "project": project,
             "tasks": tasks,
             "task_kinds": [k.value for k in TaskKind],

@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.models.clients import Client, Project
-from app.web.deps import LOGIN_REDIRECT, get_web_user
+from app.web.deps import LOGIN_REDIRECT, base_ctx, get_web_user
 
 router = APIRouter(tags=["web-clients"])
 templates = Jinja2Templates(directory="app/web/templates")
@@ -17,7 +17,7 @@ def clients_page(request: Request, db: Session = Depends(get_db), user=Depends(g
     if user is None:
         return LOGIN_REDIRECT
     clients = db.query(Client).order_by(Client.created_at.desc()).all()
-    return templates.TemplateResponse(request, "clients/index.html", {"user": user, "clients": clients})
+    return templates.TemplateResponse(request, "clients/index.html", {**base_ctx(user, db), "clients": clients})
 
 
 @router.post("/clients")
@@ -48,7 +48,7 @@ def new_project_page(
     client = db.get(Client, client_id)
     if client is None:
         return RedirectResponse("/ui/clients", status_code=302)
-    return templates.TemplateResponse(request, "clients/new_project.html", {"user": user, "client": client})
+    return templates.TemplateResponse(request, "clients/new_project.html", {**base_ctx(user, db), "client": client})
 
 
 @router.post("/clients/{client_id}/projects")
@@ -94,7 +94,7 @@ def client_detail_page(
     )
     return templates.TemplateResponse(
         request, "clients/detail.html",
-        {"user": user, "client": client, "projects": projects},
+        {**base_ctx(user, db), "client": client, "projects": projects},
     )
 
 

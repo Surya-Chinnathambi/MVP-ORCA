@@ -6,30 +6,167 @@
   <title>{% block title %}TG Audit Orchestrator{% endblock %}</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+  <style>
+    /* Loading indicator shown during HTMX requests */
+    #htmx-indicator { display:none; }
+    .htmx-request #htmx-indicator { display:flex; }
+    /* Disable submit buttons during inflight */
+    .htmx-request .btn-submit { opacity:.6; pointer-events:none; cursor:not-allowed; }
+    /* Smooth page transitions */
+    .htmx-settling { opacity:.9; }
+    /* Active nav link */
+    .nav-active { background-color: rgb(55 65 81); color: #fff; }
+  </style>
 </head>
 <body class="flex h-screen bg-gray-100 text-gray-800 text-sm" hx-boost="true">
-  <!-- Sidebar -->
-  <nav class="w-52 bg-gray-900 text-gray-100 flex flex-col flex-shrink-0">
-    <div class="px-4 py-3 font-bold text-base border-b border-gray-700 tracking-wide">
-      TG Audit
+
+  {# ── Global loading overlay ──────────────────────────────────────────── #}
+  <div id="htmx-indicator"
+    class="fixed inset-0 bg-black/20 z-50 items-center justify-center pointer-events-none">
+    <div class="bg-white rounded-lg shadow-lg px-6 py-4 flex items-center gap-3">
+      <svg class="animate-spin h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+      </svg>
+      <span class="text-sm text-gray-700 font-medium">Processing…</span>
     </div>
-    <div class="flex-1 overflow-y-auto py-2">
+  </div>
+
+  {# ── Flash / error banner ────────────────────────────────────────────── #}
+  {% set qerror = request.query_params.get('error') if request else None %}
+  {% if qerror %}
+  <div id="flash-banner"
+    class="fixed top-0 inset-x-0 z-40 flex items-center justify-between bg-red-600 text-white px-5 py-2.5 text-sm shadow-md">
+    <span>
+      {% if qerror == 'insufficient_role' %}
+        ⛔ You don't have the required role ({{ request.query_params.get('required','—') }}) to perform that action.
+      {% elif qerror == 'email_taken' %}
+        ⚠ That email address is already registered.
+      {% else %}
+        ⚠ {{ qerror | replace('_', ' ') | title }}
+      {% endif %}
+    </span>
+    <button onclick="document.getElementById('flash-banner').remove()" class="ml-4 hover:opacity-75 font-bold">✕</button>
+  </div>
+  {% endif %}
+
+  {# ── Sidebar ─────────────────────────────────────────────────────────── #}
+  <nav class="w-56 bg-gray-900 text-gray-100 flex flex-col flex-shrink-0">
+
+    {# Logo / Brand #}
+    <div class="px-4 py-3.5 border-b border-gray-700 flex items-center justify-between">
+      <div>
+        <div class="font-bold text-base tracking-wide text-white">TG Audit</div>
+        <div class="text-xs text-gray-500 leading-none mt-0.5">Orchestrator v2</div>
+      </div>
+      <span class="w-2 h-2 rounded-full bg-green-400 shrink-0" title="System online"></span>
+    </div>
+
+    {# Navigation links #}
+    <div class="flex-1 overflow-y-auto py-2 space-y-0.5">
+
       <div class="px-4 pt-3 pb-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">Workspace</div>
-      <a href="/ui/clients" class="flex items-center px-4 py-2 hover:bg-gray-700 rounded mx-1">Clients</a>
-      <a href="/ui/approvals" class="flex items-center px-4 py-2 hover:bg-gray-700 rounded mx-1">Approvals</a>
+      {% set nav_path = request.url.path if request else '' %}
+      {% for label, href, icon in [
+        ('Clients',   '/ui/clients',        '👥'),
+        ('Approvals', '/ui/approvals',       '✅'),
+      ] %}
+      <a href="{{ href }}"
+        class="flex items-center gap-2.5 px-4 py-2 hover:bg-gray-700 rounded mx-1 transition-colors
+               {{ 'nav-active' if nav_path == href or nav_path.startswith(href + '/') else '' }}">
+        <span class="text-base leading-none">{{ icon }}</span>
+        <span>{{ label }}</span>
+        {% if label == 'Approvals' and pending_approvals_count is defined and pending_approvals_count > 0 %}
+        <span class="ml-auto bg-red-500 text-white text-xs rounded-full px-1.5 py-0.5 leading-none">
+          {{ pending_approvals_count }}
+        </span>
+        {% endif %}
+      </a>
+      {% endfor %}
+
+      {% if user and user_highest_role in ['platform_admin','partner','pm','lead_consultant','analyst','senior_reviewer','qa'] %}
       <div class="px-4 pt-3 pb-1 text-xs font-semibold text-gray-500 uppercase tracking-wider">Admin</div>
-      <a href="/ui/admin/users" class="flex items-center px-4 py-2 hover:bg-gray-700 rounded mx-1">Team &amp; Roles</a>
+      <a href="/ui/admin/users"
+        class="flex items-center gap-2.5 px-4 py-2 hover:bg-gray-700 rounded mx-1 transition-colors
+               {{ 'nav-active' if nav_path.startswith('/ui/admin') else '' }}">
+        <span class="text-base leading-none">🔑</span>
+        <span>Team &amp; Roles</span>
+      </a>
+      {% endif %}
+
     </div>
-    <div class="px-4 py-3 border-t border-gray-700 text-xs text-gray-400">
-      <div class="truncate">{{ user.email }}</div>
-      <form action="/ui/logout" method="post" class="mt-1" hx-boost="false">
-        <button type="submit" class="text-gray-400 hover:text-white underline">Logout</button>
+
+    {# User footer #}
+    {% if user %}
+    <div class="px-4 py-3 border-t border-gray-700">
+      <div class="flex items-center gap-2 mb-2">
+        <div class="w-7 h-7 rounded-full bg-blue-600 flex items-center justify-center text-xs font-bold text-white shrink-0">
+          {{ (user.full_name or user.email)[0] | upper }}
+        </div>
+        <div class="min-w-0">
+          <div class="text-xs font-medium text-gray-200 truncate">{{ user.full_name or user.email }}</div>
+          <div class="text-xs text-gray-500 truncate">{{ user.email }}</div>
+        </div>
+      </div>
+      {% if user_highest_role %}
+      {% set role_colours = {
+        'platform_admin':'bg-red-700 text-red-100',
+        'partner':'bg-purple-700 text-purple-100',
+        'pm':'bg-blue-700 text-blue-100',
+        'lead_consultant':'bg-indigo-700 text-indigo-100',
+        'analyst':'bg-teal-700 text-teal-100',
+        'senior_reviewer':'bg-green-700 text-green-100',
+        'qa':'bg-yellow-700 text-yellow-100',
+        'client_approver':'bg-orange-700 text-orange-100',
+        'client_contributor':'bg-gray-600 text-gray-100',
+        'readonly':'bg-gray-700 text-gray-400',
+      } %}
+      <span class="inline-block px-2 py-0.5 rounded text-xs font-medium {{ role_colours.get(user_highest_role, 'bg-gray-700 text-gray-300') }}">
+        {{ user_highest_role | replace('_', ' ') | title }}
+      </span>
+      {% endif %}
+      <form action="/ui/logout" method="post" class="mt-2" hx-boost="false">
+        <button type="submit"
+          class="text-xs text-gray-400 hover:text-white underline">Logout</button>
       </form>
     </div>
+    {% endif %}
   </nav>
-  <!-- Main content -->
+
+  {# ── Main content ─────────────────────────────────────────────────────── #}
   <main class="flex-1 overflow-auto p-6">
     {% block content %}{% endblock %}
   </main>
+
+  <script>
+    // Attach loading indicator and disable buttons on any form submit via HTMX or standard
+    document.addEventListener('htmx:beforeRequest', () => {
+      document.querySelectorAll('button[type=submit], .btn-submit').forEach(b => {
+        b.dataset.originalText = b.innerHTML;
+        b.disabled = true;
+        b.style.opacity = '0.6';
+      });
+    });
+    document.addEventListener('htmx:afterRequest', () => {
+      document.querySelectorAll('button[type=submit], .btn-submit').forEach(b => {
+        b.disabled = false;
+        b.style.opacity = '';
+        if (b.dataset.originalText) b.innerHTML = b.dataset.originalText;
+      });
+    });
+    // Standard form submit → brief spinner
+    document.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('form').forEach(form => {
+        if (form.getAttribute('hx-boost') === 'false') return;
+        form.addEventListener('submit', () => {
+          const btn = form.querySelector('button[type=submit]');
+          if (btn && !btn.closest('[hx-post],[hx-get]')) {
+            btn.disabled = true;
+            btn.style.opacity = '0.6';
+          }
+        });
+      });
+    });
+  </script>
 </body>
 </html>

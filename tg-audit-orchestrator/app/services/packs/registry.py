@@ -47,27 +47,23 @@ def register_pack(
     db: Session,
     pack_key: str,
     *,
-    version: Optional[str] = None,
+    version: str = "1.0.0",
     organization_id: Optional[str] = None,
     actor_id: Optional[str] = None,
 ) -> MethodologyPack:
     """Load an on-disk pack.json, validate it, and store as a draft MethodologyPack.
 
-    version and lifecycle are read from the pack JSON (§7.1 metadata); the version
-    kwarg overrides the JSON value if supplied for explicit version pinning.
     Multiple versions of the same key may coexist; lifecycle governs which is active.
     """
     pack = load_pack(pack_key)
     data = pack.model_dump()
     cs = _checksum(data)
 
-    resolved_version = version or pack.version
-    # lifecycle in DB always starts at draft regardless of JSON lifecycle field
     mp = MethodologyPack(
         organization_id=organization_id,
         key=pack.key,
         title=pack.title,
-        version=resolved_version,
+        version=version,
         lifecycle=PackLifecycle.draft,
         source_json=data,
         checksum=cs,

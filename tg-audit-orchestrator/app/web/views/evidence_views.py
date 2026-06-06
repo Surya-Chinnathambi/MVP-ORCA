@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from app.db import get_db
 from app.models.clients import Project
 from app.models.evidence import EvidenceItem, EvidenceRequest, ReviewerStatus
-from app.web.deps import LOGIN_REDIRECT, get_web_user
+from app.web.deps import LOGIN_REDIRECT, base_ctx, get_web_user
 
 router = APIRouter(tags=["web-evidence"])
 templates = Jinja2Templates(directory="app/web/templates")
@@ -33,7 +33,7 @@ def evidence_requests_page(
     )
     return templates.TemplateResponse(
         request, "projects/evidence_requests.html",
-        {"user": user, "project": project, "evidence_requests": ev_requests},
+        {**base_ctx(user, db), "project": project, "evidence_requests": ev_requests},
     )
 
 
@@ -57,7 +57,7 @@ def evidence_page(
     )
     return templates.TemplateResponse(
         request, "projects/evidence.html",
-        {"user": user, "project": project, "evidence_items": items},
+        {**base_ctx(user, db), "project": project, "evidence_items": items},
     )
 
 
