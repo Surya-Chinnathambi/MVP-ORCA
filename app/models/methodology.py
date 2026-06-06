@@ -47,7 +47,7 @@ class MethodologyPack(TimestampMixin, Base):
     )
 
     organization: Mapped[Optional["Organization"]] = relationship(
-        "Organization", foreign_keys=[organization_id]
+        "Organization", foreign_keys=[organization_id], back_populates="methodology_packs"
     )
     projects: Mapped[list["Project"]] = relationship(back_populates="methodology_pack")
     approver: Mapped[Optional["User"]] = relationship(

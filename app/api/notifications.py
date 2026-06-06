@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.deps import get_current_user
-from app.models.notification import Notification
+from app.models.notification import Notification, NotificationStatus
 from app.models.users import User
 
 router = APIRouter(prefix="/notifications", tags=["notifications"])
@@ -17,17 +17,17 @@ def list_notifications(
     current_user: User = Depends(get_current_user),
 ):
     """Return the current user's web-channel notifications, newest first."""
-    q = db.query(Notification).filter_by(user_id=current_user.id)
+    q = db.query(Notification).filter_by(recipient_user_id=current_user.id)
     if unread_only:
-        q = q.filter_by(is_read=False)
+        q = q.filter(Notification.status != NotificationStatus.read.value)
     items = q.order_by(Notification.created_at.desc()).limit(50).all()
     return [
         {
             "id": n.id,
-            "event_type": n.event_type,
+            "kind": n.kind,
             "message": n.message,
             "payload": n.payload,
-            "is_read": n.is_read,
+            "status": n.status,
             "project_id": n.project_id,
             "created_at": n.created_at.isoformat() if n.created_at else None,
         }
@@ -43,12 +43,12 @@ def mark_read(
 ):
     """Mark a notification as read."""
     notif = db.get(Notification, notification_id)
-    if notif is None or notif.user_id != current_user.id:
+    if notif is None or notif.recipient_user_id != current_user.id:
         from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Notification not found")
-    notif.is_read = True
+    notif.status = NotificationStatus.read.value
     db.commit()
-    return {"id": notification_id, "is_read": True}
+    return {"id": notification_id, "status": "read"}
 
 
 @router.post("/read-all")
@@ -57,8 +57,9 @@ def mark_all_read(
     current_user: User = Depends(get_current_user),
 ):
     """Mark all web-channel notifications as read for the current user."""
-    db.query(Notification).filter_by(user_id=current_user.id, is_read=False).update(
-        {"is_read": True}
-    )
+    db.query(Notification).filter(
+        Notification.recipient_user_id == current_user.id,
+        Notification.status != NotificationStatus.read.value,
+    ).update({"status": NotificationStatus.read.value})
     db.commit()
     return {"marked_read": True}

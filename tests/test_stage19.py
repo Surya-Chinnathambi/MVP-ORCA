@@ -90,7 +90,7 @@ def project_fixture(db):
 def test_all_five_work_modes_seeded(db):
     """All 5 standard work modes must exist in the DB after seeding."""
     session, _ = db
-    names = {m.name for m in session.query(WorkMode).all()}
+    names = {m.key for m in session.query(WorkMode).all()}
     expected = {m.value for m in WorkModeName}
     assert expected.issubset(names), f"Missing modes: {expected - names}"
 
@@ -105,7 +105,7 @@ def test_analyst_context_includes_findings_excludes_approvals(db, project_fixtur
     assert "findings" in ctx["active_filters"] or "findings" in ctx or True  # view key is present
     assert ctx["work_mode"] == "analyst"
     # findings is in analyst allowed_views; pending_approvals is not
-    analyst_mode = session.query(WorkMode).filter_by(name="analyst").first()
+    analyst_mode = session.query(WorkMode).filter_by(key="analyst").first()
     assert "findings" in analyst_mode.allowed_views
     assert "evidence_items" in analyst_mode.allowed_views
     assert "pending_approvals" not in analyst_mode.allowed_views
@@ -118,7 +118,7 @@ def test_pm_context_includes_approvals_and_gates(db, project_fixture):
     ctx = resolve_context(session, user_id, project_fixture.id, "pm")
 
     assert ctx["work_mode"] == "pm"
-    pm_mode = session.query(WorkMode).filter_by(name="pm").first()
+    pm_mode = session.query(WorkMode).filter_by(key="pm").first()
     assert "pending_approvals" in pm_mode.allowed_views
     assert "gates" in pm_mode.allowed_views
     # analyst-specific views should NOT be in PM
@@ -143,7 +143,7 @@ def test_client_contributor_cannot_see_internal_fields(db, project_fixture):
 def test_client_contributor_allowed_views_subset_only(db, project_fixture):
     """client_contributor should see only: phase, open_tasks, pending_evidence_requests."""
     session, user_id = db
-    mode = session.query(WorkMode).filter_by(name="client_contributor").first()
+    mode = session.query(WorkMode).filter_by(key="client_contributor").first()
     allowed = set(mode.allowed_views)
     assert allowed == {"phase", "open_tasks", "pending_evidence_requests"}
 

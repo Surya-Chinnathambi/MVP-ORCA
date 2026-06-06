@@ -40,7 +40,7 @@ def resolve_context(
     except ValueError:
         raise ValueError(f"Unknown work mode: {work_mode_name!r}")
 
-    mode = db.query(WorkMode).filter_by(name=work_mode_name).first()
+    mode = db.query(WorkMode).filter_by(key=work_mode_name).first()
     if mode is None:
         raise ValueError(f"WorkMode {work_mode_name!r} not seeded in database")
 
@@ -105,11 +105,11 @@ def seed_work_modes(db: Session) -> int:
     from app.models.workmode import WORK_MODE_SEEDS
     inserted = 0
     for seed in WORK_MODE_SEEDS:
-        exists = db.query(WorkMode).filter_by(name=seed["name"]).first()
+        exists = db.query(WorkMode).filter_by(key=seed["key"]).first()
         if exists is None:
             db.add(WorkMode(
-                name=seed["name"],
-                display_name=seed["display_name"],
+                key=seed["key"],
+                title=seed["title"],
                 allowed_views=seed["allowed_views"],
                 default_filters=seed["default_filters"],
             ))

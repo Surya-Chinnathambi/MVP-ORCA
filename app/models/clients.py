@@ -27,7 +27,7 @@ class ServiceType(str, enum.Enum):
 class Client(TimestampMixin, Base):
     __tablename__ = "clients"
 
-    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    entity_name: Mapped[str] = mapped_column(String(255), nullable=False)
     sector: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     contacts: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
     business_units: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)

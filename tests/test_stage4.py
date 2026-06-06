@@ -234,7 +234,7 @@ def test_api_get_pack(client):
 
 def test_api_generate_plan(client, SessionTest):
     # Create a project with pack_id set via PATCH
-    c_resp = client.post("/clients/", json={"name": "API Plan Corp"})
+    c_resp = client.post("/clients/", json={"entity_name": "\1"})
     cid = c_resp.json()["id"]
     p_resp = client.post("/projects/", json={"client_id": cid, "service_type": "dpdp"})
     pid = p_resp.json()["id"]
@@ -254,7 +254,7 @@ def test_api_generate_plan(client, SessionTest):
 
 
 def test_api_plan_no_pack_id(client):
-    c_resp = client.post("/clients/", json={"name": "No Pack Corp"})
+    c_resp = client.post("/clients/", json={"entity_name": "\1"})
     cid = c_resp.json()["id"]
     p_resp = client.post("/projects/", json={"client_id": cid, "service_type": "dpdp"})
     pid = p_resp.json()["id"]

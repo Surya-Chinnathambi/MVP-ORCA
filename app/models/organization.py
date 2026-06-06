@@ -8,6 +8,7 @@ from app.models.base import TimestampMixin
 
 if TYPE_CHECKING:
     from app.models.clients import Client
+    from app.models.methodology import MethodologyPack
 
 
 class Organization(TimestampMixin, Base):
@@ -18,3 +19,6 @@ class Organization(TimestampMixin, Base):
     settings: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
 
     clients: Mapped[list["Client"]] = relationship(back_populates="organization")
+    methodology_packs: Mapped[list["MethodologyPack"]] = relationship(
+        "MethodologyPack", back_populates="organization"
+    )

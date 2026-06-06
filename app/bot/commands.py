@@ -59,7 +59,7 @@ async def cmd_status(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
             .count()
         )
 
-        client_name = project.client.name if project.client else "—"
+        client_name = project.client.entity_name if project.client else "—"
         lines = [
             f"Project: {project_id}",
             f"Client:  {client_name}",

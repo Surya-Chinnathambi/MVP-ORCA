@@ -17,6 +17,8 @@ from app.models.notification import (
     INTERNAL_ONLY_PAYLOAD_KEYS,
     Notification,
     NotificationChannel,
+    NotificationKind,
+    NotificationStatus,
 )
 
 # ── Queue factory (tests monkeypatch this) ────────────────────────────────────
@@ -58,7 +60,7 @@ def filter_payload(payload: dict, is_contributor: bool) -> dict:
 def notify(
     db: Session,
     user_id: str,
-    event_type: str,
+    kind: str,
     payload: Optional[dict] = None,
     *,
     project_id: Optional[str] = None,
@@ -77,13 +79,13 @@ def notify(
     safe_payload = filter_payload(payload or {}, is_contrib)
 
     notif = Notification(
-        user_id=user_id,
-        event_type=event_type,
+        recipient_user_id=user_id,
+        kind=kind,
         channel=NotificationChannel.web.value,
         payload=safe_payload,
         project_id=project_id,
         message=message,
-        is_read=False,
+        status=NotificationStatus.pending.value,
     )
     db.add(notif)
     db.flush()

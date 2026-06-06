@@ -408,7 +408,7 @@ def run_pilot() -> None:
     db.add(org); db.flush()
     client = Client(name="TechGuard Demo Corp", sector="technology", organization_id=org.id)
     db.add(client); db.commit(); db.refresh(client)
-    print(f"  Admin: {admin.email}  |  Client: {client.name}")
+    print(f"  Admin: {admin.email}  |  Client: {client.entity_name}")
 
     _OUTPUT.mkdir(parents=True, exist_ok=True)
 

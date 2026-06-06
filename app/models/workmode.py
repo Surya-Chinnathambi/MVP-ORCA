@@ -24,8 +24,8 @@ class WorkModeName(str, enum.Enum):
 
 WORK_MODE_SEEDS: list[dict] = [
     {
-        "name": "pm",
-        "display_name": "Project Manager",
+        "key": "pm",
+        "title": "Project Manager",
         "allowed_views": [
             "phase", "open_tasks", "pending_approvals",
             "pending_evidence_requests", "progress", "gates", "active_pack",
@@ -33,8 +33,8 @@ WORK_MODE_SEEDS: list[dict] = [
         "default_filters": {"task_status": "open"},
     },
     {
-        "name": "analyst",
-        "display_name": "Analyst",
+        "key": "analyst",
+        "title": "Analyst",
         "allowed_views": [
             "phase", "open_tasks", "pending_evidence_requests",
             "progress", "active_pack", "findings", "evidence_items", "scope_items",
@@ -42,16 +42,16 @@ WORK_MODE_SEEDS: list[dict] = [
         "default_filters": {"finding_status": "open"},
     },
     {
-        "name": "reviewer",
-        "display_name": "Reviewer",
+        "key": "reviewer",
+        "title": "Reviewer",
         "allowed_views": [
             "phase", "findings", "evidence_items", "deliverables", "progress", "gates",
         ],
         "default_filters": {"evidence_reviewer_status": "pending"},
     },
     {
-        "name": "deliverable_builder",
-        "display_name": "Deliverable Builder",
+        "key": "deliverable_builder",
+        "title": "Deliverable Builder",
         "allowed_views": [
             "phase", "deliverables", "progress", "gates", "findings",
             "evidence_items", "active_pack",
@@ -59,8 +59,8 @@ WORK_MODE_SEEDS: list[dict] = [
         "default_filters": {"evidence_lifecycle_state": "classified"},
     },
     {
-        "name": "client_contributor",
-        "display_name": "Client Contributor",
+        "key": "client_contributor",
+        "title": "Client Contributor",
         "allowed_views": [
             "phase", "open_tasks", "pending_evidence_requests",
         ],
@@ -78,8 +78,8 @@ CLIENT_CONTRIBUTOR_STRIP_KEYS = frozenset({
 class WorkMode(TimestampMixin, Base):
     __tablename__ = "work_modes"
 
-    name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
-    display_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    key: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
+    title: Mapped[str] = mapped_column(String(100), nullable=False)
     allowed_views: Mapped[list] = mapped_column(JSON, nullable=False, default=list)
     default_filters: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
 

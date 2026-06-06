@@ -49,7 +49,7 @@ class User(TimestampMixin, Base):
     # Stage 21 — MFA fields
     mfa_secret: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)
     mfa_enabled: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
-    mfa_recovery_hashes: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)
+    recovery_codes: Mapped[Optional[list]] = mapped_column(JSON, nullable=True)
 
     permissions: Mapped[list["Permission"]] = relationship(
         back_populates="user", cascade="all, delete-orphan"

@@ -94,9 +94,6 @@ class EvidenceItem(TimestampMixin, Base):
     internal_lifecycle_state: Mapped[str] = mapped_column(
         String(50), default=EvidenceLifecycleState.intake.value, nullable=False
     )
-    supersedes_id: Mapped[Optional[str]] = mapped_column(
-        String(36), ForeignKey("evidence_items.id"), nullable=True
-    )
 
     project: Mapped["Project"] = relationship(back_populates="evidence_items")
     evidence_request: Mapped[Optional["EvidenceRequest"]] = relationship(
@@ -106,9 +103,6 @@ class EvidenceItem(TimestampMixin, Base):
         back_populates="evidence_item",
         foreign_keys="EvidenceLifecycleEvent.evidence_item_id",
         cascade="all, delete-orphan",
-    )
-    supersedes: Mapped[Optional["EvidenceItem"]] = relationship(
-        "EvidenceItem", remote_side="EvidenceItem.id", foreign_keys=[supersedes_id]
     )
 
 
@@ -125,6 +119,9 @@ class EvidenceLifecycleEvent(TimestampMixin, Base):
         String(36), ForeignKey("users.id"), nullable=True
     )
     reason: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    supersedes_id: Mapped[Optional[str]] = mapped_column(
+        String(36), ForeignKey("evidence_items.id"), nullable=True
+    )
     ts: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=_utcnow, nullable=False
     )
@@ -135,3 +132,6 @@ class EvidenceLifecycleEvent(TimestampMixin, Base):
         foreign_keys=[evidence_item_id],
     )
     actor: Mapped[Optional["User"]] = relationship("User", foreign_keys=[actor_id])
+    supersedes: Mapped[Optional["EvidenceItem"]] = relationship(
+        "EvidenceItem", foreign_keys=[supersedes_id]
+    )

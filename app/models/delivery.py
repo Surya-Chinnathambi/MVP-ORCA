@@ -25,6 +25,7 @@ class DeliverableKind(str, enum.Enum):
     advisory_clinic_deck = "advisory_clinic_deck"
     management_summary = "management_summary"
     client_action_plan = "client_action_plan"
+    evidence_matrix = "evidence_matrix"
 
 
 class AdvisoryClinic(TimestampMixin, Base):

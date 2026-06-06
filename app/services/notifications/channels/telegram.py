@@ -21,7 +21,7 @@ def send_telegram(notification: Notification, chat_id: str) -> None:
         return
 
     text = notification.message or (
-        f"[{notification.event_type}] {notification.payload or ''}"
+        f"[{notification.kind}] {notification.payload or ''}"
     )
 
     try:

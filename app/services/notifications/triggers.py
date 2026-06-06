@@ -51,8 +51,8 @@ def on_approval_needed(db: Session, approval_request_id: str) -> list[str]:
         notify(
             db,
             perm.user_id,
-            "approval_needed",
-            payload,
+            kind="approval_needed",
+            payload=payload,
             project_id=approval.project_id,
             message=f"Approval required: {approval.target_type} — {approval.reason}",
         )
@@ -91,8 +91,8 @@ def on_evidence_request_deadline(db: Session, evidence_request_id: str) -> None:
     notify(
         db,
         recipient_id,
-        "evidence_request_reminder",
-        payload,
+        kind="evidence_reminder",
+        payload=payload,
         project_id=er.project_id,
         message=f"Evidence request '{er.title}' deadline approaching.",
     )
@@ -130,8 +130,8 @@ def on_finding_status_change(
     notify(
         db,
         project.owner_id,
-        "finding_status_change",
-        payload,
+        kind="finding_status",
+        payload=payload,
         project_id=finding.project_id,
         message=f"Finding '{finding.title}' changed from {old_status} → {new_status}.",
     )
@@ -150,8 +150,8 @@ def on_project_deadline(db: Session, project_id: str) -> None:
     notify(
         db,
         project.owner_id,
-        "deadline",
-        {"project_id": project_id},
+        kind="deadline",
+        payload={"project_id": project_id},
         project_id=project_id,
         message="Project deadline is approaching.",
     )
@@ -190,8 +190,8 @@ def _deliver_status_summary(project_id: str, user_id: str) -> None:
         notify(
             db,
             user_id,
-            "scheduled_status_summary",
-            {"project_id": project_id},
+            kind="status_summary",
+            payload={"project_id": project_id},
             project_id=project_id,
             message="Scheduled status summary for your project.",
         )

@@ -87,7 +87,7 @@ def run_pilot() -> None:
     db.add(project)
     db.commit()
     db.refresh(project)
-    print(f"  Client:      {client.name}")
+    print(f"  Client:      {client.entity_name}")
     print(f"  Project id:  {project.id[:8]}…  type={project.service_type}")
 
     # ── 2. Scope + Gate G1 ────────────────────────────────────────────────────

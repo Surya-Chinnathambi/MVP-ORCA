@@ -5,7 +5,7 @@ from pydantic import BaseModel, ConfigDict
 
 
 class ClientCreate(BaseModel):
-    name: str
+    entity_name: str
     sector: Optional[str] = None
     contacts: Optional[Any] = None
     business_units: Optional[Any] = None
@@ -14,7 +14,7 @@ class ClientCreate(BaseModel):
 
 
 class ClientUpdate(BaseModel):
-    name: Optional[str] = None
+    entity_name: Optional[str] = None
     sector: Optional[str] = None
     contacts: Optional[Any] = None
     business_units: Optional[Any] = None
@@ -26,7 +26,7 @@ class ClientOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: str
-    name: str
+    entity_name: str
     sector: Optional[str]
     contacts: Optional[Any]
     business_units: Optional[Any]

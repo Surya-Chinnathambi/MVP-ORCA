@@ -73,13 +73,13 @@ def client(seeded_db, SessionTest):
 
 def test_create_client(client):
     resp = client.post("/clients/", json={
-        "name": "Acme Finance",
+        "entity_name": "Acme Finance",
         "sector": "banking",
         "contacts": [{"name": "Priya", "email": "priya@acme.local"}],
     })
     assert resp.status_code == 201
     data = resp.json()
-    assert data["name"] == "Acme Finance"
+    assert data["entity_name"] == "Acme Finance"
     assert data["sector"] == "banking"
     assert data["contacts"][0]["name"] == "Priya"
 
@@ -91,7 +91,7 @@ def test_list_clients(client):
 
 
 def test_update_client(client):
-    r = client.post("/clients/", json={"name": "Temp Corp"})
+    r = client.post("/clients/", json={"entity_name": "Temp Corp"})
     assert r.status_code == 201
     cid = r.json()["id"]
     resp = client.patch(f"/clients/{cid}", json={"regulatory_context": "DPDP Act 2023"})
@@ -101,7 +101,7 @@ def test_update_client(client):
 
 def test_create_project(client):
     # Create client first
-    c_resp = client.post("/clients/", json={"name": "Project Owner Corp"})
+    c_resp = client.post("/clients/", json={"entity_name": "Project Owner Corp"})
     cid = c_resp.json()["id"]
 
     resp = client.post("/projects/", json={
@@ -124,7 +124,7 @@ def test_project_not_found(client):
 
 def test_scope_item_starts_unapproved(client, SessionTest):
     """Add an exclusion scope item — must start unapproved, return ApprovalRequest."""
-    c_resp = client.post("/clients/", json={"name": "Scope Test Corp"})
+    c_resp = client.post("/clients/", json={"entity_name": "Scope Test Corp"})
     cid = c_resp.json()["id"]
     p_resp = client.post("/projects/", json={"client_id": cid, "service_type": "dpdp"})
     pid = p_resp.json()["id"]
@@ -149,7 +149,7 @@ def test_scope_item_starts_unapproved(client, SessionTest):
 
 def test_approve_scope_item_via_gateway(client, SessionTest):
     """Decide an approval → scope_item.approved flips True + audit event written."""
-    c_resp = client.post("/clients/", json={"name": "Gate Corp"})
+    c_resp = client.post("/clients/", json={"entity_name": "Gate Corp"})
     cid = c_resp.json()["id"]
     p_resp = client.post("/projects/", json={"client_id": cid, "service_type": "vapt"})
     pid = p_resp.json()["id"]
@@ -188,7 +188,7 @@ def test_approve_scope_item_via_gateway(client, SessionTest):
 
 def test_reject_scope_item(client, SessionTest):
     """Reject a scope item — approved stays False."""
-    c_resp = client.post("/clients/", json={"name": "Reject Corp"})
+    c_resp = client.post("/clients/", json={"entity_name": "Reject Corp"})
     cid = c_resp.json()["id"]
     p_resp = client.post("/projects/", json={"client_id": cid, "service_type": "dpdp"})
     pid = p_resp.json()["id"]
@@ -214,7 +214,7 @@ def test_reject_scope_item(client, SessionTest):
 
 def test_double_decide_rejected(client):
     """Deciding an already-decided approval returns 400."""
-    c_resp = client.post("/clients/", json={"name": "DD Corp"})
+    c_resp = client.post("/clients/", json={"entity_name": "DD Corp"})
     cid = c_resp.json()["id"]
     p_resp = client.post("/projects/", json={"client_id": cid, "service_type": "dpdp"})
     pid = p_resp.json()["id"]
@@ -228,7 +228,7 @@ def test_double_decide_rejected(client):
 
 
 def test_list_approvals_filter_by_project(client):
-    c_resp = client.post("/clients/", json={"name": "Filter Corp"})
+    c_resp = client.post("/clients/", json={"entity_name": "Filter Corp"})
     cid = c_resp.json()["id"]
     p_resp = client.post("/projects/", json={"client_id": cid, "service_type": "dpdp"})
     pid = p_resp.json()["id"]

@@ -44,7 +44,7 @@ def enroll_mfa(
     current_user.mfa_secret = secret
 
     codes = generate_recovery_codes()
-    current_user.mfa_recovery_hashes = [hash_recovery_code(c) for c in codes]
+    current_user.recovery_codes = [hash_recovery_code(c) for c in codes]
     db.commit()
 
     uri = totp_provisioning_uri(secret, current_user.email)
@@ -80,7 +80,7 @@ def disable_mfa(
         raise HTTPException(status_code=401, detail="Invalid TOTP token")
     current_user.mfa_enabled = False
     current_user.mfa_secret = None
-    current_user.mfa_recovery_hashes = None
+    current_user.recovery_codes = None
     db.commit()
     return {"mfa_enabled": False}
 
@@ -91,5 +91,5 @@ def mfa_status(current_user: User = Depends(get_current_user)):
     return {
         "mfa_enrolled": current_user.mfa_secret is not None,
         "mfa_enabled": current_user.mfa_enabled,
-        "recovery_codes_remaining": len(current_user.mfa_recovery_hashes or []),
+        "recovery_codes_remaining": len(current_user.recovery_codes or []),
     }

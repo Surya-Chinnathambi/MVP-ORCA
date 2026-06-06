@@ -12,7 +12,7 @@ Allowed transitions:
   delivered  → archived    (archive_evidence)
 
 supersede_evidence() creates a replacement item that retains the old item in the DB
-with supersedes_id pointing back to it.
+with supersedes_id recorded on the EvidenceLifecycleEvent.
 """
 from __future__ import annotations
 
@@ -177,10 +177,8 @@ def supersede_evidence(
 ) -> EvidenceItem:
     """Create a replacement EvidenceItem that supersedes old_item_id.
 
-    The old item is retained (not deleted). The new item:
-    - has supersedes_id = old_item_id
-    - inherits evidence_request_id from the old item
-    - starts at internal_lifecycle_state=intake
+    The old item is retained (not deleted). A lifecycle event records supersedes_id.
+    The new item inherits evidence_request_id from the old item.
     """
     from app.services.evidence.ingest import ingest_file
 
@@ -193,5 +191,14 @@ def supersede_evidence(
         evidence_request_id=old_item.evidence_request_id,
         uploaded_by_id=actor_id,
     )
-    new_item.supersedes_id = old_item_id
+    # Record the supersession chain on the lifecycle event
+    event = EvidenceLifecycleEvent(
+        evidence_item_id=new_item.id,
+        from_state=EvidenceLifecycleState.intake.value,
+        to_state=EvidenceLifecycleState.intake.value,
+        actor_id=actor_id,
+        reason=f"supersedes item {old_item_id}",
+        supersedes_id=old_item_id,
+    )
+    db.add(event)
     return new_item

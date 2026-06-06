@@ -28,7 +28,7 @@ def send_email(notification: Notification, recipient_email: str) -> None:
     password = getattr(settings, "smtp_password", "")
     from_addr = getattr(settings, "smtp_from", user)
 
-    subject = f"[TG Audit] {notification.event_type.replace('_', ' ').title()}"
+    subject = f"[TG Audit] {notification.kind.replace('_', ' ').title()}"
     body = notification.message or str(notification.payload or "")
 
     msg = MIMEText(body, "plain")

@@ -37,11 +37,11 @@ def list_work_modes(
     _: User = Depends(get_current_user),
 ):
     """Return all configured work modes with allowed_views and default_filters."""
-    modes = db.query(WorkMode).order_by(WorkMode.name).all()
+    modes = db.query(WorkMode).order_by(WorkMode.key).all()
     return [
         {
-            "name": m.name,
-            "display_name": m.display_name,
+            "key": m.key,
+            "title": m.title,
             "allowed_views": m.allowed_views,
             "default_filters": m.default_filters,
         }

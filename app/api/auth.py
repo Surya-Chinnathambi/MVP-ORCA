@@ -79,13 +79,13 @@ def login(body: LoginWithMFARequest, request: Request, db: Session = Depends(get
             if not verify_totp(user.mfa_secret, body.totp_token):
                 raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid TOTP token")
         elif body.recovery_code:
-            hashes = list(user.mfa_recovery_hashes or [])
+            hashes = list(user.recovery_codes or [])
             idx = verify_recovery_code(hashes, body.recovery_code)
             if idx is None:
                 raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid recovery code")
             # Consume the recovery code
             hashes.pop(idx)
-            user.mfa_recovery_hashes = hashes
+            user.recovery_codes = hashes
             db.commit()
         else:
             raise HTTPException(

@@ -151,13 +151,13 @@ def test_approval_needed_notifies_right_approver_only(db, project_fixture):
     # All new notifications must be event_type=approval_needed
     new_notifs = (
         session.query(Notification)
-        .filter_by(event_type="approval_needed")
+        .filter_by(kind="approval_needed")
         .order_by(Notification.created_at.desc())
         .limit(after_count - before_count)
         .all()
     )
     for n in new_notifs:
-        assert n.event_type == "approval_needed"
+        assert n.kind == "approval_needed"
 
 
 # ── Deadline reminder fires ───────────────────────────────────────────────────
@@ -176,15 +176,15 @@ def test_deadline_reminder_creates_notification(db, project_fixture):
     session.commit()
     session.refresh(er)
 
-    before = session.query(Notification).filter_by(user_id=analyst_id).count()
+    before = session.query(Notification).filter_by(recipient_user_id=analyst_id).count()
     on_evidence_request_deadline(session, er.id)
     session.commit()
-    after = session.query(Notification).filter_by(user_id=analyst_id).count()
+    after = session.query(Notification).filter_by(recipient_user_id=analyst_id).count()
 
     assert after > before, "Deadline reminder must create a notification for the ER owner"
     last = (
         session.query(Notification)
-        .filter_by(user_id=analyst_id, event_type="evidence_request_reminder")
+        .filter_by(recipient_user_id=analyst_id, kind="evidence_reminder")
         .order_by(Notification.created_at.desc())
         .first()
     )
@@ -221,7 +221,7 @@ def test_deadline_reminder_via_rq_sync(db, project_fixture):
     original_sl = jobs_mod.SessionLocal if hasattr(jobs_mod, 'SessionLocal') else None
 
     before = session.query(Notification).filter_by(
-        user_id=analyst_id, event_type="evidence_request_reminder"
+        recipient_user_id=analyst_id, kind="evidence_reminder"
     ).count()
 
     # Execute synchronously via is_async=False
@@ -286,7 +286,7 @@ def test_non_contributor_payload_passed_through_intact(db, project_fixture):
     notif = notify(
         session,
         analyst_id,
-        "finding_status_change",
+        "finding_status",
         payload,
         project_id=project_fixture.id,
     )
