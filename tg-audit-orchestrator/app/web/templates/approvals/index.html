@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Approvals{% endblock %}
+{% block content %}
+<h1 class="text-2xl font-bold text-gray-800 mb-6">Approval Queue</h1>
+
+{% if approvals %}
+<div class="space-y-4">
+  {% for a in approvals %}
+  <div id="approval-{{ a.id }}" class="bg-white rounded-lg shadow p-5">
+    <div class="flex items-start justify-between">
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2 mb-1">
+          <span class="px-2 py-0.5 rounded bg-yellow-100 text-yellow-700 text-xs font-medium">pending</span>
+          <span class="text-xs text-gray-400">{{ a.target_type }} / {{ a.target_id[:8] }}…</span>
+          <span class="text-xs text-gray-400">{{ a.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+        </div>
+        <p class="font-medium text-gray-800">{{ a.reason }}</p>
+        <p class="text-xs text-gray-500 mt-1">Approver role: <strong>{{ a.approver_role }}</strong></p>
+        {% if a.change_before or a.change_after %}
+        <div class="mt-2 grid grid-cols-2 gap-3 text-xs">
+          <div class="bg-red-50 rounded p-2">
+            <div class="font-medium text-gray-500 mb-1">Before</div>
+            <code>{{ a.change_before | tojson if a.change_before else "—" }}</code>
+          </div>
+          <div class="bg-green-50 rounded p-2">
+            <div class="font-medium text-gray-500 mb-1">After</div>
+            <code>{{ a.change_after | tojson if a.change_after else "—" }}</code>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    <!-- Approve / Reject forms -->
+    <div class="flex gap-3 mt-4">
+      <form action="/ui/approvals/{{ a.id }}/approve" method="post"
+        hx-post="/ui/approvals/{{ a.id }}/approve" hx-target="#approval-{{ a.id }}" hx-swap="outerHTML">
+        <button type="submit"
+          class="bg-green-600 hover:bg-green-700 text-white px-4 py-1.5 rounded text-sm font-medium">
+          Approve
+        </button>
+      </form>
+      <form action="/ui/approvals/{{ a.id }}/reject" method="post"
+        hx-post="/ui/approvals/{{ a.id }}/reject" hx-target="#approval-{{ a.id }}" hx-swap="outerHTML"
+        class="flex gap-2">
+        <input type="text" name="reason" placeholder="Rejection reason"
+          class="border rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-300 w-48">
+        <button type="submit"
+          class="bg-red-500 hover:bg-red-600 text-white px-4 py-1.5 rounded text-sm font-medium">
+          Reject
+        </button>
+      </form>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="bg-white rounded-lg shadow p-8 text-center text-gray-500">
+  No pending approvals. All clear!
+</div>
+{% endif %}
+{% endblock %}

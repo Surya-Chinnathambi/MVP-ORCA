@@ -1,0 +1,5 @@
+# targets.txt — TG-PTE-Jun2026-Orc | 2026-06-05
+# 10.10.9.1  : explicitly provided in scope (seed IP)
+# 44.228.249.3 : testphp.vulnweb.com resolved A record
+10.10.9.1
+44.228.249.3

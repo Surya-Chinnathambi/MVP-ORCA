@@ -1,0 +1,62 @@
+{
+  "key": "nist",
+  "title": "NIST Cybersecurity Framework 2.0",
+  "version": "2.0",
+  "controls": [
+    {
+      "id": "NIST-GV.OC",
+      "title": "Organisational Context",
+      "text": "The organisational mission is understood and informs cybersecurity risk management; stakeholders with cybersecurity-related expectations are identified and understood.",
+      "evidence_expectation": "Mission statement with cybersecurity context; stakeholder register; executive risk appetite statement",
+      "assessment_procedure": "Review board/executive risk appetite; verify cybersecurity aligned to business mission",
+      "risk_theme": "governance",
+      "related_frameworks": ["iso_27001"],
+      "cross_framework_refs": {},
+      "applicable_packs": []
+    },
+    {
+      "id": "NIST-ID.AM",
+      "title": "Asset Management",
+      "text": "Assets (data, hardware, software, systems, facilities, services, people) that enable the organisation to achieve business purposes are identified and managed consistent with their relative importance to organisational objectives and the organisation's risk strategy.",
+      "evidence_expectation": "Asset inventory; data classification scheme; CMDB or equivalent",
+      "assessment_procedure": "Review asset inventory completeness; verify data classified; check ownership assigned",
+      "risk_theme": "asset_management",
+      "related_frameworks": ["iso_27001", "iso_27002"],
+      "cross_framework_refs": {},
+      "applicable_packs": []
+    },
+    {
+      "id": "NIST-PR.AC",
+      "title": "Identity Management and Access Control",
+      "text": "Access to physical and logical assets is limited to authorised users, services, and hardware and managed commensurate with the assessed risk of unauthorised access.",
+      "evidence_expectation": "IAM policy; MFA enrollment records; access review results; PAM evidence",
+      "assessment_procedure": "Verify MFA enforced for privileged and remote access; check access reviewed quarterly",
+      "risk_theme": "access_control",
+      "related_frameworks": ["iso_27001", "iso_27002"],
+      "cross_framework_refs": {},
+      "applicable_packs": []
+    },
+    {
+      "id": "NIST-DE.CM",
+      "title": "Continuous Monitoring",
+      "text": "The organisation monitors assets and network infrastructure for cybersecurity anomalies and indicators of potential cybersecurity events.",
+      "evidence_expectation": "SIEM deployment evidence; alerting runbooks; SOC coverage schedule",
+      "assessment_procedure": "Verify 24/7 monitoring coverage; check alerting tuned; review false-positive rate management",
+      "risk_theme": "monitoring",
+      "related_frameworks": ["iso_27002"],
+      "cross_framework_refs": {},
+      "applicable_packs": []
+    },
+    {
+      "id": "NIST-RS.MA",
+      "title": "Incident Management",
+      "text": "Responses to detected cybersecurity incidents are managed and executed in accordance with the incident management strategy.",
+      "evidence_expectation": "Incident response plan; tabletop exercise records; incident register",
+      "assessment_procedure": "Review IRP currency; verify tabletop held within 12 months; check incidents closed with lessons learned",
+      "risk_theme": "incident_response",
+      "related_frameworks": ["iso_27001", "eu_gdpr"],
+      "cross_framework_refs": {"eu_gdpr": ["GDPR-ART33"]},
+      "applicable_packs": []
+    }
+  ]
+}

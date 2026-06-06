@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Scan {{ job.id[:8] }}{% endblock %}
+{% block content %}
+<div class="mb-2 text-sm text-gray-500">
+  <a href="/ui/projects/{{ project.id }}/scans" class="hover:underline">← Scans</a>
+</div>
+
+<!-- Header -->
+<div class="flex items-center justify-between mb-4">
+  <div>
+    <h1 class="text-xl font-bold text-gray-800">
+      Scan <span class="font-mono">{{ job.id[:8] }}…</span>
+    </h1>
+    <p class="text-sm text-gray-500">
+      Target: <span class="font-mono font-medium">{{ job.host }}</span>
+      · Phases: {{ job.phases | join(', ') if job.phases else '—' }}
+      · Tier: {{ job.tier }}
+    </p>
+  </div>
+  {% set sc = {
+    'queued':    ('bg-gray-100 text-gray-600',    '⏳ Queued'),
+    'running':   ('bg-yellow-100 text-yellow-700','⟳ Running'),
+    'completed': ('bg-green-100 text-green-700',  '✓ Completed'),
+    'failed':    ('bg-red-100 text-red-600',      '✗ Failed'),
+  } %}
+  {% set cls, label = sc.get(job.status, ('', job.status)) %}
+  <span class="px-3 py-1 rounded-full text-sm font-semibold {{ cls }}" id="status-badge">
+    {{ label }}
+  </span>
+</div>
+
+<!-- Live status card — fragment handles its own HTMX polling -->
+{% set active = job.status in ('queued', 'running') %}
+{% include "projects/scan_status_fragment.html" %}
+{% endblock %}

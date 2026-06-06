@@ -1,0 +1,47 @@
+{% extends "portal/base.html" %}
+{% block title %}Tasks — Client Portal{% endblock %}
+{% block content %}
+<div class="max-w-3xl">
+  <h1 class="text-2xl font-bold text-blue-900 mb-1">Assigned Tasks</h1>
+  <p class="text-gray-500 mb-6">Tasks that require your input or sign-off. Use comments to communicate with the team.</p>
+
+  {% if tasks %}
+  <div class="space-y-4">
+    {% for t in tasks %}
+    <div class="bg-white rounded-lg shadow p-5">
+      <div class="flex items-start justify-between">
+        <div>
+          <h3 class="font-semibold text-gray-800">{{ t.title }}</h3>
+          <div class="text-xs text-gray-500 mt-0.5">Kind: {{ t.kind }} · Status: {{ t.status }}</div>
+        </div>
+        <span class="text-xs px-2 py-0.5 rounded font-semibold
+          {% if t.status in ('complete',) %}bg-green-100 text-green-800
+          {% elif t.status in ('in_progress', 'review') %}bg-blue-100 text-blue-800
+          {% elif t.status == 'blocked' %}bg-red-100 text-red-800
+          {% else %}bg-gray-100 text-gray-600{% endif %}">
+          {{ t.status | upper }}
+        </span>
+      </div>
+      <form action="/portal/tasks/{{ t.id }}/comment" method="post" class="mt-3"
+            hx-post="/portal/tasks/{{ t.id }}/comment"
+            hx-target="find .comment-feedback"
+            hx-swap="innerHTML">
+        <textarea name="comment" rows="2" placeholder="Add a comment…"
+                  class="w-full border rounded px-3 py-2 text-sm resize-none"
+                  required></textarea>
+        <div class="flex items-center gap-3 mt-2">
+          <button type="submit"
+                  class="bg-blue-700 text-white px-4 py-1.5 rounded hover:bg-blue-800 text-sm font-medium">
+            Comment
+          </button>
+          <span class="comment-feedback text-xs text-green-700"></span>
+        </div>
+      </form>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="text-gray-400 italic">No tasks assigned to your team at this time.</p>
+  {% endif %}
+</div>
+{% endblock %}

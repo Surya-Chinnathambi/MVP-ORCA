@@ -1,0 +1,22 @@
+{
+  "key": "vapt",
+  "title": "VAPT Combined Framework",
+  "version": "2024",
+  "components": [
+    {"key": "owasp_wstg",  "title": "OWASP Web Security Testing Guide", "version": "4.2"},
+    {"key": "owasp_api10", "title": "OWASP API Security Top 10",        "version": "2023"},
+    {"key": "ptes",        "title": "Penetration Testing Execution Standard", "version": "1.1"}
+  ],
+  "categories": {
+    "recon":          "Information gathering and target enumeration",
+    "config":         "Configuration and deployment management",
+    "auth":           "Authentication mechanism testing",
+    "authz":          "Authorization and access control",
+    "input":          "Input validation — injection, XSS, deserialization",
+    "session":        "Session management and token security",
+    "crypto":         "Cryptography and TLS configuration",
+    "api":            "API-specific security (OWASP API10)",
+    "business_logic": "Business logic flaws and workflow abuse",
+    "infra":          "Infrastructure and network-level findings"
+  }
+}

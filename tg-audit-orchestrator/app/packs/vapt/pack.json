@@ -1,0 +1,147 @@
+{
+  "key": "vapt",
+  "title": "VAPT Assessment Pack",
+  "frameworks": ["owasp_asvs", "owasp_wstg", "owasp_api10", "ptes", "nist"],
+  "intake_questions": [
+    {"id": "q1", "text": "List all in-scope IP ranges, domains, and applications"},
+    {"id": "q2", "text": "What is the authentication model (SSO, OAuth2, API keys, basic auth)?"},
+    {"id": "q3", "text": "Are there any WAF, IDS/IPS, or rate-limiting controls in front of targets?"},
+    {"id": "q4", "text": "What is the testing window (start datetime, end datetime, timezone)?"},
+    {"id": "q5", "text": "Are staging or production systems in scope? Who is the emergency contact?"}
+  ],
+  "scope_template": [
+    {"kind": "asset",      "prompt": "Add each in-scope domain or IP range"},
+    {"kind": "inclusion",  "prompt": "Define what is explicitly in scope"},
+    {"kind": "exclusion",  "prompt": "List systems or paths explicitly excluded from testing"},
+    {"kind": "assumption", "prompt": "Document agreed testing depth and credential access levels"},
+    {"kind": "constraint", "prompt": "Record rules of engagement, rate-limit constraints, and notification requirements"}
+  ],
+  "requirements": [
+    {
+      "ref_code": "VAPT-RECON-01",
+      "category": "recon",
+      "text": "Perform passive and active information gathering: DNS enumeration, WHOIS, certificate transparency, service fingerprinting.",
+      "evidence_expectation": "Recon output (dns.txt, cert_transparency.txt, nmap service scan)"
+    },
+    {
+      "ref_code": "VAPT-CONFIG-01",
+      "category": "config",
+      "text": "Review server and application configuration: HTTP security headers, default credentials, unnecessary services, directory listing.",
+      "evidence_expectation": "Security headers report; nikto or automated scanner output"
+    },
+    {
+      "ref_code": "VAPT-CONFIG-02",
+      "category": "config",
+      "text": "Review TLS/SSL configuration: protocol versions, cipher suites, certificate validity, and HSTS.",
+      "evidence_expectation": "testssl.sh or SSLyze output; certificate details"
+    },
+    {
+      "ref_code": "VAPT-AUTH-01",
+      "category": "auth",
+      "text": "Test authentication mechanisms: brute-force protection, lockout policy, credential stuffing resilience, MFA bypass.",
+      "evidence_expectation": "Authentication test results; login attempt logs; MFA bypass test evidence"
+    },
+    {
+      "ref_code": "VAPT-AUTH-02",
+      "category": "auth",
+      "text": "Test password reset and account recovery flows for insecure token generation, predictability, and expiry enforcement.",
+      "evidence_expectation": "Password reset flow screenshots; token entropy analysis"
+    },
+    {
+      "ref_code": "VAPT-AUTHZ-01",
+      "category": "authz",
+      "text": "Test horizontal and vertical privilege escalation: IDOR, missing function-level access control, and role boundary enforcement.",
+      "evidence_expectation": "IDOR test cases with results; role-based access control verification evidence"
+    },
+    {
+      "ref_code": "VAPT-INPUT-01",
+      "category": "input",
+      "text": "Test for injection vulnerabilities: SQL injection, command injection, LDAP injection, and template injection.",
+      "evidence_expectation": "SQLMap/manual injection test output; affected endpoints and payloads"
+    },
+    {
+      "ref_code": "VAPT-INPUT-02",
+      "category": "input",
+      "text": "Test for cross-site scripting (Reflected, Stored, DOM-based XSS) and HTML injection.",
+      "evidence_expectation": "XSS test results; affected parameters; proof-of-concept payloads"
+    },
+    {
+      "ref_code": "VAPT-SESSION-01",
+      "category": "session",
+      "text": "Test session token entropy, fixation, hijacking, and proper invalidation on logout and timeout.",
+      "evidence_expectation": "Session token analysis (Burp sequencer or similar); logout/timeout test results"
+    },
+    {
+      "ref_code": "VAPT-API-01",
+      "category": "api",
+      "text": "Test API authentication and authorization: broken object-level auth (BOLA/IDOR), broken function-level auth (BFLA), mass assignment.",
+      "evidence_expectation": "API test results with endpoint inventory; BOLA and BFLA test evidence"
+    },
+    {
+      "ref_code": "VAPT-API-02",
+      "category": "api",
+      "text": "Test API for rate limiting, excessive data exposure, and security misconfiguration.",
+      "evidence_expectation": "Rate limiting test results; data exposure findings; API schema review notes"
+    },
+    {
+      "ref_code": "VAPT-BL-01",
+      "category": "business_logic",
+      "text": "Test business logic flows for abuse: price manipulation, workflow skipping, negative value inputs, and race conditions.",
+      "evidence_expectation": "Business logic test cases and outcomes; specific workflow abuse scenarios"
+    }
+  ],
+  "evidence_requests": [
+    {"requirement_ref": "VAPT-RECON-01",  "title": "Reconnaissance output files",          "description": "DNS enumeration, nmap scan, certificate transparency results"},
+    {"requirement_ref": "VAPT-CONFIG-01", "title": "Security headers and config review",    "description": "Automated scanner report and manual configuration review notes"},
+    {"requirement_ref": "VAPT-CONFIG-02", "title": "TLS/SSL configuration report",          "description": "testssl.sh or SSLyze full output for all in-scope endpoints"},
+    {"requirement_ref": "VAPT-AUTH-01",   "title": "Authentication test results",           "description": "Brute-force, lockout, and MFA bypass test evidence"},
+    {"requirement_ref": "VAPT-AUTHZ-01",  "title": "Authorization and IDOR test results",   "description": "IDOR test cases, role boundary verification, privilege escalation attempts"},
+    {"requirement_ref": "VAPT-INPUT-01",  "title": "Injection test results",                "description": "SQL, command, and template injection findings with payloads"},
+    {"requirement_ref": "VAPT-INPUT-02",  "title": "XSS test results",                      "description": "Reflected, stored, and DOM XSS findings with PoC payloads"},
+    {"requirement_ref": "VAPT-SESSION-01","title": "Session management analysis",           "description": "Session token entropy report; fixation and invalidation test results"},
+    {"requirement_ref": "VAPT-API-01",    "title": "API authorization test results",        "description": "BOLA/BFLA test cases; mass assignment findings; API endpoint inventory"},
+    {"requirement_ref": "VAPT-API-02",    "title": "API rate limiting and exposure report", "description": "Rate limiting test results; excessive data exposure findings"},
+    {"requirement_ref": "VAPT-BL-01",     "title": "Business logic test cases",             "description": "Documented abuse scenarios and test outcomes"}
+  ],
+  "task_templates": [
+    {"kind": "interview",         "title": "Kick-off call — scope confirmation and rules of engagement"},
+    {"kind": "test",              "title": "Phase 01 — Passive and active reconnaissance"},
+    {"kind": "test",              "title": "Phase 02 — Configuration and infrastructure review"},
+    {"kind": "test",              "title": "Phase 03 — Authentication and session testing"},
+    {"kind": "test",              "title": "Phase 04 — Authorisation and access control testing"},
+    {"kind": "test",              "title": "Phase 05 — Input validation and injection testing"},
+    {"kind": "test",              "title": "Phase 06 — API security testing (OWASP API10)"},
+    {"kind": "test",              "title": "Phase 07 — Business logic testing"},
+    {"kind": "review",            "title": "Internal findings review and deduplication"},
+    {"kind": "workshop",          "title": "Findings walkthrough with client team"},
+    {"kind": "remediation",       "title": "Retest of critical and high findings"}
+  ],
+  "finding_templates": [
+    {"category": "config",         "title_pattern": "Security misconfiguration: {area}"},
+    {"category": "auth",           "title_pattern": "Authentication weakness: {area}"},
+    {"category": "authz",          "title_pattern": "Broken access control: {area}"},
+    {"category": "input",          "title_pattern": "Injection vulnerability: {area}"},
+    {"category": "session",        "title_pattern": "Session management flaw: {area}"},
+    {"category": "api",            "title_pattern": "API security issue: {area}"},
+    {"category": "crypto",         "title_pattern": "Cryptographic weakness: {area}"},
+    {"category": "business_logic", "title_pattern": "Business logic flaw: {area}"}
+  ],
+  "report_templates": [
+    "gap_matrix", "report", "retest_report", "management_summary",
+    "roadmap", "client_action_plan", "evidence_matrix"
+  ],
+  "qa_rules": [
+    "every_finding_has_evidence",
+    "severity_consistent",
+    "evidence_requests_resolved",
+    "requirements_covered",
+    "remediation_has_owner",
+    "scope_finding_match",
+    "no_draft_findings"
+  ],
+  "approval_triggers": [
+    "scope_change", "testing_window_change", "exclusion_change",
+    "severity_change", "finding_status_change", "client_shared_finding",
+    "evidence_rejection", "report_release", "closure"
+  ]
+}
