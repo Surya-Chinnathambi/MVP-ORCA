@@ -17,6 +17,7 @@ from app.web.views import (
     project_views,
     scan_views,
     task_views,
+    team_views,
 )
 
 router = APIRouter(prefix="/ui")
@@ -33,6 +34,7 @@ router.include_router(task_views.router)
 router.include_router(deliverable_views.router)
 router.include_router(approval_views.router)
 router.include_router(scan_views.router)
+router.include_router(team_views.router)
 router.include_router(admin_views.router)
 
 

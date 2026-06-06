@@ -10,6 +10,7 @@ from app.models.delivery import RemediationAction
 from app.models.evidence import EvidenceItem, EvidenceRequest
 from app.models.scope import Requirement, ScopeItem
 from app.models.tasks import Finding, FindingSeverity, FindingStatus, Task
+from app.models.users import Permission, ScopeLevel
 from app.models.workflow import AuditTrailEvent
 from app.web.deps import LOGIN_REDIRECT, base_ctx, get_web_user
 
@@ -30,6 +31,11 @@ def project_dashboard(
     if not project:
         return RedirectResponse("/ui/clients", status_code=302)
     client = db.get(Client, project.client_id)
+    team_count = (
+        db.query(Permission)
+        .filter_by(scope_level=ScopeLevel.project, scope_id=project_id)
+        .count()
+    )
     return templates.TemplateResponse(
         request, "projects/dashboard.html",
         {
@@ -42,6 +48,7 @@ def project_dashboard(
             "open_requests": db.query(EvidenceRequest).filter_by(
                 project_id=project_id, status="open"
             ).count(),
+            "team_count": team_count,
         },
     )
 
