@@ -65,18 +65,38 @@ def _load_scope(path: Path) -> ScopeImport:
         raise ValueError(f"scope.json validation error: {exc}") from exc
 
 
+def _iter_json_objects(text: str, filename: str):
+    """Yield parsed JSON objects from text that may be true JSONL (one per line)
+    or pretty-printed concatenated objects (multi-line, no array wrapper).
+    Uses raw_decode() so it handles both formats without re-serialising."""
+    decoder = json.JSONDecoder()
+    pos = 0
+    length = len(text)
+    while pos < length:
+        # Skip whitespace / blank lines between objects
+        while pos < length and text[pos] in " \t\r\n":
+            pos += 1
+        if pos >= length:
+            break
+        try:
+            obj, end_pos = decoder.raw_decode(text, pos)
+            pos = end_pos
+            if isinstance(obj, dict):
+                yield obj
+        except json.JSONDecodeError as exc:
+            raise ValueError(f"{filename}: JSON decode error at position {pos}: {exc}") from exc
+
+
 def _load_evidence(path: Path) -> List[EvidenceRecord]:
     if not path.exists():
         raise FileNotFoundError(f"evidence_manifest.jsonl not found: {path}")
     records: List[EvidenceRecord] = []
-    for i, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
-        raw = raw.strip()
-        if not raw:
-            continue
+    text = path.read_text(encoding="utf-8")
+    for i, obj in enumerate(_iter_json_objects(text, path.name), 1):
         try:
-            records.append(EvidenceRecord.model_validate(json.loads(raw)))
+            records.append(EvidenceRecord.model_validate(obj))
         except Exception as exc:
-            raise ValueError(f"evidence_manifest.jsonl line {i}: {exc}") from exc
+            raise ValueError(f"evidence_manifest.jsonl record {i}: {exc}") from exc
     return records
 
 
@@ -84,17 +104,12 @@ def _load_findings(path: Path) -> List[FindingRecord]:
     if not path.exists():
         raise FileNotFoundError(f"findings.jsonl not found: {path}")
     records: List[FindingRecord] = []
-    for i, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
-        raw = raw.strip()
-        if not raw or raw == "null":
-            continue
+    text = path.read_text(encoding="utf-8")
+    for i, obj in enumerate(_iter_json_objects(text, path.name), 1):
         try:
-            parsed = json.loads(raw)
-            if not isinstance(parsed, dict):
-                continue  # skip null / non-object lines
-            records.append(FindingRecord.model_validate(parsed))
+            records.append(FindingRecord.model_validate(obj))
         except Exception as exc:
-            raise ValueError(f"findings.jsonl line {i}: {exc}") from exc
+            raise ValueError(f"findings.jsonl record {i}: {exc}") from exc
     return records
 
 
