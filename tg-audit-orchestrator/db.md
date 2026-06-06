@@ -409,3 +409,31 @@ User ─1:N─> Permission ─N:1─> Role
 8. **Task.status** / **Deliverable.kind** enums expanded — Stage 27.
 
 > All alterations ship as **forward-only Alembic migrations with explicit backfills**. Never drop a column holding delivery data.
+
+---
+
+## Framework-library decision (Full Spec §6.7, §8.2) — stageC6
+
+**Decision: JSON-as-library (option b).**
+
+Framework metadata (description, requirement text, evidence expectations, assessment procedures,
+risk themes, related frameworks, applicable packs) lives in `app/frameworks/*.json` — one file
+per framework key. The `Framework` DB table stores only the lightweight identity (`id`, `key`,
+`title`, `version`) needed for relational linking.
+
+**Why:** In-DB querying of framework content is not required for the MVP. The JSON files are
+the canonical source; the loader reads them on demand. Moving framework bodies into the DB
+would require a large migration and a new many-to-many schema without clear MVP benefit.
+
+**§8.2 many-to-many mapping:**
+
+| Relationship | Storage | Notes |
+|---|---|---|
+| Evidence item → many requirements | `EvidenceRequest` rows (one per requirement) | Relational; each EvidenceItem links to one EvidenceRequest |
+| Finding → many frameworks | `Finding.pack_scoped_data["frameworks"]` (JSON array of framework keys) | JSON-array linkage — **tech debt** (not relationally enforced). Future: add `finding_frameworks` join table. |
+| Project → selected frameworks | `Project.framework_ids` (JSON array of framework keys) | JSON-array; relational enforcement deferred to post-MVP. |
+
+**Tech debt note:** `Finding.pack_scoped_data["frameworks"]` and `Project.framework_ids` are
+JSON arrays, not FK-enforced join tables. Queries spanning frameworks and findings require
+application-layer joins. A `finding_frameworks` join table should be added post-MVP to support
+cross-framework analytics.
