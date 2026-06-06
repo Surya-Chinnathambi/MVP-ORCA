@@ -1,6 +1,9 @@
 {
   "key": "dpdp",
   "title": "DPDP Readiness Pack",
+  "version": "1.0.0",
+  "lifecycle": "active",
+  "service_description": "End-to-end readiness assessment against India's Digital Personal Data Protection Act 2023. Covers notice, consent, data principal rights, security safeguards, breach notification, and governance obligations for Data Fiduciaries and Significant Data Fiduciaries.",
   "frameworks": ["dpdp_act"],
   "intake_questions": [
     {"id": "q1", "text": "List all business units that process personal data"},
@@ -13,6 +16,40 @@
     {"kind": "business_unit", "prompt": "Identify each business unit processing personal data"},
     {"kind": "asset",         "prompt": "List systems and applications storing or transmitting personal data"},
     {"kind": "exclusion",     "prompt": "Confirm any systems explicitly excluded from the DPDP scope"}
+  ],
+  "role_responsibility_model": [
+    {
+      "role": "Lead Consultant",
+      "responsibilities": [
+        "Own overall DPDP assessment delivery",
+        "Lead data mapping workshops",
+        "Review and approve all findings before client sharing"
+      ]
+    },
+    {
+      "role": "Analyst",
+      "responsibilities": [
+        "Collect and verify evidence for each requirement",
+        "Draft gap findings and remediation recommendations",
+        "Operate advisory clinics with client stakeholders"
+      ]
+    },
+    {
+      "role": "QA Reviewer",
+      "responsibilities": [
+        "Validate all evidence against requirements",
+        "Confirm QA gates G4 and G5 before report release",
+        "Sign off on final deliverables"
+      ]
+    },
+    {
+      "role": "Client Contact",
+      "responsibilities": [
+        "Provide requested evidence and access",
+        "Attend workshops and interviews",
+        "Review and approve draft findings (Gate G4)"
+      ]
+    }
   ],
   "requirements": [
     {
@@ -89,18 +126,70 @@
     }
   ],
   "evidence_requests": [
-    {"requirement_ref": "DPDP-NOTICE-01",     "title": "Privacy Notice — current version",              "description": "Current privacy notice shown to data principals at or before collection"},
-    {"requirement_ref": "DPDP-NOTICE-02",     "title": "Multilingual notice evidence",                  "description": "Available language versions or process documentation for translated notices"},
-    {"requirement_ref": "DPDP-CONSENT-01",    "title": "Consent mechanism screenshots",                 "description": "Screenshots/recordings of consent UI confirming affirmative action"},
-    {"requirement_ref": "DPDP-CONSENT-02",    "title": "Consent withdrawal mechanism",                  "description": "Demo or docs of withdrawal process plus sample audit log"},
-    {"requirement_ref": "DPDP-CONSENT-03",    "title": "Consent records extract",                       "description": "Sample consent log showing who, when, purpose; retention policy"},
-    {"requirement_ref": "DPDP-RIGHTS-01",     "title": "Data access request SOP and sample",            "description": "SOP for access requests and a sample fulfilled response"},
-    {"requirement_ref": "DPDP-RIGHTS-02",     "title": "Erasure and correction workflow",               "description": "Technical and procedural docs for erasure/correction fulfilment"},
-    {"requirement_ref": "DPDP-RIGHTS-03",     "title": "Grievance portal and SLA",                      "description": "Grievance officer details, portal/email, SLA, and resolved sample"},
-    {"requirement_ref": "DPDP-SEC-01",        "title": "Security safeguards evidence pack",             "description": "IS policy, encryption policy, latest pentest report, patch management evidence"},
-    {"requirement_ref": "DPDP-SEC-02",        "title": "Data Processing Agreements",                    "description": "Signed DPAs with data processors; vendor security questionnaire results"},
-    {"requirement_ref": "DPDP-BREACH-01",     "title": "Incident response and breach notification plan","description": "IRP document, notification templates, most recent tabletop/drill record"},
-    {"requirement_ref": "DPDP-GOVERNANCE-01", "title": "DPO appointment and public contact",            "description": "DPO designation record and evidence of public-facing contact details"}
+    {"requirement_ref": "DPDP-NOTICE-01",     "title": "Privacy Notice — current version",               "description": "Current privacy notice shown to data principals at or before collection"},
+    {"requirement_ref": "DPDP-NOTICE-02",     "title": "Multilingual notice evidence",                   "description": "Available language versions or process documentation for translated notices"},
+    {"requirement_ref": "DPDP-CONSENT-01",    "title": "Consent mechanism screenshots",                  "description": "Screenshots/recordings of consent UI confirming affirmative action"},
+    {"requirement_ref": "DPDP-CONSENT-02",    "title": "Consent withdrawal mechanism",                   "description": "Demo or docs of withdrawal process plus sample audit log"},
+    {"requirement_ref": "DPDP-CONSENT-03",    "title": "Consent records extract",                        "description": "Sample consent log showing who, when, purpose; retention policy"},
+    {"requirement_ref": "DPDP-RIGHTS-01",     "title": "Data access request SOP and sample",             "description": "SOP for access requests and a sample fulfilled response"},
+    {"requirement_ref": "DPDP-RIGHTS-02",     "title": "Erasure and correction workflow",                "description": "Technical and procedural docs for erasure/correction fulfilment"},
+    {"requirement_ref": "DPDP-RIGHTS-03",     "title": "Grievance portal and SLA",                       "description": "Grievance officer details, portal/email, SLA, and resolved sample"},
+    {"requirement_ref": "DPDP-SEC-01",        "title": "Security safeguards evidence pack",              "description": "IS policy, encryption policy, latest pentest report, patch management evidence"},
+    {"requirement_ref": "DPDP-SEC-02",        "title": "Data Processing Agreements",                     "description": "Signed DPAs with data processors; vendor security questionnaire results"},
+    {"requirement_ref": "DPDP-BREACH-01",     "title": "Incident response and breach notification plan", "description": "IRP document, notification templates, most recent tabletop/drill record"},
+    {"requirement_ref": "DPDP-GOVERNANCE-01", "title": "DPO appointment and public contact",             "description": "DPO designation record and evidence of public-facing contact details"}
+  ],
+  "assessment_procedures": [
+    {
+      "ref_code": "AP-DPDP-01",
+      "title": "Privacy notice review",
+      "steps": [
+        "Obtain current version of the privacy notice",
+        "Verify it states purpose of processing and categories of personal data",
+        "Confirm it is presented at or before collection point",
+        "Check availability in English plus at least one Eighth Schedule language"
+      ]
+    },
+    {
+      "ref_code": "AP-DPDP-02",
+      "title": "Consent mechanism walkthrough",
+      "steps": [
+        "Review consent UI flow for affirmative action (tick box, e-signature, etc.)",
+        "Test consent withdrawal path and confirm ease-of-use parity",
+        "Inspect consent log schema for who, when, and purpose fields",
+        "Verify retention policy for consent records"
+      ]
+    },
+    {
+      "ref_code": "AP-DPDP-03",
+      "title": "Data principal rights testing",
+      "steps": [
+        "Submit a test access request via the published channel",
+        "Measure time-to-response against SLA commitment",
+        "Request a correction and verify technical update in system of record",
+        "Test erasure request and confirm deletion or pseudonymisation"
+      ]
+    },
+    {
+      "ref_code": "AP-DPDP-04",
+      "title": "Security safeguards assessment",
+      "steps": [
+        "Review information security policy for currency and CISO sign-off",
+        "Examine most recent penetration test report (must be within 12 months)",
+        "Verify encryption in transit (TLS 1.2+) and at rest for personal data stores",
+        "Review processor DPAs for equivalent security obligations clause"
+      ]
+    },
+    {
+      "ref_code": "AP-DPDP-05",
+      "title": "Breach notification readiness review",
+      "steps": [
+        "Obtain incident response plan document",
+        "Confirm DPBI notification template exists and is current",
+        "Verify evidence of last tabletop or drill exercise",
+        "Check escalation path and emergency contact list"
+      ]
+    }
   ],
   "task_templates": [
     {"kind": "interview",  "title": "DPO/CISO interview — data processing overview and governance"},
@@ -120,12 +209,67 @@
     {"category": "breach",     "title_pattern": "Breach response gap: {area}"},
     {"category": "governance", "title_pattern": "Governance gap: {area}"}
   ],
+  "severity_model": {
+    "critical": "Fundamental non-compliance posing immediate legal risk (e.g. no notice, no consent mechanism)",
+    "high":     "Significant gap likely to result in enforcement action or data principal harm",
+    "medium":   "Partial compliance with clear remediation path within 90 days",
+    "low":      "Process or documentation weakness with low immediate risk",
+    "informational": "Observation or best-practice recommendation without compliance obligation"
+  },
+  "review_gates": [
+    {"id": "G1", "label": "Scope approved",                "required_role": "pm"},
+    {"id": "G2", "label": "Evidence request list approved", "required_role": "pm"},
+    {"id": "G3", "label": "Evidence complete or exceptions approved", "required_role": "qa"},
+    {"id": "G4", "label": "Findings approved",             "required_role": "reviewer"},
+    {"id": "G5", "label": "Draft report QA complete",      "required_role": "qa"},
+    {"id": "G6", "label": "Final report approved",         "required_role": "partner"},
+    {"id": "G7", "label": "Remediation/closure accepted",  "required_role": "partner"}
+  ],
+  "approval_triggers": [
+    "scope_change",
+    "severity_change",
+    "finding_status_change",
+    "evidence_rejection",
+    "report_release",
+    "closure"
+  ],
   "report_templates": ["gap_matrix", "roadmap", "summary"],
+  "advisory_clinic_templates": [
+    {
+      "category": "notice_and_consent",
+      "title": "Notice & Consent Advisory Clinic",
+      "guidance": "Review current notice language against §5 requirements. Walk through consent UI flows, affirmative action mechanism, and multilingual provision. Identify gaps and agree remediation ownership."
+    },
+    {
+      "category": "rights_and_grievance",
+      "title": "Rights & Grievance Advisory Clinic",
+      "guidance": "Walkthrough of access, correction, and erasure request processes. Review grievance redressal channel, designated officer contact, and SLA commitments. Test a live request end-to-end."
+    },
+    {
+      "category": "breach_notification",
+      "title": "Breach Notification Advisory Clinic",
+      "guidance": "Review incident response plan for DPBI notification obligations. Confirm notification templates, timeline triggers, and escalation path. Conduct a tabletop walk-through of a simulated breach scenario."
+    },
+    {
+      "category": "processor_governance",
+      "title": "Processor Governance Advisory Clinic",
+      "guidance": "Audit data processing agreements with key vendors for equivalent safeguard obligations. Identify processors lacking valid DPAs and agree a remediation timeline."
+    },
+    {
+      "category": "retention_and_deletion",
+      "title": "Retention & Deletion Advisory Clinic",
+      "guidance": "Review data retention schedules against processing purposes. Confirm technical deletion or pseudonymisation mechanisms for data no longer necessary. Identify retention policy gaps."
+    },
+    {
+      "category": "security_safeguards",
+      "title": "Security Safeguards Advisory Clinic",
+      "guidance": "Review encryption standards, access control policies, and penetration test coverage. Identify gaps in technical and organisational security measures required under §8."
+    }
+  ],
   "qa_rules": [
     "every_finding_has_evidence",
     "severity_consistent",
     "all_requirements_assessed",
     "open_evidence_requests_flagged"
-  ],
-  "approval_triggers": ["scope_change", "severity_change", "report_release"]
+  ]
 }

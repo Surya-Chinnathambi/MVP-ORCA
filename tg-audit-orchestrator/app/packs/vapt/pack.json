@@ -1,6 +1,9 @@
 {
   "key": "vapt",
   "title": "VAPT Assessment Pack",
+  "version": "1.0.0",
+  "lifecycle": "active",
+  "service_description": "Comprehensive Vulnerability Assessment and Penetration Testing service covering web application, API, network, and business logic security. Follows OWASP ASVS, WSTG, API Security Top 10, PTES, and NIST frameworks to deliver actionable findings with severity-graded remediation guidance.",
   "frameworks": ["owasp_asvs", "owasp_wstg", "owasp_api10", "ptes", "nist"],
   "intake_questions": [
     {"id": "q1", "text": "List all in-scope IP ranges, domains, and applications"},
@@ -15,6 +18,40 @@
     {"kind": "exclusion",  "prompt": "List systems or paths explicitly excluded from testing"},
     {"kind": "assumption", "prompt": "Document agreed testing depth and credential access levels"},
     {"kind": "constraint", "prompt": "Record rules of engagement, rate-limit constraints, and notification requirements"}
+  ],
+  "role_responsibility_model": [
+    {
+      "role": "Lead Consultant",
+      "responsibilities": [
+        "Own overall VAPT engagement delivery and rules of engagement",
+        "Lead reconnaissance and high-complexity exploit validation",
+        "Review and approve all findings before client sharing"
+      ]
+    },
+    {
+      "role": "Analyst",
+      "responsibilities": [
+        "Execute test phases 01–07 per the task plan",
+        "Document findings with PoC evidence and CVSS scores",
+        "Perform retesting after remediation"
+      ]
+    },
+    {
+      "role": "QA Reviewer",
+      "responsibilities": [
+        "Validate finding severity and evidence quality",
+        "Confirm QA gates G4 and G5 before report release",
+        "Review final deliverables for completeness"
+      ]
+    },
+    {
+      "role": "Client Contact",
+      "responsibilities": [
+        "Confirm scope and rules of engagement",
+        "Provide emergency contact availability during testing window",
+        "Review draft findings and initiate remediation"
+      ]
+    }
   ],
   "requirements": [
     {
@@ -103,32 +140,140 @@
     {"requirement_ref": "VAPT-API-02",    "title": "API rate limiting and exposure report", "description": "Rate limiting test results; excessive data exposure findings"},
     {"requirement_ref": "VAPT-BL-01",     "title": "Business logic test cases",             "description": "Documented abuse scenarios and test outcomes"}
   ],
+  "assessment_procedures": [
+    {
+      "ref_code": "AP-VAPT-01",
+      "title": "Reconnaissance",
+      "steps": [
+        "Conduct passive OSINT: WHOIS, DNS records, certificate transparency logs",
+        "Run active nmap service and version scan against all in-scope IP ranges",
+        "Enumerate subdomains via brute-force and zone transfer attempts",
+        "Fingerprint web server, framework, and CMS versions"
+      ]
+    },
+    {
+      "ref_code": "AP-VAPT-02",
+      "title": "Configuration and TLS review",
+      "steps": [
+        "Run nikto or similar automated scanner against web targets",
+        "Test HTTP security headers (CSP, HSTS, X-Frame-Options, etc.)",
+        "Run testssl.sh against all HTTPS endpoints",
+        "Verify no default credentials on any in-scope service"
+      ]
+    },
+    {
+      "ref_code": "AP-VAPT-03",
+      "title": "Authentication and session testing",
+      "steps": [
+        "Test for account lockout after N failed attempts",
+        "Attempt brute-force with common credential lists",
+        "Analyse session token entropy using Burp Sequencer",
+        "Test session invalidation on logout and timeout",
+        "Attempt session fixation by setting a known token before authentication"
+      ]
+    },
+    {
+      "ref_code": "AP-VAPT-04",
+      "title": "Authorisation testing",
+      "steps": [
+        "Map all object-referencing endpoints (GUIDs, IDs, usernames)",
+        "Test IDOR by accessing resources with a different authenticated user",
+        "Test vertical privilege escalation by calling privileged endpoints as a low-privilege user",
+        "Verify role-based access control enforcement at the API layer"
+      ]
+    },
+    {
+      "ref_code": "AP-VAPT-05",
+      "title": "Input validation and injection",
+      "steps": [
+        "Fuzz all input parameters with SQL injection payloads (manual + SQLMap)",
+        "Test for command injection on parameters that invoke OS commands",
+        "Test XSS on reflected, stored, and DOM-based injection points",
+        "Test for SSTI using template engine polyglot payloads"
+      ]
+    },
+    {
+      "ref_code": "AP-VAPT-06",
+      "title": "API security testing",
+      "steps": [
+        "Enumerate API endpoints from documentation, JS sources, and traffic analysis",
+        "Test BOLA/IDOR for every object-referencing endpoint",
+        "Test BFLA by invoking admin functions as a standard user",
+        "Confirm rate limiting on authentication and sensitive endpoints",
+        "Test for mass assignment on POST/PUT/PATCH endpoints"
+      ]
+    }
+  ],
   "task_templates": [
-    {"kind": "interview",         "title": "Kick-off call — scope confirmation and rules of engagement"},
-    {"kind": "test",              "title": "Phase 01 — Passive and active reconnaissance"},
-    {"kind": "test",              "title": "Phase 02 — Configuration and infrastructure review"},
-    {"kind": "test",              "title": "Phase 03 — Authentication and session testing"},
-    {"kind": "test",              "title": "Phase 04 — Authorisation and access control testing"},
-    {"kind": "test",              "title": "Phase 05 — Input validation and injection testing"},
-    {"kind": "test",              "title": "Phase 06 — API security testing (OWASP API10)"},
-    {"kind": "test",              "title": "Phase 07 — Business logic testing"},
-    {"kind": "review",            "title": "Internal findings review and deduplication"},
-    {"kind": "workshop",          "title": "Findings walkthrough with client team"},
-    {"kind": "remediation",       "title": "Retest of critical and high findings"}
+    {"kind": "interview",   "title": "Kick-off call — scope confirmation and rules of engagement"},
+    {"kind": "test",        "title": "Phase 01 — Passive and active reconnaissance"},
+    {"kind": "test",        "title": "Phase 02 — Configuration and infrastructure review"},
+    {"kind": "test",        "title": "Phase 03 — Authentication and session testing"},
+    {"kind": "test",        "title": "Phase 04 — Authorisation and access control testing"},
+    {"kind": "test",        "title": "Phase 05 — Input validation and injection testing"},
+    {"kind": "test",        "title": "Phase 06 — API security testing (OWASP API10)"},
+    {"kind": "test",        "title": "Phase 07 — Business logic testing"},
+    {"kind": "review",      "title": "Internal findings review and deduplication"},
+    {"kind": "workshop",    "title": "Findings walkthrough with client team"},
+    {"kind": "remediation", "title": "Retest of critical and high findings"}
   ],
   "finding_templates": [
-    {"category": "config",         "title_pattern": "Security misconfiguration: {area}"},
-    {"category": "auth",           "title_pattern": "Authentication weakness: {area}"},
-    {"category": "authz",          "title_pattern": "Broken access control: {area}"},
-    {"category": "input",          "title_pattern": "Injection vulnerability: {area}"},
-    {"category": "session",        "title_pattern": "Session management flaw: {area}"},
-    {"category": "api",            "title_pattern": "API security issue: {area}"},
-    {"category": "crypto",         "title_pattern": "Cryptographic weakness: {area}"},
-    {"category": "business_logic", "title_pattern": "Business logic flaw: {area}"}
+    {"category": "config",          "title_pattern": "Security misconfiguration: {area}"},
+    {"category": "auth",            "title_pattern": "Authentication weakness: {area}"},
+    {"category": "authz",           "title_pattern": "Broken access control: {area}"},
+    {"category": "input",           "title_pattern": "Injection vulnerability: {area}"},
+    {"category": "session",         "title_pattern": "Session management flaw: {area}"},
+    {"category": "api",             "title_pattern": "API security issue: {area}"},
+    {"category": "crypto",          "title_pattern": "Cryptographic weakness: {area}"},
+    {"category": "business_logic",  "title_pattern": "Business logic flaw: {area}"}
+  ],
+  "severity_model": {
+    "critical": "Remote code execution, authentication bypass, or full data exfiltration with no user interaction",
+    "high":     "Significant impact (SQLi, stored XSS, IDOR exposing sensitive data, BFLA to admin functions)",
+    "medium":   "Limited impact requiring user interaction or specific conditions (reflected XSS, weak session tokens)",
+    "low":      "Informational or low-impact issues (missing headers, verbose error messages)",
+    "informational": "Best-practice observations with no exploitable attack vector in current context"
+  },
+  "review_gates": [
+    {"id": "G1", "label": "Scope approved",                "required_role": "pm"},
+    {"id": "G2", "label": "Evidence request list approved", "required_role": "pm"},
+    {"id": "G3", "label": "Evidence complete or exceptions approved", "required_role": "qa"},
+    {"id": "G4", "label": "Findings approved",             "required_role": "reviewer"},
+    {"id": "G5", "label": "Draft report QA complete",      "required_role": "qa"},
+    {"id": "G6", "label": "Final report approved",         "required_role": "partner"},
+    {"id": "G7", "label": "Remediation/closure accepted",  "required_role": "partner"}
+  ],
+  "approval_triggers": [
+    "scope_change",
+    "testing_window_change",
+    "exclusion_change",
+    "severity_change",
+    "finding_status_change",
+    "client_shared_finding",
+    "evidence_rejection",
+    "report_release",
+    "closure"
   ],
   "report_templates": [
     "gap_matrix", "report", "retest_report", "management_summary",
     "roadmap", "client_action_plan", "evidence_matrix"
+  ],
+  "advisory_clinic_templates": [
+    {
+      "category": "scope_and_roe",
+      "title": "Scope & Rules of Engagement Clinic",
+      "guidance": "Review confirmed scope assets, exclusions, and testing window. Confirm emergency contact, safe-harbour clause, and rate-limit constraints with the client team."
+    },
+    {
+      "category": "findings_walkthrough",
+      "title": "Critical and High Findings Walkthrough",
+      "guidance": "Demonstrate critical and high findings to the technical team. Walk through exploitation steps, business impact, and recommended remediation for each finding."
+    },
+    {
+      "category": "remediation_planning",
+      "title": "Remediation Planning Clinic",
+      "guidance": "Prioritise findings by severity and exploitability. Assign remediation owners, agree target dates, and define acceptance criteria for retest. Identify quick wins vs. long-term fixes."
+    }
   ],
   "qa_rules": [
     "every_finding_has_evidence",
@@ -138,10 +283,5 @@
     "remediation_has_owner",
     "scope_finding_match",
     "no_draft_findings"
-  ],
-  "approval_triggers": [
-    "scope_change", "testing_window_change", "exclusion_change",
-    "severity_change", "finding_status_change", "client_shared_finding",
-    "evidence_rejection", "report_release", "closure"
   ]
 }
