@@ -107,6 +107,28 @@ done
 [[ -z "$CLIENT" ]] && die "--client is required"
 [[ -z "$DOMAINS" && -z "$IPS" ]] && die "Provide --domains and/or --ips"
 
+# ── Sanitize input: strip http(s):// prefixes and trailing paths from domains ─
+# pt-orc.conf requires bare hostnames only (e.g. "app.acme.com api.acme.com")
+# filenames derived from domains must not contain :// or slashes
+_strip_proto() {
+    echo "$1" | tr ' ' '\n' \
+      | sed 's|^\s*https\?://||g' \
+      | sed 's|/.*||g' \
+      | sed 's|\s*$||' \
+      | grep -v '^$' \
+      | tr '\n' ' ' \
+      | xargs
+}
+DOMAINS="$(_strip_proto "$DOMAINS")"
+IPS="$(echo "$IPS" | tr ' ' '\n' | sed 's|^\s*||;s|\s*$||' | grep -v '^$' | tr '\n' ' ' | xargs)"
+
+# Warn if anything still looks like a URL (catches edge cases)
+for _d in $DOMAINS; do
+    if [[ "$_d" == *"/"* || "$_d" == *":"* ]]; then
+        die "Domain still contains invalid characters after stripping: '$_d'  (pass bare hostname, not URL)"
+    fi
+done
+
 # ── Preflight: filesystem ─────────────────────────────────────────────────────
 [[ -d "$PTORC_DIR" ]]      || die "PT-Orc not found at $PTORC_DIR"
 [[ -f "$PTORC_CONF" ]]     || die "pt-orc.conf not found at $PTORC_CONF"
@@ -169,6 +191,54 @@ else
         warn "won't persist between phases. Scan output files (.xml) will still be written."
         warn "To fix manually: sudo msfdb init && sudo msfdb start"
     fi
+fi
+
+# ── Preflight: DNS recon tools ────────────────────────────────────────────────
+echo -e "${BOLD}── Preflight: DNS/recon tools ──${NC}"
+
+_install_if_missing() {
+    local cmd="$1" pkg="${2:-$1}"
+    if ! command -v "$cmd" &>/dev/null; then
+        log "$cmd not found — installing $pkg..."
+        apt-get install -y "$pkg" -qq 2>&1 | grep -v "^$" | tail -3
+        if command -v "$cmd" &>/dev/null; then
+            ok "$cmd installed"
+        else
+            warn "$cmd still not found after install attempt — step will skip it"
+        fi
+    else
+        ok "$cmd found: $(command -v "$cmd")"
+    fi
+}
+
+_install_if_missing subfinder subfinder
+_install_if_missing dnsx dnsx
+_install_if_missing httpx httpx
+
+# puredns needs Go — install go then puredns if not present
+if ! command -v puredns &>/dev/null; then
+    warn "puredns not found — installing via Go..."
+    if ! command -v go &>/dev/null; then
+        apt-get install -y golang-go -qq 2>&1 | grep -v "^$" | tail -2
+    fi
+    if command -v go &>/dev/null; then
+        GOPATH="${GOPATH:-/root/go}"
+        GOBIN="${GOPATH}/bin"
+        mkdir -p "$GOBIN"
+        GOPATH="$GOPATH" GOBIN="$GOBIN" \
+            go install github.com/d3mondev/puredns/v2@latest 2>&1 | tail -3
+        # Add go bin to PATH for this session and future shells
+        export PATH="${PATH}:${GOBIN}"
+        if command -v puredns &>/dev/null; then
+            ok "puredns installed: $(command -v puredns)"
+        else
+            warn "puredns install failed — brute-force DNS step will be skipped"
+        fi
+    else
+        warn "Go install failed — puredns will remain unavailable"
+    fi
+else
+    ok "puredns found: $(command -v puredns)"
 fi
 
 echo ""
