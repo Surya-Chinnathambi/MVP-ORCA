@@ -104,7 +104,7 @@ def file_db(tmp_path_factory):
         org = Organization(name="S29 Org")
         db.add(org)
         db.flush()
-        client = Client(name="S29 Client", organization_id=org.id)
+        client = Client(entity_name="S29 Client", organization_id=org.id)
         db.add(client)
         db.flush()
         proj = Project(
@@ -198,7 +198,7 @@ def mem_db_url(tmp_path_factory):
             db.add(Role(name=rname))
         db.flush()
         analyst_role = db.query(Role).filter_by(name=RoleName.analyst.value).first()
-        admin_role = db.query(Role).filter_by(name=RoleName.admin.value).first()
+        admin_role = db.query(Role).filter_by(name=RoleName.platform_admin.value).first()
 
         u1 = User(
             email="alice@s29.local",

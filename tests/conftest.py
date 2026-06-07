@@ -56,7 +56,7 @@ def make_org(db: Session, *, name: str = "Test Org") -> Organization:
 
 
 def make_client(db: Session, *, org: Organization, name: str = "Test Client") -> Client:
-    client = Client(name=name, organization_id=org.id)
+    client = Client(entity_name=name, organization_id=org.id)
     db.add(client)
     db.flush()
     return client

@@ -4,52 +4,504 @@
 <div class="mb-2 text-sm text-gray-500">
   <a href="/ui/projects/{{ project.id }}" class="hover:underline">← Project</a>
 </div>
-<h1 class="text-xl font-bold text-gray-800 mb-5">Methodology Pack</h1>
 
 {% if pack_data %}
+{# ── Header ─────────────────────────────────────────────────────────────── #}
 <div class="bg-white rounded-lg shadow p-5 mb-5">
-  <div class="flex justify-between items-start">
+  <div class="flex justify-between items-start flex-wrap gap-2">
     <div>
-      <h2 class="font-semibold text-gray-800 text-lg">{{ pack_data.title }}</h2>
-      <p class="text-sm text-gray-500 mt-1">Pack key: <code>{{ pack_data.key }}</code></p>
+      <h1 class="text-xl font-bold text-gray-800">{{ pack_data.title }}</h1>
+      <p class="text-sm text-gray-500 mt-1">Pack key: <code class="bg-gray-100 px-1 rounded">{{ pack_data.key }}</code></p>
+      <div class="flex flex-wrap gap-2 mt-2">
+        {% for fw in pack_data.frameworks %}
+        <span class="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded text-xs font-medium border border-indigo-200">{{ fw }}</span>
+        {% endfor %}
+      </div>
     </div>
-    <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
-      {{ pack_data.key | upper }}
-    </span>
+    <div class="flex gap-2 items-start">
+      <span class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">{{ pack_data.key | upper }}</span>
+      <form action="/ui/projects/{{ project.id }}/pack/generate" method="post">
+        <button type="submit" class="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded text-xs font-medium">
+          {% if requirements_count > 0 %}Regenerate Plan{% else %}Generate Plan{% endif %}
+        </button>
+      </form>
+    </div>
   </div>
-  <div class="grid grid-cols-3 gap-4 mt-4 text-sm">
-    <div>
-      <div class="font-bold text-gray-700">{{ pack_data.requirements | length }}</div>
-      <div class="text-gray-500">Requirements</div>
+  <div class="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-4">
+    {% for label, val, color in [
+      ('Requirements',      pack_data.requirements | length,        'blue'),
+      ('Evidence Requests', pack_data.evidence_requests | length,   'purple'),
+      ('Task Templates',    pack_data.task_templates | length,      'green'),
+      ('Finding Templates', pack_data.finding_templates | length,   'orange'),
+      ('Review Gates',      pack_data.review_gates | length,        'indigo'),
+    ] %}
+    <div class="bg-{{ color }}-50 rounded-lg p-3 text-center border border-{{ color }}-100">
+      <div class="text-2xl font-bold text-{{ color }}-700">{{ val }}</div>
+      <div class="text-xs text-{{ color }}-600 mt-0.5">{{ label }}</div>
     </div>
-    <div>
-      <div class="font-bold text-gray-700">{{ pack_data.evidence_requests | length }}</div>
-      <div class="text-gray-500">Evidence Requests</div>
-    </div>
-    <div>
-      <div class="font-bold text-gray-700">{{ pack_data.task_templates | length }}</div>
-      <div class="text-gray-500">Task Templates</div>
-    </div>
+    {% endfor %}
   </div>
 </div>
 
+{# ── 1. Severity Model ────────────────────────────────────────────────────── #}
+{% if pack_data.severity_model %}
 <div class="bg-white rounded-lg shadow p-5 mb-5">
-  <h3 class="font-semibold text-gray-700 mb-3">Generated Plan</h3>
-  <p class="text-sm text-gray-600 mb-4">
-    {{ requirements_count }} requirement(s) currently in project.
-    Generating the plan will create requirements, evidence requests, and tasks from the pack.
-  </p>
-  <form action="/ui/projects/{{ project.id }}/pack/generate" method="post">
+  <h2 class="font-semibold text-gray-700 mb-4 flex items-center gap-2">
+    <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+    </svg>
+    Severity Model
+  </h2>
+  <div class="space-y-2">
+    {% set sev_levels = [
+      ('critical',      'bg-red-100 text-red-800 border-red-300',    'border-l-red-500'),
+      ('high',          'bg-orange-100 text-orange-800 border-orange-300', 'border-l-orange-500'),
+      ('medium',        'bg-yellow-100 text-yellow-800 border-yellow-300', 'border-l-yellow-500'),
+      ('low',           'bg-blue-100 text-blue-800 border-blue-300',  'border-l-blue-400'),
+      ('informational', 'bg-gray-100 text-gray-700 border-gray-300',  'border-l-gray-400'),
+    ] %}
+    {% for sev, badge_cls, border_cls in sev_levels %}
+    {% if pack_data.severity_model and sev in pack_data.severity_model and pack_data.severity_model[sev] %}
+    <div class="flex items-start gap-3 p-3 rounded-lg border-l-4 bg-gray-50 border border-gray-100 {{ border_cls }}">
+      <span class="flex-shrink-0 px-2 py-0.5 rounded text-xs font-bold border {{ badge_cls }} capitalize w-24 text-center">
+        {{ sev }}
+      </span>
+      <span class="text-sm text-gray-600 leading-relaxed">{{ pack_data.severity_model[sev] }}</span>
+    </div>
+    {% endif %}
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{# ── 2. Review Gates ──────────────────────────────────────────────────────── #}
+{% if gate_statuses %}
+<div class="bg-white rounded-lg shadow p-5 mb-5">
+  <h2 class="font-semibold text-gray-700 mb-4 flex items-center gap-2">
+    <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg>
+    Review Gates
+    <span class="ml-auto text-xs text-gray-400 font-normal">
+      {{ gate_statuses | selectattr('passed') | list | length }} / {{ gate_statuses | length }} passed
+    </span>
+  </h2>
+  {# Progress bar #}
+  {% set passed_count = gate_statuses | selectattr('passed') | list | length %}
+  {% set total_count = gate_statuses | length %}
+  <div class="w-full bg-gray-100 rounded-full h-2 mb-4">
+    <div class="bg-green-500 h-2 rounded-full transition-all"
+         style="width: {{ ((passed_count / total_count) * 100) | round | int }}%"></div>
+  </div>
+  <div class="space-y-2">
+    {% for gate in gate_statuses %}
+    <div class="flex items-center gap-3 p-3 rounded-lg border
+      {{ 'bg-green-50 border-green-200' if gate.passed else 'bg-gray-50 border-gray-200' }}">
+      <div class="flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold
+        {{ 'bg-green-500 text-white' if gate.passed else 'bg-gray-200 text-gray-500' }}">
+        {% if gate.passed %}✓{% else %}{{ loop.index }}{% endif %}
+      </div>
+      <span class="text-xs font-bold px-2 py-0.5 rounded
+        {{ 'bg-green-100 text-green-700' if gate.passed else 'bg-gray-100 text-gray-600' }}">
+        {{ gate.id }}
+      </span>
+      <span class="flex-1 text-sm {{ 'text-green-800 font-medium' if gate.passed else 'text-gray-600' }}">
+        {{ gate.label }}
+      </span>
+      {% if gate.role %}
+      <span class="text-xs text-gray-400 px-2 py-0.5 bg-white rounded border border-gray-200">
+        {{ gate.role | replace('_', ' ') }}
+      </span>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  <p class="text-xs text-gray-400 mt-3">Gates are updated as approvals and reviews complete in the project workflow.</p>
+</div>
+{% endif %}
+
+{# ── 3. PT-Orc Phase Mapping ─────────────────────────────────────────────── #}
+{% if pack_data.ptorc_phase_mapping %}
+<div class="bg-white rounded-lg shadow p-5 mb-5">
+  <h2 class="font-semibold text-gray-700 mb-4 flex items-center gap-2">
+    <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+    </svg>
+    PT-Orc Phase Mapping
+    <a href="/ui/projects/{{ project.id }}/scans"
+       class="ml-auto text-xs text-blue-600 hover:underline font-normal">→ Launch Scan</a>
+  </h2>
+  {% set phase_colors = {'01':'sky','02':'sky','03':'green','04':'green','05':'green','06':'yellow','07':'yellow','08':'red','09':'purple'} %}
+  {% set phase_labels = {'01':'DNS Recon','02':'IP Analysis','03':'Comp Scan','04':'TLS Review','05':'Web Enum','06':'WordPress','07':'Svc Verify','08':'App/API Review','09':'AI/LLM Review'} %}
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b">
+          <th class="pb-2 text-left text-gray-500 font-medium w-36">Category</th>
+          <th class="pb-2 text-left text-gray-500 font-medium">PT-Orc Phases Triggered</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-50">
+        {% for category, phases in pack_data.ptorc_phase_mapping.items() %}
+        {% if phases %}
+        <tr class="hover:bg-gray-50">
+          <td class="py-2 pr-4">
+            <span class="font-mono text-xs bg-gray-100 px-1.5 py-0.5 rounded text-gray-700">{{ category }}</span>
+          </td>
+          <td class="py-2">
+            <div class="flex flex-wrap gap-1">
+              {% for ph in phases %}
+              {% set c = phase_colors.get(ph, 'gray') %}
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-{{ c }}-100 text-{{ c }}-800 border border-{{ c }}-200">
+                <span class="font-bold">{{ ph }}</span>
+                <span class="opacity-70">· {{ phase_labels.get(ph, '') }}</span>
+              </span>
+              {% endfor %}
+            </div>
+          </td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+{# ── 4. Advisory Clinics ─────────────────────────────────────────────────── #}
+{% if pack_data.advisory_clinic_templates %}
+<div class="bg-white rounded-lg shadow p-5 mb-5">
+  <h2 class="font-semibold text-gray-700 mb-4 flex items-center gap-2">
+    <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/>
+    </svg>
+    Advisory Clinic Templates
+    <span class="ml-2 px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-xs font-medium">
+      {{ pack_data.advisory_clinic_templates | length }} workshops
+    </span>
+  </h2>
+  {% set cat_colors = {
+    'auth':'blue','api':'purple','config':'green','input':'red',
+    'supply_chain':'orange','cloud':'sky','business_logic':'indigo',
+    'consent':'teal','rights':'emerald','governance':'violet',
+    'planning':'amber','testing':'cyan','detection':'rose',
+  } %}
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+    {% for clinic in pack_data.advisory_clinic_templates %}
+    {% set c = cat_colors.get(clinic.category, 'gray') %}
+    <div class="border border-{{ c }}-200 bg-{{ c }}-50 rounded-lg p-4 hover:shadow-sm transition">
+      <div class="mb-2">
+        <span class="px-2 py-0.5 rounded-full text-xs font-medium bg-{{ c }}-100 text-{{ c }}-700 border border-{{ c }}-200">
+          {{ clinic.category | replace('_',' ') | title }}
+        </span>
+      </div>
+      <h3 class="font-semibold text-gray-800 text-sm mb-2">{{ clinic.title }}</h3>
+      {% if clinic.guidance %}
+      <p class="text-xs text-gray-600 leading-relaxed">{{ clinic.guidance }}</p>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{# ── 5. Requirements List ─────────────────────────────────────────────────── #}
+{% if pack_data.requirements %}
+<div class="bg-white rounded-lg shadow p-5 mb-5">
+  <h2 class="font-semibold text-gray-700 mb-3 flex items-center gap-2">
+    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+    </svg>
+    Requirements ({{ pack_data.requirements | length }})
+    <span class="ml-auto text-xs text-gray-400 font-normal">{{ requirements_count }} loaded in project</span>
+  </h2>
+  {% set cat_badge = {
+    'pre_engagement':'gray','recon':'sky','config':'green','cloud':'cyan',
+    'auth':'blue','authz':'violet','input':'red','xxe':'orange',
+    'ssrf':'orange','upload':'amber','session':'indigo','cors':'purple',
+    'api':'blue','graphql':'teal','websocket':'emerald',
+    'secret':'red','infra':'gray','business_logic':'yellow',
+    'supply_chain':'orange','retest':'pink',
+    'notice':'teal','consent':'green','rights':'blue','security':'red','breach':'orange','governance':'violet',
+    'planning':'amber','detection':'rose','response':'indigo','testing':'cyan','notification':'purple',
+  } %}
+  <div class="space-y-1 max-h-96 overflow-y-auto pr-1">
+    {% for req in pack_data.requirements %}
+    {% set c = cat_badge.get(req.category, 'gray') %}
+    <div class="flex items-start gap-2 p-2 rounded hover:bg-gray-50 text-sm">
+      <span class="flex-shrink-0 mt-0.5 font-mono text-xs px-1.5 py-0.5 rounded bg-{{ c }}-100 text-{{ c }}-700 border border-{{ c }}-100 whitespace-nowrap">
+        {{ req.ref_code }}
+      </span>
+      <span class="text-gray-600 flex-1">{{ req.text[:130] }}{% if req.text | length > 130 %}…{% endif %}</span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{# ── 6. Intake Questions ─────────────────────────────────────────────────── #}
+{% if pack_data.intake_questions %}
+<div class="bg-white rounded-lg shadow p-5 mb-5">
+  <h2 class="font-semibold text-gray-700 mb-3 flex items-center gap-2">
+    <svg class="w-4 h-4 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+    </svg>
+    Intake Questions ({{ pack_data.intake_questions | length }})
+  </h2>
+  <ol class="space-y-2">
+    {% for q in pack_data.intake_questions %}
+    <li class="flex gap-3 text-sm">
+      <span class="flex-shrink-0 w-6 h-6 rounded-full bg-teal-100 text-teal-700 text-xs font-bold flex items-center justify-center">{{ loop.index }}</span>
+      <span class="text-gray-700 pt-0.5">{{ q.text }}</span>
+    </li>
+    {% endfor %}
+  </ol>
+</div>
+{% endif %}
+
+{# ── 7. Sector Overlays ──────────────────────────────────────────────────── #}
+{% if pack_data.sector_overlays %}
+<div class="bg-white rounded-lg shadow p-5 mb-5">
+  <h2 class="font-semibold text-gray-700 mb-1 flex items-center gap-2">
+    <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+    </svg>
+    Sector-Specific Overlays ({{ pack_data.sector_overlays | length }} sectors)
+  </h2>
+  <p class="text-xs text-gray-400 mb-4">Select your client's industry sector to view additional DPDP requirements, evidence requests, and advisory clinics specific to that sector.</p>
+
+  {# Sector tab buttons #}
+  {% set sector_colours = {
+    'healthcare':'bg-red-50 border-red-200 text-red-700 hover:bg-red-100',
+    'manufacturing':'bg-yellow-50 border-yellow-200 text-yellow-700 hover:bg-yellow-100',
+    'automation':'bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100',
+    'financial_services':'bg-green-50 border-green-200 text-green-700 hover:bg-green-100',
+    'education':'bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100',
+    'ecommerce':'bg-orange-50 border-orange-200 text-orange-700 hover:bg-orange-100',
+    'telecom':'bg-cyan-50 border-cyan-200 text-cyan-700 hover:bg-cyan-100',
+    'government':'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100',
+    'pharma':'bg-violet-50 border-violet-200 text-violet-700 hover:bg-violet-100',
+    'media':'bg-pink-50 border-pink-200 text-pink-700 hover:bg-pink-100',
+    'hospitality':'bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100',
+    'legal':'bg-zinc-50 border-zinc-300 text-zinc-700 hover:bg-zinc-100',
+    'agritech':'bg-lime-50 border-lime-200 text-lime-700 hover:bg-lime-100',
+    'realestate':'bg-stone-50 border-stone-300 text-stone-700 hover:bg-stone-100',
+    'energy':'bg-yellow-50 border-yellow-300 text-yellow-800 hover:bg-yellow-100',
+    'logistics':'bg-sky-50 border-sky-200 text-sky-700 hover:bg-sky-100',
+  } %}
+  {% set sector_active = {
+    'healthcare':'bg-red-600 border-red-600 text-white',
+    'manufacturing':'bg-yellow-600 border-yellow-600 text-white',
+    'automation':'bg-blue-600 border-blue-600 text-white',
+    'financial_services':'bg-green-700 border-green-700 text-white',
+    'education':'bg-purple-600 border-purple-600 text-white',
+    'ecommerce':'bg-orange-600 border-orange-600 text-white',
+    'telecom':'bg-cyan-600 border-cyan-600 text-white',
+    'government':'bg-slate-600 border-slate-600 text-white',
+    'pharma':'bg-violet-600 border-violet-600 text-white',
+    'media':'bg-pink-600 border-pink-600 text-white',
+    'hospitality':'bg-amber-600 border-amber-600 text-white',
+    'legal':'bg-zinc-700 border-zinc-700 text-white',
+    'agritech':'bg-lime-600 border-lime-600 text-white',
+    'realestate':'bg-stone-600 border-stone-600 text-white',
+    'energy':'bg-yellow-600 border-yellow-600 text-white',
+    'logistics':'bg-sky-600 border-sky-600 text-white',
+  } %}
+
+  <div class="flex flex-wrap gap-2 mb-5">
+    {% for sector_key, overlay in pack_data.sector_overlays.items() %}
+    <button onclick="showSector('{{ sector_key }}')" id="tab-{{ sector_key }}"
+      class="sector-tab px-3 py-1.5 rounded-lg border text-sm font-medium transition-all {{ sector_colours.get(sector_key, 'bg-gray-50 border-gray-200 text-gray-700') }}"
+      data-active-cls="{{ sector_active.get(sector_key, 'bg-gray-600 text-white border-gray-600') }}"
+      data-inactive-cls="{{ sector_colours.get(sector_key, 'bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100') }}">
+      {{ overlay.icon or '' }} {{ overlay.label }}
+    </button>
+    {% endfor %}
+  </div>
+
+  {# Sector panels #}
+  {% for sector_key, overlay in pack_data.sector_overlays.items() %}
+  <div id="sector-{{ sector_key }}" class="sector-panel hidden">
+
+    {# Header #}
+    <div class="rounded-lg border border-indigo-100 bg-indigo-50 p-4 mb-4">
+      <div class="flex items-start gap-3">
+        <span class="text-3xl">{{ overlay.icon or '🏢' }}</span>
+        <div>
+          <h3 class="font-bold text-indigo-800 text-base">{{ overlay.label }}</h3>
+          <p class="text-sm text-indigo-700 mt-0.5">{{ overlay.description }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+
+      {# Sensitive data types #}
+      {% if overlay.sensitive_data_types %}
+      <div class="rounded-lg border border-red-100 bg-red-50 p-4">
+        <h4 class="font-semibold text-red-800 text-sm mb-2">⚠ Sensitive Data Types in this Sector</h4>
+        <ul class="space-y-1">
+          {% for dt in overlay.sensitive_data_types %}
+          <li class="text-xs text-red-700 flex gap-1.5">
+            <span class="text-red-400 mt-0.5">•</span>{{ dt }}
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+
+      {# Applicable regulations #}
+      {% if overlay.applicable_regulations %}
+      <div class="rounded-lg border border-blue-100 bg-blue-50 p-4">
+        <h4 class="font-semibold text-blue-800 text-sm mb-2">📋 Applicable Regulations</h4>
+        <ul class="space-y-1">
+          {% for reg in overlay.applicable_regulations %}
+          <li class="text-xs text-blue-700 flex gap-1.5">
+            <span class="text-blue-400 mt-0.5">•</span>{{ reg }}
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+    </div>
+
+    {# Risk note #}
+    {% if overlay.risk_notes %}
+    <div class="rounded-lg border border-amber-200 bg-amber-50 p-3 mb-4 text-xs text-amber-800 leading-relaxed">
+      <strong>Risk Context:</strong> {{ overlay.risk_notes }}
+    </div>
+    {% endif %}
+
+    {# Additional requirements #}
+    {% if overlay.additional_requirements %}
+    <div class="mb-4">
+      <h4 class="font-semibold text-gray-700 text-sm mb-2">
+        Sector-Specific Requirements ({{ overlay.additional_requirements | length }})
+      </h4>
+      <div class="space-y-2 max-h-80 overflow-y-auto pr-1">
+        {% set cat_colours = {
+          'consent':'bg-blue-100 text-blue-700',
+          'notice':'bg-teal-100 text-teal-700',
+          'security':'bg-red-100 text-red-700',
+          'governance':'bg-purple-100 text-purple-700',
+          'purpose':'bg-yellow-100 text-yellow-700',
+          'rights':'bg-green-100 text-green-700',
+          'breach':'bg-orange-100 text-orange-700',
+          'transfer':'bg-indigo-100 text-indigo-700',
+          'sdf':'bg-pink-100 text-pink-700',
+          'children':'bg-rose-100 text-rose-700',
+        } %}
+        {% for req in overlay.additional_requirements %}
+        <div class="rounded border border-gray-200 bg-gray-50 p-3">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="font-mono text-xs px-1.5 py-0.5 rounded bg-gray-200 text-gray-700">{{ req.ref_code }}</span>
+            <span class="text-xs px-1.5 py-0.5 rounded {{ cat_colours.get(req.category, 'bg-gray-100 text-gray-600') }}">{{ req.category }}</span>
+            {% if req.sector_law %}
+            <span class="text-xs text-gray-400 truncate ml-auto">{{ req.sector_law }}</span>
+            {% endif %}
+          </div>
+          <p class="text-xs text-gray-700 mb-1">{{ req.text }}</p>
+          {% if req.evidence_expectation %}
+          <p class="text-xs text-gray-500 italic">Evidence: {{ req.evidence_expectation }}</p>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {# Sector intake questions #}
+    {% if overlay.intake_questions %}
+    <div class="mb-4">
+      <h4 class="font-semibold text-gray-700 text-sm mb-2">
+        Sector Intake Questions ({{ overlay.intake_questions | length }})
+      </h4>
+      <ol class="space-y-1.5">
+        {% for q in overlay.intake_questions %}
+        <li class="flex gap-2 text-xs text-gray-700">
+          <span class="flex-shrink-0 w-5 h-5 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center text-xs">{{ loop.index }}</span>
+          <span class="pt-0.5">{{ q }}</span>
+        </li>
+        {% endfor %}
+      </ol>
+    </div>
+    {% endif %}
+
+    {# Advisory clinics #}
+    {% if overlay.advisory_clinic_templates %}
+    <div>
+      <h4 class="font-semibold text-gray-700 text-sm mb-2">
+        Sector Advisory Clinics ({{ overlay.advisory_clinic_templates | length }})
+      </h4>
+      <div class="grid grid-cols-1 sm:grid-cols-{% if overlay.advisory_clinic_templates | length == 1 %}1{% else %}2{% endif %} gap-3">
+        {% for clinic in overlay.advisory_clinic_templates %}
+        <div class="rounded-lg border border-gray-200 bg-white p-3">
+          <span class="text-xs px-1.5 py-0.5 rounded {{ cat_colours.get(clinic.category, 'bg-gray-100 text-gray-600') }}">{{ clinic.category }}</span>
+          <p class="font-semibold text-sm text-gray-800 mt-2 mb-1">{{ clinic.title }}</p>
+          <p class="text-xs text-gray-600 leading-relaxed">{{ clinic.guidance[:200] }}{% if clinic.guidance | length > 200 %}…{% endif %}</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+  </div>{# end sector panel #}
+  {% endfor %}
+
+</div>
+
+<script>
+function showSector(key) {
+  document.querySelectorAll('.sector-panel').forEach(p => p.classList.add('hidden'));
+  document.querySelectorAll('.sector-tab').forEach(btn => {
+    btn.className = 'sector-tab px-3 py-1.5 rounded-lg border text-sm font-medium transition-all ' + btn.dataset.inactiveCls;
+  });
+  const panel = document.getElementById('sector-' + key);
+  const tab = document.getElementById('tab-' + key);
+  if (panel) panel.classList.remove('hidden');
+  if (tab) tab.className = 'sector-tab px-3 py-1.5 rounded-lg border text-sm font-medium transition-all ' + tab.dataset.activeCls;
+}
+// Auto-open first sector
+const firstSector = document.querySelector('.sector-tab');
+if (firstSector) {
+  const key = firstSector.id.replace('tab-', '');
+  showSector(key);
+}
+</script>
+{% endif %}
+
+{% else %}
+{# ── No pack attached ─────────────────────────────────────────────────────── #}
+<h1 class="text-xl font-bold text-gray-800 mb-5">Methodology Pack</h1>
+<div class="bg-yellow-50 border border-yellow-200 text-yellow-800 p-4 rounded-lg text-sm mb-5">
+  No methodology pack attached. Attach a pack to generate requirements, evidence requests, and tasks from it.
+</div>
+{% endif %}
+
+{# ── Attach / Switch Pack ─────────────────────────────────────────────────── #}
+<div class="bg-white rounded-lg shadow p-5">
+  <h2 class="font-semibold text-gray-700 mb-1">
+    {% if pack_data %}Switch Pack{% else %}Attach a Pack{% endif %}
+  </h2>
+  {% if pack_data %}
+  <p class="text-xs text-gray-500 mb-3">Switching changes the pack key. Existing project data is not removed — regenerate the plan after switching.</p>
+  {% endif %}
+  <form action="/ui/projects/{{ project.id }}/pack/attach" method="post" class="flex gap-3 items-end flex-wrap mt-3">
+    <div class="flex-1 min-w-52">
+      <label class="block text-xs font-medium text-gray-600 mb-1">Pack</label>
+      <select name="pack_key" required
+        class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+        {% for p in all_packs %}
+        <option value="{{ p.key }}" {% if pack_data and pack_data.key == p.key %}selected{% endif %}>
+          {{ p.title }}
+        </option>
+        {% endfor %}
+      </select>
+    </div>
     <button type="submit"
-      class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm font-medium">
-      {% if requirements_count > 0 %}Regenerate Plan{% else %}Generate Plan{% endif %}
+      class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-medium whitespace-nowrap">
+      {% if pack_data %}Switch Pack{% else %}Attach Pack{% endif %}
     </button>
   </form>
 </div>
-
-{% else %}
-<div class="bg-yellow-50 border border-yellow-200 text-yellow-800 p-4 rounded-lg text-sm">
-  No pack loaded for this project. Set <code>pack_id</code> via the project API.
-</div>
-{% endif %}
 {% endblock %}

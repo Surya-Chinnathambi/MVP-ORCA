@@ -33,7 +33,7 @@ _APPROVAL_REQUIRED: set[PackLifecycle] = {PackLifecycle.approved, PackLifecycle.
 # Which approver role guards each gated transition
 _APPROVER_ROLE: dict[PackLifecycle, str] = {
     PackLifecycle.approved: "qa",
-    PackLifecycle.active: "admin",
+    PackLifecycle.active: "platform_admin",  # RBAC.md §4: pack→active requires platform_admin
 }
 
 

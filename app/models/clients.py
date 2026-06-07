@@ -61,6 +61,7 @@ class Project(TimestampMixin, Base):
     )
     framework_ids: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
     gates: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
+    roe_data: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
 
     client: Mapped["Client"] = relationship(back_populates="projects")
     owner: Mapped[Optional["User"]] = relationship(

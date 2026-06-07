@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
@@ -45,6 +46,11 @@ app.include_router(web_router)
 app.include_router(portal_router)
 
 app.mount("/static", StaticFiles(directory="app/web/static"), name="static")
+
+
+@app.get("/")
+def root():
+    return RedirectResponse("/ui/login", status_code=302)
 
 
 @app.on_event("startup")

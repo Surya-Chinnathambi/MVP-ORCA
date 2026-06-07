@@ -28,7 +28,7 @@ from sqlalchemy.orm import Session
 
 from app.models.clients import Project
 from app.models.delivery import Deliverable, DeliverableKind
-from app.models.evidence import EvidenceItem
+from app.models.evidence import EvidenceItem, EvidenceLifecycleEvent, EvidenceLifecycleState
 from app.models.scope import ScopeItem, ScopeItemKind
 from app.models.tasks import Finding, FindingSource, FindingStatus
 from app.services.audit import record_event, request_approval
@@ -86,10 +86,13 @@ def _load_findings(path: Path) -> List[FindingRecord]:
     records: List[FindingRecord] = []
     for i, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
         raw = raw.strip()
-        if not raw:
+        if not raw or raw == "null":
             continue
         try:
-            records.append(FindingRecord.model_validate(json.loads(raw)))
+            parsed = json.loads(raw)
+            if not isinstance(parsed, dict):
+                continue  # skip null / non-object lines
+            records.append(FindingRecord.model_validate(parsed))
         except Exception as exc:
             raise ValueError(f"findings.jsonl line {i}: {exc}") from exc
     return records
@@ -123,7 +126,7 @@ def _import_scope(db: Session, project_id: str, scope: ScopeImport) -> tuple[lis
             target_type="scope_item",
             target_id=item.id,
             reason=f"PT-Orc import: target '{target}' from {scope.engagement_profile} engagement",
-            approver_role="reviewer",
+            approver_role="partner",
             change_before=None,
             change_after={"kind": "inclusion", "value": target},
         )
@@ -162,10 +165,19 @@ def _import_evidence(
             classification=classify_text(rec.summary, filename=rec.source_file),
             extracted_text=rec.summary or None,
             item_metadata={"source": "ptorc", "phase": rec.phase, "ptorc_id": rec.id},
-            supersedes_id=old_id,
         )
         db.add(item)
         db.flush()
+        if old_id:
+            # Record supersession via lifecycle event (supersedes_id lives on the event, not the item)
+            db.add(EvidenceLifecycleEvent(
+                evidence_item_id=item.id,
+                from_state=EvidenceLifecycleState.intake.value,
+                to_state=EvidenceLifecycleState.intake.value,
+                supersedes_id=old_id,
+                reason="ptorc retest: supersedes previous import",
+            ))
+            db.flush()
         ev_map[rec.id] = item.id
     return ev_map
 
@@ -184,9 +196,14 @@ def _find_correlated(
     # Expand to include superseded IDs so retest evidence links back to original findings
     ev_set = set(evidence_orm_ids)
     for item_id in list(ev_set):
-        item = db.get(EvidenceItem, item_id)
-        if item and item.supersedes_id:
-            ev_set.add(item.supersedes_id)
+        evt = (
+            db.query(EvidenceLifecycleEvent)
+            .filter_by(evidence_item_id=item_id)
+            .filter(EvidenceLifecycleEvent.supersedes_id.isnot(None))
+            .first()
+        )
+        if evt and evt.supersedes_id:
+            ev_set.add(evt.supersedes_id)
 
     candidates = (
         db.query(Finding)

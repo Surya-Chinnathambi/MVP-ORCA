@@ -4,10 +4,13 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.db import get_db
-from app.deps import get_current_user
+from app.deps import get_current_user, require_permission
 from app.models.clients import Client
 from app.models.users import User
 from app.schemas.clients import ClientCreate, ClientOut, ClientUpdate
+
+# Roles allowed to create / mutate clients per RBAC.md §3
+_CLIENT_WRITE_ROLES = ("platform_admin", "partner", "pm")
 
 router = APIRouter(prefix="/clients", tags=["clients"])
 
@@ -24,7 +27,7 @@ def list_clients(
 def create_client(
     body: ClientCreate,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    _: User = Depends(require_permission(*_CLIENT_WRITE_ROLES)),
 ):
     client = Client(**body.model_dump())
     db.add(client)
@@ -50,7 +53,7 @@ def update_client(
     client_id: str,
     body: ClientUpdate,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    _: User = Depends(require_permission(*_CLIENT_WRITE_ROLES)),
 ):
     client = db.get(Client, client_id)
     if client is None:
@@ -66,7 +69,7 @@ def update_client(
 def delete_client(
     client_id: str,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    _: User = Depends(require_permission("platform_admin", "partner")),
 ):
     client = db.get(Client, client_id)
     if client is None:

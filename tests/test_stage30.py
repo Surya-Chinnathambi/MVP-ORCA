@@ -82,7 +82,7 @@ def admin(db):
 def shared_client(db, admin):
     org = Organization(name="S30 Org")
     db.add(org); db.flush()
-    client = Client(name="TechGuard Demo Corp S30", sector="tech", organization_id=org.id)
+    client = Client(entity_name="TechGuard Demo Corp S30", sector="tech", organization_id=org.id)
     db.add(client); db.commit(); db.refresh(client)
     return client
 

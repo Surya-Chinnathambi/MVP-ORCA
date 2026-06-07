@@ -1,0 +1,139 @@
+{
+  "key": "owasp_asvs",
+  "title": "OWASP Application Security Verification Standard v4.0.3",
+  "version": "4.0.3",
+  "controls": [
+    {
+      "id": "ASVS-V2.1",
+      "title": "Password Security",
+      "text": "Verify that user-set passwords are at least 12 characters long, support all Unicode characters, and are checked against a list of known-breached passwords. Verify no password rotation policies that encourage weak passwords.",
+      "evidence_expectation": "Password policy documentation; login form testing results; breached password check implementation evidence",
+      "assessment_procedure": "Test minimum length enforcement; attempt common/breached passwords; verify Unicode support; check for max length restrictions that could indicate hashing issues",
+      "risk_theme": "authentication",
+      "related_frameworks": ["owasp_wstg"],
+      "cross_framework_refs": {"owasp_wstg": ["WSTG-ATHN-01"]},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "ASVS-V2.7",
+      "title": "Out-of-Band Verifier",
+      "text": "Verify that out-of-band authenticators (OTP via email/SMS) expire after a reasonable period, are single-use, not transmitted in plaintext, and that the delivery channel cannot be intercepted.",
+      "evidence_expectation": "OTP expiry test results; OTP reuse test; OTP channel security analysis",
+      "assessment_procedure": "Test OTP expiry; attempt OTP reuse; verify OTP not sent in URL; test SIM-swap and email interception mitigations; verify account lockout after failed OTP attempts",
+      "risk_theme": "authentication",
+      "related_frameworks": ["owasp_wstg"],
+      "cross_framework_refs": {"owasp_wstg": ["WSTG-ATHN-06"]},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "ASVS-V3.3",
+      "title": "Session Termination",
+      "text": "Verify that logout and session expiration invalidate the session token on the server side. Verify that all active sessions are invalidated on password change or account lock.",
+      "evidence_expectation": "Session invalidation test results; token reuse after logout test; concurrent session management testing",
+      "assessment_procedure": "Log out and attempt to reuse the session token; change password and verify all sessions terminated; test session fixation; verify idle timeout enforced",
+      "risk_theme": "session_management",
+      "related_frameworks": ["owasp_wstg"],
+      "cross_framework_refs": {"owasp_wstg": ["WSTG-SESS-01"]},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "ASVS-V4.1",
+      "title": "General Access Control",
+      "text": "Verify that all application components enforce access controls, that the principle of least privilege is applied, and that access control failures result in safe defaults (deny by default).",
+      "evidence_expectation": "Access control matrix; privilege escalation test results; forced browse test results",
+      "assessment_procedure": "Test all protected resources without authentication; test with lower-privilege roles; verify deny-by-default; check for inconsistent enforcement across API and UI layers",
+      "risk_theme": "access_control",
+      "related_frameworks": ["owasp_wstg", "owasp_api10"],
+      "cross_framework_refs": {"owasp_api10": ["API5-BFLA"]},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "ASVS-V4.2",
+      "title": "Operation Level Access Control",
+      "text": "Verify that sensitive data and APIs are protected against direct object reference attacks, that insecure direct object references (IDOR) are not accessible across account or role boundaries.",
+      "evidence_expectation": "IDOR/BOLA test cases; cross-account object access attempts; automated IDOR scanning results",
+      "assessment_procedure": "Map all data objects with user-controlled identifiers; attempt cross-account access; test with manipulated IDs; verify server-side authorisation for every object access",
+      "risk_theme": "access_control",
+      "related_frameworks": ["owasp_api10"],
+      "cross_framework_refs": {"owasp_api10": ["API1-BOLA", "API3-BOPLA"]},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "ASVS-V5.3",
+      "title": "Output Encoding and Injection Prevention",
+      "text": "Verify that output encoding is applied context-sensitively to prevent XSS. Verify that parameterised queries or ORM are used for all database queries. Verify that OS commands use parameterised interfaces.",
+      "evidence_expectation": "XSS test results; SQLi test results; OS command injection test results; code review snippets showing parameterisation",
+      "assessment_procedure": "Test all output for XSS in HTML/JS/CSS contexts; test all database inputs for SQL injection; test OS command injection points; verify template injection prevention",
+      "risk_theme": "injection",
+      "related_frameworks": ["owasp_wstg", "owasp_api10"],
+      "cross_framework_refs": {"owasp_wstg": ["WSTG-INPV-01", "WSTG-INPV-05"], "owasp_api10": ["API8-INJECT"]},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "ASVS-V12.3",
+      "title": "File Execution",
+      "text": "Verify that user-submitted file names and paths are validated before use to prevent path traversal, LFI, and RFI. Verify that uploaded files are not executed from attacker-controlled paths.",
+      "evidence_expectation": "Path traversal test results; file upload security test results; file execution test results",
+      "assessment_procedure": "Test path traversal in file parameters; test LFI with ../../../etc/passwd variants; test file upload for shell upload; verify upload storage outside web root; test filename sanitisation",
+      "risk_theme": "file_handling",
+      "related_frameworks": ["owasp_wstg"],
+      "cross_framework_refs": {"owasp_wstg": ["WSTG-ATHZ-01"]},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "ASVS-V12.6",
+      "title": "SSRF Protection",
+      "text": "Verify that the web or application server is configured to allow only necessary outbound connections, and that URL-accepting user inputs are validated against a strict allowlist to prevent SSRF.",
+      "evidence_expectation": "SSRF test results; URL validation review; outbound connectivity test; cloud metadata endpoint access attempt",
+      "assessment_procedure": "Test all URL-accepting inputs with internal IP addresses, cloud metadata endpoints, and localhost; verify DNS rebinding prevention; check allowlist/blocklist implementation; test with bypass techniques (decimal IP, IPv6)",
+      "risk_theme": "server_side",
+      "related_frameworks": ["owasp_api10"],
+      "cross_framework_refs": {"owasp_api10": ["API6-SSRF"]},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "ASVS-V13.2",
+      "title": "RESTful Web Service",
+      "text": "Verify that RESTful APIs use strong content type enforcement, validate JSON schemas, implement rate limiting, and use appropriate HTTP methods with authorisation checks for each.",
+      "evidence_expectation": "Content type enforcement test; JSON schema validation results; rate limiting test evidence",
+      "assessment_procedure": "Test content type manipulation; send malformed JSON; verify rate limits enforced; test HTTP method override; check JSONP is disabled; verify no unnecessary HTTP methods allowed",
+      "risk_theme": "api_security",
+      "related_frameworks": ["owasp_api10"],
+      "cross_framework_refs": {"owasp_api10": ["API4-URC", "API7-MISC"]},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "ASVS-V14.2",
+      "title": "Dependency Security",
+      "text": "Verify that all components — frameworks, libraries, and third-party packages — are actively maintained, free from known vulnerabilities, and sourced from authenticated repositories.",
+      "evidence_expectation": "Dependency scan output (OWASP Dependency-Check, Snyk, npm audit); CVE list for identified packages; patching policy",
+      "assessment_procedure": "Run dependency vulnerability scanner; identify components with known CVEs; verify patch cadence; check for end-of-life components; verify package integrity checks (checksums/SCA)",
+      "risk_theme": "supply_chain",
+      "related_frameworks": ["owasp_api10"],
+      "cross_framework_refs": {"owasp_api10": ["API10-UAE"]},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "ASVS-V14.4",
+      "title": "HTTP Security Headers",
+      "text": "Verify that every HTTP response contains security headers: Content-Security-Policy, X-Content-Type-Options, X-Frame-Options, Cache-Control, and Strict-Transport-Security with appropriate values.",
+      "evidence_expectation": "Security headers audit for all endpoints; CSP policy review; HSTS max-age verification",
+      "assessment_procedure": "Check all security headers present and correctly valued; verify CSP blocks unsafe-inline/unsafe-eval; verify HSTS includes subdomains; check Referrer-Policy and Permissions-Policy configured",
+      "risk_theme": "configuration",
+      "related_frameworks": ["owasp_wstg", "owasp_api10"],
+      "cross_framework_refs": {"owasp_wstg": ["WSTG-CONF-07"], "owasp_api10": ["API7-MISC"]},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "ASVS-V15.1",
+      "title": "Business Logic",
+      "text": "Verify that business logic flows require all steps to be completed in order, that values cannot be manipulated (price, quantity, role), and that critical operations implement anti-automation and rate limiting.",
+      "evidence_expectation": "Workflow step-skipping test cases; price/value manipulation test results; race condition test evidence",
+      "assessment_procedure": "Map all multi-step workflows; attempt step skipping; manipulate quantity/price fields; test for race conditions in checkout/transfer flows; verify server-side validation of all business-critical values",
+      "risk_theme": "business_logic",
+      "related_frameworks": ["owasp_wstg"],
+      "cross_framework_refs": {"owasp_wstg": ["WSTG-BUSL-01"]},
+      "applicable_packs": ["vapt"]
+    }
+  ]
+}

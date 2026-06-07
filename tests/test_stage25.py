@@ -78,7 +78,7 @@ def seeded_project(db: Session):
     db.add(org)
     db.flush()
 
-    client = Client(name="TestCo", organization_id=org.id)
+    client = Client(entity_name="TestCo", organization_id=org.id)
     db.add(client)
     db.flush()
 
@@ -161,7 +161,7 @@ def test_generate_plan_grc_maturity(db: Session, engine):
     session.add(org)
     session.flush()
 
-    client = Client(name="GRC Corp", organization_id=org.id)
+    client = Client(entity_name="GRC Corp", organization_id=org.id)
     session.add(client)
     session.flush()
 

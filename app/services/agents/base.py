@@ -6,14 +6,24 @@ GUARDRAILS (enforced in code, not prompt-only):
   - Agents cannot release reports → agent_release_report raises AgentGuardError
   - Agents cannot access restricted evidence without the requesting user's permission
 
-Every agent action writes an AuditTrailEvent with after={"actor_type": "agent"}.
-actor_id is set to None (agents have no user account); requested_by is stored in after.
+Every agent action writes an AuditTrailEvent using the agent sentinel user as actor_id.
+The sentinel user (agent@system.internal) is seeded by scripts/seed.py and is inactive
+(cannot log in). requested_by carries the human user ID that triggered the agent.
 """
 from __future__ import annotations
 
 from typing import Any, Optional
 
 from sqlalchemy.orm import Session
+
+AGENT_SENTINEL_EMAIL = "agent@system.internal"
+
+
+def _get_sentinel_id(db: Session) -> Optional[str]:
+    """Return the agent sentinel user's id, or None if not yet seeded."""
+    from app.models.users import User
+    sentinel = db.query(User).filter_by(email=AGENT_SENTINEL_EMAIL).first()
+    return sentinel.id if sentinel else None
 
 
 class AgentGuardError(Exception):
@@ -22,22 +32,37 @@ class AgentGuardError(Exception):
 
 # ── Guardrail stubs ───────────────────────────────────────────────────────────
 
-def agent_decide_approval(*args, **kwargs) -> None:
-    """Agents cannot approve ApprovalRequests. Always raises AgentGuardError."""
+def agent_decide_approval(db: Session, *, project_id: Optional[str] = None,
+                          requested_by: Optional[str] = None, **kwargs) -> None:
+    """Agents cannot approve ApprovalRequests. Logs a blocked event and raises."""
+    log_agent_action(db, action="agent.blocked.decide_approval",
+                     target_type="approval_request", target_id="n/a",
+                     project_id=project_id, requested_by=requested_by,
+                     after={"reason": "agents cannot approve"})
     raise AgentGuardError(
         "Agents cannot approve ApprovalRequests. Human approval is required."
     )
 
 
-def agent_set_severity(*args, **kwargs) -> None:
-    """Agents cannot confirm or set finding severity. Always raises AgentGuardError."""
+def agent_set_severity(db: Session, *, project_id: Optional[str] = None,
+                       requested_by: Optional[str] = None, **kwargs) -> None:
+    """Agents cannot confirm or set finding severity. Logs a blocked event and raises."""
+    log_agent_action(db, action="agent.blocked.set_severity",
+                     target_type="finding", target_id="n/a",
+                     project_id=project_id, requested_by=requested_by,
+                     after={"reason": "agents cannot confirm severity"})
     raise AgentGuardError(
         "Agents cannot set or confirm finding severity. A human reviewer must decide."
     )
 
 
-def agent_release_report(*args, **kwargs) -> None:
-    """Agents cannot release reports. Always raises AgentGuardError."""
+def agent_release_report(db: Session, *, project_id: Optional[str] = None,
+                         requested_by: Optional[str] = None, **kwargs) -> None:
+    """Agents cannot release reports. Logs a blocked event and raises."""
+    log_agent_action(db, action="agent.blocked.release_report",
+                     target_type="deliverable", target_id="n/a",
+                     project_id=project_id, requested_by=requested_by,
+                     after={"reason": "agents cannot release reports"})
     raise AgentGuardError(
         "Agents cannot release reports. Report release requires human approval."
     )
@@ -55,8 +80,9 @@ def log_agent_action(
     requested_by: Optional[str] = None,
     after: Optional[dict] = None,
 ) -> None:
-    """Write an AuditTrailEvent tagged actor_type=agent (actor_id=None)."""
+    """Write an AuditTrailEvent using the agent sentinel user as actor_id."""
     from app.services.audit import record_event
+    sentinel_id = _get_sentinel_id(db)
     payload = {"actor_type": "agent"}
     if requested_by:
         payload["requested_by"] = requested_by
@@ -67,7 +93,7 @@ def log_agent_action(
         action=action,
         target_type=target_type,
         target_id=target_id,
-        actor_id=None,
+        actor_id=sentinel_id,
         project_id=project_id,
         after=payload,
     )

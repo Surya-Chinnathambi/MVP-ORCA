@@ -1,0 +1,139 @@
+{
+  "key": "owasp_wstg",
+  "title": "OWASP Web Security Testing Guide v4.2",
+  "version": "4.2",
+  "controls": [
+    {
+      "id": "WSTG-INFO-01",
+      "title": "Conduct Search Engine Discovery and Reconnaissance",
+      "text": "Use search engines and public sources to discover sensitive information about the target: exposed files, directories, credentials, configuration data, and internal paths indexed by search engines.",
+      "evidence_expectation": "Google/Shodan/Censys dork results; cached pages; exposed files list",
+      "assessment_procedure": "Run targeted dorks for the domain; check Shodan/Censys for exposed services; document all discovered sensitive data",
+      "risk_theme": "information_gathering",
+      "related_frameworks": ["ptes"],
+      "cross_framework_refs": {"ptes": ["PTES-INTEL-01"]},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "WSTG-INFO-02",
+      "title": "Fingerprint Web Server and Application",
+      "text": "Identify the web server software, version, operating system, and application framework to understand the attack surface and applicable CVEs.",
+      "evidence_expectation": "Nmap/Wappalyzer output; HTTP response headers; version banners",
+      "assessment_procedure": "Analyse HTTP response headers, error pages, and URL patterns; run technology detection tools; correlate versions with CVE databases",
+      "risk_theme": "information_gathering",
+      "related_frameworks": ["ptes"],
+      "cross_framework_refs": {"ptes": ["PTES-INTEL-01"]},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "WSTG-CONF-01",
+      "title": "Test Network and Application Configuration",
+      "text": "Identify misconfigured services, insecure HTTP methods, unnecessary services, default credentials, and debug endpoints that increase the attack surface.",
+      "evidence_expectation": "Service enumeration output; HTTP OPTIONS response; admin/debug endpoint discovery results",
+      "assessment_procedure": "Test HTTP methods allowed; check for exposed admin interfaces; verify no default credentials; enumerate all services",
+      "risk_theme": "configuration",
+      "related_frameworks": ["owasp_asvs"],
+      "cross_framework_refs": {"owasp_asvs": ["ASVS-V14.2"]},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "WSTG-CONF-07",
+      "title": "Test HTTP Strict Transport Security and Security Headers",
+      "text": "Verify that HSTS, CSP, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, and Permissions-Policy headers are correctly configured to mitigate a range of client-side attacks.",
+      "evidence_expectation": "Security headers report (SecurityHeaders.com or manual); curl response header dump",
+      "assessment_procedure": "Check all security headers present and correctly configured; verify HSTS max-age sufficient; validate CSP does not allow unsafe-inline or unsafe-eval",
+      "risk_theme": "configuration",
+      "related_frameworks": ["owasp_asvs"],
+      "cross_framework_refs": {"owasp_asvs": ["ASVS-V14.4"]},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "WSTG-ATHN-01",
+      "title": "Test Credentials Transported over Encrypted Channel",
+      "text": "Ensure all authentication credentials are submitted exclusively over HTTPS/TLS and that no credential leakage occurs in URLs, logs, or referer headers.",
+      "evidence_expectation": "Network capture showing TLS-encrypted credentials; absence of credentials in GET parameters",
+      "assessment_procedure": "Intercept login requests; verify TLS; check that passwords do not appear in URLs, browser history, or server logs",
+      "risk_theme": "authentication",
+      "related_frameworks": ["owasp_asvs"],
+      "cross_framework_refs": {"owasp_asvs": ["ASVS-V2.7"]},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "WSTG-ATHN-06",
+      "title": "Test for Bypassing Authentication Schema",
+      "text": "Test whether authentication controls can be bypassed through parameter manipulation, forced browsing, SQL injection, session token prediction, or logic flaws.",
+      "evidence_expectation": "Authentication bypass proof-of-concept; forced browse results; parameter manipulation test cases",
+      "assessment_procedure": "Attempt forced browsing to authenticated pages; test parameter manipulation; try SQL injection in login; test remember-me and stay-logged-in mechanisms",
+      "risk_theme": "authentication",
+      "related_frameworks": ["owasp_asvs"],
+      "cross_framework_refs": {"owasp_asvs": ["ASVS-V2.1"]},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "WSTG-ATHZ-01",
+      "title": "Test Directory Traversal and File Include",
+      "text": "Test for path traversal vulnerabilities that allow access to files outside the web root, and Local/Remote File Inclusion flaws that enable execution of arbitrary code.",
+      "evidence_expectation": "Traversal test payloads and responses; successful file read proof-of-concept",
+      "assessment_procedure": "Test file parameters with traversal sequences; test URL includes; check for /etc/passwd, windows/win.ini reads; test with encoding variants",
+      "risk_theme": "access_control",
+      "related_frameworks": ["owasp_asvs"],
+      "cross_framework_refs": {"owasp_asvs": ["ASVS-V12.3"]},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "WSTG-INPV-01",
+      "title": "Test for Reflected Cross-Site Scripting",
+      "text": "Test for reflected XSS in all user-controlled inputs including URL parameters, form fields, HTTP headers, and JSON/XML data submitted to the application.",
+      "evidence_expectation": "XSS payload execution screenshots; affected parameter list; browser console proof",
+      "assessment_procedure": "Test all input vectors with context-appropriate XSS payloads; verify reflected in response; test in different browsers; check for DOM XSS",
+      "risk_theme": "input_validation",
+      "related_frameworks": ["owasp_asvs"],
+      "cross_framework_refs": {"owasp_asvs": ["ASVS-V5.3"]},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "WSTG-INPV-05",
+      "title": "Test for SQL Injection",
+      "text": "Test all user-supplied inputs for SQL injection vulnerabilities including classic, blind (time-based and boolean-based), out-of-band, and second-order injection.",
+      "evidence_expectation": "SQLMap output or manual injection proof; database version/table data extracted; affected parameter list",
+      "assessment_procedure": "Test inputs with SQL metacharacters; run SQLMap against all entry points; test for blind injection; verify input not sanitised; check ORM usage",
+      "risk_theme": "injection",
+      "related_frameworks": ["owasp_asvs"],
+      "cross_framework_refs": {"owasp_asvs": ["ASVS-V5.3"]},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "WSTG-SESS-01",
+      "title": "Test Session Management Schema",
+      "text": "Analyse session token complexity, randomness, predictability, and proper secure/httponly flag configuration. Test for session fixation, hijacking, and improper invalidation.",
+      "evidence_expectation": "Session token analysis report (Burp Sequencer); token entropy calculation; flag inspection results",
+      "assessment_procedure": "Capture multiple session tokens; analyse entropy; check secure/httponly flags; test token reuse after logout; verify invalidation on password change",
+      "risk_theme": "session_management",
+      "related_frameworks": ["owasp_asvs"],
+      "cross_framework_refs": {"owasp_asvs": ["ASVS-V3.3"]},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "WSTG-BUSL-01",
+      "title": "Test Business Logic Flows",
+      "text": "Test for business logic vulnerabilities including workflow bypass, negative value manipulation, forced browsing through multi-step processes, and race conditions in critical operations.",
+      "evidence_expectation": "Business logic bypass test cases; race condition proof-of-concept; workflow manipulation evidence",
+      "assessment_procedure": "Map all multi-step workflows; test step skipping; try negative quantities; test concurrent requests for race conditions; test parameter manipulation in purchase flows",
+      "risk_theme": "business_logic",
+      "related_frameworks": ["owasp_asvs"],
+      "cross_framework_refs": {"owasp_asvs": ["ASVS-V15.1"]},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "WSTG-CLNT-01",
+      "title": "Test for DOM-Based Cross-Site Scripting",
+      "text": "Identify DOM-based XSS by analysing client-side JavaScript that writes to dangerous sinks (innerHTML, document.write, eval) using attacker-controlled sources (location.hash, URL parameters).",
+      "evidence_expectation": "Source-sink analysis results; DOM XSS payload execution proof; affected JavaScript file and function",
+      "assessment_procedure": "Review JavaScript for dangerous sinks; trace data from URL sources to sinks; test payloads in hash/fragment parameters; use DOM Invader or manual analysis",
+      "risk_theme": "client_side",
+      "related_frameworks": ["owasp_asvs"],
+      "cross_framework_refs": {"owasp_asvs": ["ASVS-V5.3"]},
+      "applicable_packs": ["vapt"]
+    }
+  ]
+}

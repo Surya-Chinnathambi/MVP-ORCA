@@ -70,7 +70,7 @@ def project_fixture(db):
     org = Organization(name="S19 Org")
     session.add(org)
     session.flush()
-    client = Client(name="S19 Client", organization_id=org.id)
+    client = Client(entity_name="S19 Client", organization_id=org.id)
     session.add(client)
     session.flush()
     proj = Project(

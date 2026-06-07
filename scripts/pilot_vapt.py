@@ -28,7 +28,7 @@ from app.models.delivery import RemediationAction
 from app.models.evidence import EvidenceItem, EvidenceRequest, EvidenceRequestStatus
 from app.models.scope import ScopeItem, ScopeItemKind
 from app.models.tasks import Finding, FindingSeverity, FindingSource, FindingStatus
-from app.models.users import Role, RoleName, User
+from app.models.users import Permission, Role, RoleName, ScopeLevel, User
 from app.models.workflow import ApprovalRequest, AuditTrailEvent
 from app.services.audit import decide_approval, record_event, request_approval
 from app.services.auth import hash_password
@@ -113,7 +113,7 @@ def _make_fixture_run_dir(tmp_path: Path, project_id: str) -> Path:
     (run_dir / "report_bundle.json").write_text(json.dumps({
         "project_ref": project_id,
         "profile": "external",
-        "retest_status": "scheduled",
+        "retest_status": "pending",
         "residual_risk": "Medium — high severity finding unresolved pending remediation",
         "counts": {"findings": 2, "evidence": 3},
     }), encoding="utf-8")
@@ -141,11 +141,20 @@ def run_pilot() -> None:
     db.add(admin)
     db.commit()
     db.refresh(admin)
+
+    # Grant admin partner + platform_admin at org level so decide_approval role check passes
+    partner_role = db.query(Role).filter_by(name=RoleName.partner.value).first()
+    pa_role = db.query(Role).filter_by(name=RoleName.platform_admin.value).first()
+    for role in [partner_role, pa_role]:
+        if role:
+            db.add(Permission(user_id=admin.id, scope_level=ScopeLevel.organization.value,
+                              scope_id=None, role_id=role.id))
+    db.commit()
     print(f"  Admin:  {admin.email}  (id={admin.id[:8]}…)")
 
     # ── 1. Client + project ───────────────────────────────────────────────────
     _sep("1. Client + project setup")
-    client = Client(name="Skyline Commerce Ltd", sector="ecommerce")
+    client = Client(entity_name="Skyline Commerce Ltd", sector="ecommerce")
     db.add(client)
     db.flush()
     project = Project(
@@ -217,20 +226,13 @@ def run_pilot() -> None:
     print(f"  Findings imported:       {len(result.findings)}")
     print(f"  All findings status:     in_review (not auto-approved)")
 
-    # Approve imported scope items
-    for si in result.scope_items:
-        ap = request_approval(
-            db,
-            project_id=project.id,
-            target_type="scope",
-            target_id=si.id,
-            reason="Approve imported PT-Orc scope",
-            approver_role="partner",
-            requested_by=admin.id,
-        )
-        db.commit()
-        decide_approval(db, approval_id=ap.id, approved=True, decider_id=admin.id)
-        si.approved = True
+    # Approve imported scope items — approvals were already created by the importer
+    for ap_id in result.scope_approvals:
+        decide_approval(db, approval_id=ap_id, approved=True, decider_id=admin.id)
+    for si_id in result.scope_items:
+        si = db.get(ScopeItem, si_id)
+        if si:
+            si.approved = True
     db.commit()
     print(f"  Imported scope items approved.")
 

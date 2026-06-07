@@ -45,7 +45,7 @@ def seeded_db(engine, SessionTest):
         for name in [r.value for r in RoleName]:
             db.add(Role(name=name))
         db.flush()
-        admin_role = db.query(Role).filter_by(name=RoleName.admin).first()
+        admin_role = db.query(Role).filter_by(name=RoleName.platform_admin).first()
         admin = User(
             email="admin@test.local",
             password_hash=hash_password("admin123"),
@@ -198,7 +198,7 @@ def test_approval_gateway(SessionTest):
     """Approval request created pending → decided approved → audit event written."""
     with SessionTest() as db:
         # Need a project for context
-        client_row = Client(name="GW Test Corp")
+        client_row = Client(entity_name="GW Test Corp")
         db.add(client_row)
         db.flush()
         project = Project(client_id=client_row.id, service_type=ServiceType.dpdp)
@@ -213,7 +213,7 @@ def test_approval_gateway(SessionTest):
             target_type="scope_item",
             target_id="fake-scope-id",
             reason="Added exclusion for PCI-DSS scope",
-            approver_role=RoleName.reviewer.value,
+            approver_role=RoleName.senior_reviewer.value,
             change_before={"approved": False},
             change_after={"approved": True},
             requested_by=actor.id,
@@ -244,7 +244,7 @@ def test_approval_gateway(SessionTest):
 
 def test_record_event_standalone(SessionTest):
     with SessionTest() as db:
-        client_row = Client(name="Event Test Corp")
+        client_row = Client(entity_name="Event Test Corp")
         db.add(client_row)
         db.flush()
         project = Project(client_id=client_row.id, service_type=ServiceType.vapt)

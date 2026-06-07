@@ -171,7 +171,7 @@ def _dpdp_run(_db, tmp_path_factory):
     tmp = tmp_path_factory.mktemp("dpdp")
 
     # Client + project
-    client = Client(name="Pilot DPDP Corp", sector="fintech")
+    client = Client(entity_name="Pilot DPDP Corp", sector="fintech")
     db.add(client)
     db.flush()
     project = Project(
@@ -282,7 +282,7 @@ def _vapt_run(_db, tmp_path_factory):
     tmp = tmp_path_factory.mktemp("vapt")
 
     # Client + project
-    client = Client(name="Pilot VAPT Corp", sector="ecommerce")
+    client = Client(entity_name="Pilot VAPT Corp", sector="ecommerce")
     db.add(client)
     db.flush()
     project = Project(

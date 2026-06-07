@@ -43,7 +43,7 @@ def test_all_17_tables_created(db):
 
 def test_client_project_scopeitem_chain(db):
     """Create Client → Project → ScopeItem and verify FK chain + timestamps."""
-    client = Client(name="Acme Corp", sector="finance")
+    client = Client(entity_name="Acme Corp", sector="finance")
     db.add(client)
     db.flush()
 
@@ -66,7 +66,7 @@ def test_client_project_scopeitem_chain(db):
     # Query back and verify
     c = db.get(Client, client.id)
     assert c is not None
-    assert c.name == "Acme Corp"
+    assert c.entity_name == "Acme Corp"
     assert c.created_at is not None
 
     p = db.get(Project, project.id)
@@ -111,7 +111,7 @@ def test_framework_requirement(db):
     db.flush()
 
     # Reuse the project from previous test (create a fresh one)
-    client = Client(name="Beta Ltd")
+    client = Client(entity_name="Beta Ltd")
     db.add(client)
     db.flush()
     project = Project(client_id=client.id, service_type=ServiceType.dpdp)
@@ -135,7 +135,7 @@ def test_framework_requirement(db):
 
 
 def test_finding_and_approval_workflow(db):
-    client = Client(name="Gamma Inc")
+    client = Client(entity_name="Gamma Inc")
     db.add(client)
     db.flush()
     project = Project(client_id=client.id, service_type=ServiceType.vapt)

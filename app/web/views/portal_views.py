@@ -1,6 +1,7 @@
 """Client portal views — strictly scoped to client_approver / client_contributor / readonly."""
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from typing import Optional
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile, status
@@ -65,6 +66,43 @@ def _scoped_project_id(user: User, db: Session, requested: Optional[str] = None)
     return next(iter(allowed))
 
 
+# ── Terms ─────────────────────────────────────────────────────────────────────
+
+@router.get("/terms", response_class=HTMLResponse)
+def portal_terms_page(
+    request: Request,
+    user: User = Depends(_portal_user),
+    db: Session = Depends(get_db),
+):
+    return templates.TemplateResponse(request, "portal/terms.html", {
+        "user": user,
+        "already_accepted": bool(user.terms_accepted_at),
+    })
+
+
+@router.post("/terms/accept")
+def portal_terms_accept(
+    request: Request,
+    agree: str = Form(default=""),
+    user: User = Depends(_portal_user),
+    db: Session = Depends(get_db),
+):
+    if agree != "1":
+        return RedirectResponse("/portal/terms", status_code=302)
+    now = datetime.now(timezone.utc)
+    user.terms_accepted_at = now
+    record_event(
+        db,
+        action="terms.accepted",
+        target_type="user",
+        target_id=user.id,
+        actor_id=user.id,
+        after={"terms_version": "TG-AO-CLIENT-TOS-2026-06", "accepted_at": now.isoformat()},
+    )
+    db.commit()
+    return RedirectResponse("/portal/dashboard", status_code=302)
+
+
 # ── Dashboard ────────────────────────────────────────────────────────────────
 
 @router.get("/dashboard", response_class=HTMLResponse)
@@ -73,6 +111,8 @@ def portal_dashboard(
     user: User = Depends(_portal_user),
     db: Session = Depends(get_db),
 ):
+    if not user.terms_accepted_at:
+        return RedirectResponse("/portal/terms", status_code=302)
     project_id = _scoped_project_id(user, db)
     from app.models.clients import Project
     project = db.get(Project, project_id)

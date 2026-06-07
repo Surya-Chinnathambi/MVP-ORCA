@@ -5,7 +5,7 @@ from fastapi import Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
 from app.db import get_db
-from app.models.users import Permission, Role, RoleName, User
+from app.models.users import Permission, Role, RoleName, ScopeLevel, User
 
 
 def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
@@ -16,6 +16,42 @@ def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
     if user is None or not user.is_active:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found or inactive")
     return user
+
+
+def require_permission(*role_names: str, scope_level: Optional[str] = None) -> Callable:
+    """Dependency factory: caller must hold at least one of the given roles.
+
+    If scope_level is given, the Permission row must also match that level
+    (or the user must hold an organization-wide permission in one of the roles).
+    """
+
+    def _check(
+        current_user: User = Depends(get_current_user),
+        db: Session = Depends(get_db),
+    ) -> User:
+        roles = db.query(Role).filter(Role.name.in_(role_names)).all()
+        role_ids = [r.id for r in roles]
+        if not role_ids:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                                detail="Required roles not configured")
+        q = db.query(Permission).filter(
+            Permission.user_id == current_user.id,
+            Permission.role_id.in_(role_ids),
+        )
+        if scope_level:
+            q = q.filter(
+                (Permission.scope_level == scope_level) |
+                (Permission.scope_level == ScopeLevel.organization.value)
+            )
+        perm = q.first()
+        if perm is None:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"Requires one of roles: {list(role_names)}",
+            )
+        return current_user
+
+    return _check
 
 
 def require_role(role_name: str) -> Callable:
@@ -102,4 +138,4 @@ def require_portal_role(
 
 
 # Common pre-built dependency aliases
-require_admin = require_role(RoleName.admin.value)
+require_admin = require_permission(RoleName.platform_admin.value)

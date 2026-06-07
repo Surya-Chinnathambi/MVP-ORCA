@@ -39,7 +39,7 @@ def seeded_db(engine, SessionTest):
         for name in [r.value for r in RoleName]:
             db.add(Role(name=name))
         db.flush()
-        admin_role = db.query(Role).filter_by(name=RoleName.admin).first()
+        admin_role = db.query(Role).filter_by(name=RoleName.platform_admin).first()
         admin = User(
             email="admin@stage3.local",
             password_hash=hash_password("admin123"),

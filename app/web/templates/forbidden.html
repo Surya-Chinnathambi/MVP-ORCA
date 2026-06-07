@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Access Denied{% endblock %}
+{% block content %}
+<div class="min-h-[60vh] flex items-center justify-center">
+  <div class="bg-white rounded-xl shadow-md p-10 max-w-md w-full text-center">
+    <div class="text-6xl mb-4">🚫</div>
+    <h1 class="text-2xl font-bold text-gray-800 mb-2">Access Denied</h1>
+    <p class="text-gray-500 mb-6">
+      You don't have the required role to access this page.<br>
+      Contact your platform administrator to request access.
+    </p>
+    {% if user %}
+    <div class="bg-gray-50 rounded-lg p-3 mb-6 text-sm text-gray-600">
+      Logged in as <strong>{{ user.email }}</strong>
+      {% if user_highest_role %}
+      with role <strong>{{ user_highest_role | replace('_', ' ') | title }}</strong>
+      {% endif %}
+    </div>
+    {% endif %}
+    <div class="flex gap-3 justify-center">
+      <a href="/ui/clients"
+        class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded text-sm font-medium transition-colors">
+        Go to Dashboard
+      </a>
+      <a href="javascript:history.back()"
+        class="border border-gray-300 hover:bg-gray-50 text-gray-700 px-5 py-2 rounded text-sm font-medium transition-colors">
+        Go Back
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

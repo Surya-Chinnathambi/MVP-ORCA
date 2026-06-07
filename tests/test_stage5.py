@@ -44,7 +44,7 @@ def seeded(engine, SessionTest):
         for name in [r.value for r in RoleName]:
             db.add(Role(name=name))
         db.flush()
-        admin_role = db.query(Role).filter_by(name=RoleName.admin).first()
+        admin_role = db.query(Role).filter_by(name=RoleName.platform_admin).first()
         admin = User(
             email="admin@stage5.local",
             password_hash=hash_password("admin123"),
@@ -56,7 +56,7 @@ def seeded(engine, SessionTest):
         db.add(Permission(user_id=admin.id, role_id=admin_role.id, scope_level="project"))
 
         # Create client + DPDP project with plan
-        client_row = Client(name="Stage5 Corp")
+        client_row = Client(entity_name="Stage5 Corp")
         db.add(client_row)
         db.flush()
         project = Project(

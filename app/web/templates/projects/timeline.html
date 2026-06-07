@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Timeline — {{ project.id[:8] }}{% endblock %}
+{% block content %}
+<div class="mb-2 text-sm text-gray-500">
+  <a href="/ui/projects/{{ project.id }}" class="hover:underline">← Project</a>
+</div>
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-xl font-bold text-gray-800">Project Timeline &amp; Milestones</h1>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+  <!-- Milestones list -->
+  <div class="lg:col-span-2 space-y-3">
+    {% if milestones %}
+    {% for m in milestones %}
+    <div class="bg-white rounded-lg shadow p-4 flex items-start gap-4">
+      <div class="mt-0.5 flex-shrink-0">
+        {% if m.get('status') == 'completed' %}
+        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-green-100 text-green-700 font-bold text-sm">✓</span>
+        {% elif m.get('status') == 'in_progress' %}
+        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-blue-100 text-blue-700 font-bold text-sm">▶</span>
+        {% elif m.get('status') == 'at_risk' %}
+        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-red-100 text-red-700 font-bold text-sm">!</span>
+        {% else %}
+        <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-gray-100 text-gray-500 font-bold text-sm">○</span>
+        {% endif %}
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center justify-between gap-2">
+          <p class="font-medium text-gray-800">{{ m.get('title', '—') }}</p>
+          <span class="text-xs text-gray-400 flex-shrink-0">{{ m.get('date', '') }}</span>
+        </div>
+        {% if m.get('notes') %}
+        <p class="text-xs text-gray-500 mt-0.5">{{ m['notes'] }}</p>
+        {% endif %}
+        <span class="mt-1 inline-block px-2 py-0.5 rounded-full text-xs font-medium
+          {{ 'bg-green-100 text-green-700' if m.get('status') == 'completed'
+             else 'bg-blue-100 text-blue-700' if m.get('status') == 'in_progress'
+             else 'bg-red-100 text-red-700' if m.get('status') == 'at_risk'
+             else 'bg-gray-100 text-gray-500' }}">
+          {{ m.get('status', 'upcoming') | replace('_', ' ') | title }}
+        </span>
+      </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="bg-white rounded-lg shadow p-8 text-center text-gray-400">
+      No milestones defined yet. Add the first one using the form.
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Add milestone form -->
+  <div class="bg-white rounded-lg shadow p-5">
+    <h2 class="font-semibold text-gray-700 mb-4">Add Milestone</h2>
+    <form action="/ui/projects/{{ project.id }}/timeline" method="post" class="space-y-3">
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1">Title</label>
+        <input type="text" name="title" required placeholder="e.g. Kick-off call"
+          class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1">Date</label>
+        <input type="date" name="date" required
+          class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1">Status</label>
+        <select name="status"
+          class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+          <option value="upcoming">Upcoming</option>
+          <option value="in_progress">In Progress</option>
+          <option value="completed">Completed</option>
+          <option value="at_risk">At Risk</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1">Notes (optional)</label>
+        <textarea name="notes" rows="2" placeholder="Additional details…"
+          class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400"></textarea>
+      </div>
+      <button type="submit"
+        class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded text-sm font-medium btn-submit">
+        Add Milestone
+      </button>
+    </form>
+  </div>
+
+</div>
+{% endblock %}

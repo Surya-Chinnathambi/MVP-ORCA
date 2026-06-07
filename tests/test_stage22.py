@@ -88,7 +88,7 @@ def project_fixture(db):
     org = Organization(name="S22 Org")
     session.add(org)
     session.flush()
-    client = Client(name="S22 Client", organization_id=org.id)
+    client = Client(entity_name="S22 Client", organization_id=org.id)
     session.add(client)
     session.flush()
     proj = Project(
@@ -133,7 +133,7 @@ def test_approval_needed_notifies_right_approver_only(db, project_fixture):
     session.flush()
 
     # Grant admin the 'admin' role so they appear in the approver query
-    admin_role = session.query(Role).filter_by(name=RoleName.admin.value).first()
+    admin_role = session.query(Role).filter_by(name=RoleName.platform_admin.value).first()
     admin_perm = Permission(user_id=admin_id, role_id=admin_role.id, scope_level="project")
     session.add(admin_perm)
     session.flush()

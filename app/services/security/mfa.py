@@ -7,7 +7,7 @@ Recovery:    generate_recovery_codes() → list[str] (plaintext, shown once)
              hash_recovery_code(code) → stored hash
              verify_recovery_code(stored_hashes, code) → bool, returns index if matched
 
-Enforcement: is_mfa_required(role_name) → True for admin / partner / platform_admin roles.
+Enforcement: is_mfa_required(role_name) → True for platform_admin / partner roles.
 """
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ from typing import Optional
 
 import pyotp
 
-_MFA_REQUIRED_ROLES = frozenset({"admin", "partner", "platform_admin"})
+_MFA_REQUIRED_ROLES = frozenset({"platform_admin", "partner"})
 _RECOVERY_CODE_COUNT = 8
 _RECOVERY_CODE_BYTES = 10  # 80 bits → 20 hex chars
 

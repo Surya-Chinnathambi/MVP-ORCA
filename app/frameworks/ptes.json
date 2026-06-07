@@ -1,0 +1,84 @@
+{
+  "key": "ptes",
+  "title": "Penetration Testing Execution Standard v1.1",
+  "version": "1.1",
+  "controls": [
+    {
+      "id": "PTES-PRE-01",
+      "title": "Pre-Engagement Interactions",
+      "text": "Establish the scope, rules of engagement, legal authorisation, testing windows, emergency contacts, and escalation procedures before any testing begins. Obtain written authorisation from the asset owner.",
+      "evidence_expectation": "Signed scope document; rules of engagement; written authorisation letter; emergency contact list; testing window confirmation",
+      "assessment_procedure": "Verify scope document signed by authorised representative; confirm rules of engagement define off-limits actions; verify emergency escalation procedure established; confirm testing window agreed",
+      "risk_theme": "pre_engagement",
+      "related_frameworks": [],
+      "cross_framework_refs": {},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "PTES-INTEL-01",
+      "title": "Intelligence Gathering (OSINT and Active Recon)",
+      "text": "Collect information about the target using passive (OSINT) and active techniques: DNS enumeration, WHOIS, Shodan/Censys, certificate transparency, BGP routing, social engineering intelligence, and network scanning.",
+      "evidence_expectation": "OSINT report; DNS enumeration output; Shodan/Censys results; network scan output (nmap); certificate transparency results",
+      "assessment_procedure": "Document all OSINT sources used; verify passive recon conducted before active; compare scope against discovered assets; identify shadow IT and forgotten subdomains",
+      "risk_theme": "reconnaissance",
+      "related_frameworks": ["owasp_wstg"],
+      "cross_framework_refs": {"owasp_wstg": ["WSTG-INFO-01", "WSTG-INFO-02"]},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "PTES-THREAT-01",
+      "title": "Threat Modelling",
+      "text": "Identify the most likely threat actors, their capabilities, and motivations. Map threats to the target's business context to prioritise testing focus on the most impactful attack paths.",
+      "evidence_expectation": "Threat model document; STRIDE/DREAD or PASTA threat model output; threat actor profile; prioritised attack surface",
+      "assessment_procedure": "Verify threat model created before active testing; confirm threats mapped to business impact; check prioritisation aligns with client's risk profile",
+      "risk_theme": "threat_modelling",
+      "related_frameworks": [],
+      "cross_framework_refs": {},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "PTES-VULN-01",
+      "title": "Vulnerability Research and Analysis",
+      "text": "Identify vulnerabilities in the target through automated scanning, manual analysis, and CVE research. Correlate discovered technologies with known vulnerability databases (NVD, CVE, Exploit-DB).",
+      "evidence_expectation": "Vulnerability scan output (Nessus, OpenVAS, Nuclei); CVE correlation report; manual analysis notes; false positive verification",
+      "assessment_procedure": "Run authenticated and unauthenticated scans; manually verify identified vulnerabilities; check CVE databases for discovered software versions; prioritise by CVSS score and exploitability",
+      "risk_theme": "vulnerability_analysis",
+      "related_frameworks": ["owasp_asvs"],
+      "cross_framework_refs": {"owasp_asvs": ["ASVS-V14.2"]},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "PTES-EXPLOIT-01",
+      "title": "Exploitation",
+      "text": "Attempt to exploit identified vulnerabilities within the agreed rules of engagement to demonstrate real-world impact, achieve proof-of-concept, and establish the exploitability and severity of findings.",
+      "evidence_expectation": "Exploitation proof-of-concept; screenshots of successful exploitation; reverse shell or privilege escalation evidence; impact demonstration (data accessed, services affected)",
+      "assessment_procedure": "Only exploit within agreed scope and rules; document all exploitation attempts (success and failure); demonstrate minimum viable proof without causing service disruption; document post-exploitation impact",
+      "risk_theme": "exploitation",
+      "related_frameworks": ["owasp_wstg"],
+      "cross_framework_refs": {},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "PTES-POST-01",
+      "title": "Post Exploitation and Lateral Movement",
+      "text": "After initial compromise, assess the attacker's ability to maintain persistence, escalate privileges, move laterally within the network, and exfiltrate data to demonstrate chained attack impact.",
+      "evidence_expectation": "Lateral movement evidence; privilege escalation proof; persistence mechanism discovered; data exfiltration path demonstrated (without actual exfiltration)",
+      "assessment_procedure": "Test for credential harvesting from initial foothold; attempt lateral movement to adjacent systems; document privilege escalation paths; map data exfiltration routes; verify network segmentation effectiveness",
+      "risk_theme": "post_exploitation",
+      "related_frameworks": [],
+      "cross_framework_refs": {},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "PTES-REPORT-01",
+      "title": "Reporting",
+      "text": "Produce a structured penetration test report containing an executive summary, technical findings with CVSS scores, reproduction steps, evidence, risk ratings, and actionable remediation recommendations prioritised by business impact.",
+      "evidence_expectation": "Penetration test report document; executive summary; technical findings with CVSS scores; evidence appendix; remediation roadmap",
+      "assessment_procedure": "Verify report contains all required sections; confirm CVSS scores calculated correctly; check remediation guidance is specific and actionable; verify executive summary is non-technical and risk-focused",
+      "risk_theme": "reporting",
+      "related_frameworks": [],
+      "cross_framework_refs": {},
+      "applicable_packs": ["vapt"]
+    }
+  ]
+}

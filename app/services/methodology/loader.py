@@ -1,7 +1,7 @@
 """Pack loader — reads and validates pack JSON against the frozen Pack schema."""
 import json
 from pathlib import Path
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from pydantic import BaseModel, ValidationError
 
@@ -60,6 +60,27 @@ class AdvisoryClinicTemplate(BaseModel):
     guidance: Optional[str] = None
 
 
+class SectorOverlayRequirement(BaseModel):
+    ref_code: str
+    category: str
+    text: str
+    evidence_expectation: Optional[str] = None
+    sector_law: Optional[str] = None
+
+
+class SectorOverlay(BaseModel):
+    label: str
+    icon: Optional[str] = None
+    description: str
+    sensitive_data_types: List[str] = []
+    applicable_regulations: List[str] = []
+    risk_notes: Optional[str] = None
+    additional_requirements: List[SectorOverlayRequirement] = []
+    intake_questions: List[str] = []
+    evidence_requests: List[EvidenceRequestTemplate] = []
+    advisory_clinic_templates: List[AdvisoryClinicTemplate] = []
+
+
 class Pack(BaseModel):
     key: str
     title: str
@@ -77,6 +98,10 @@ class Pack(BaseModel):
     severity_model: Optional[SeverityModel] = None
     review_gates: List[ReviewGate] = []
     advisory_clinic_templates: List[AdvisoryClinicTemplate] = []
+    # VAPT-specific: maps requirement category → PT-Orc phase numbers
+    ptorc_phase_mapping: Optional[Dict[str, List[str]]] = None
+    # DPDP sector overlays — sector-specific requirements, evidence, advisory clinics
+    sector_overlays: Optional[Dict[str, SectorOverlay]] = None
 
 
 # ── Loader ────────────────────────────────────────────────────────────────────

@@ -59,7 +59,7 @@ def _seed(_engine, _SessionMaker):
         db.add(admin)
         db.flush()
 
-        client = Client(name="BotTest Corp")
+        client = Client(entity_name="BotTest Corp")
         db.add(client)
         db.flush()
 

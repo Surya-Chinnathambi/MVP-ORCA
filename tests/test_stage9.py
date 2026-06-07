@@ -48,7 +48,7 @@ def project_id(engine, SessionTest):
     with Session(engine) as db:
         for name in [r.value for r in RoleName]:
             db.add(Role(name=name))
-        client_row = Client(name="Stage9 Corp")
+        client_row = Client(entity_name="Stage9 Corp")
         db.add(client_row)
         db.flush()
         project = Project(

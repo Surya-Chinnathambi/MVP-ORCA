@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Terms &amp; Conditions — TG Audit Orchestrator{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto">
+
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold text-gray-800">Platform Terms &amp; Conditions</h1>
+    <p class="text-gray-500 text-sm mt-1">You must accept these terms before using the TG Audit Orchestrator platform.</p>
+  </div>
+
+  <div class="bg-white rounded-lg shadow p-6 mb-6 space-y-5 text-sm text-gray-700 leading-relaxed">
+
+    <section>
+      <h2 class="font-semibold text-gray-800 text-base mb-2">1. Authorized Use</h2>
+      <p>Access to this platform is granted exclusively to TechGuard Labs personnel and authorized client representatives. Your use is limited to activities directly related to the specific engagement(s) to which you have been assigned. Accessing project data, evidence, or findings outside your assigned scope is strictly prohibited and constitutes a breach of these terms.</p>
+    </section>
+
+    <section>
+      <h2 class="font-semibold text-gray-800 text-base mb-2">2. Engagement Scope Boundaries</h2>
+      <p>All security testing, assessment, and advisory activities conducted through or documented in this platform must operate strictly within the approved scope defined in the Scope Builder for each engagement. Unauthorized testing — including any activity against systems, networks, or data outside the approved scope — is prohibited regardless of technical capability or access. Scope changes require formal approval via the platform's review gate process (G1).</p>
+    </section>
+
+    <section>
+      <h2 class="font-semibold text-gray-800 text-base mb-2">3. Evidence Confidentiality</h2>
+      <p>All evidence uploaded to or processed by this platform is classified as confidential by default. Evidence may contain sensitive client data including but not limited to: system configurations, access credentials, personal data, financial records, and proprietary business information. You must not copy, share, reproduce, or transmit any evidence or its contents outside of authorized platform workflows. Evidence access is restricted to personnel with a verified project-level permission.</p>
+    </section>
+
+    <section>
+      <h2 class="font-semibold text-gray-800 text-base mb-2">4. Findings and Professional Judgement</h2>
+      <p>Findings, risk ratings, and recommendations generated through this platform represent the professional judgements of TechGuard Labs consultants at a specific point in time. They do not constitute legal opinions, regulatory determinations, or certifications of compliance. Severity classifications require human approval by a qualified reviewer and must not be treated as definitive without such approval. No finding or report released through this platform shall be cited in legal proceedings as a regulatory certification unless explicitly framed as such in writing by TechGuard Labs leadership.</p>
+    </section>
+
+    <section>
+      <h2 class="font-semibold text-gray-800 text-base mb-2">5. Data Retention</h2>
+      <p>Evidence, findings, and project data are retained within the platform for the duration of the engagement plus a 90-day post-closure period unless a longer retention period is specified in the engagement contract. After the retention period, data is subject to secure deletion per TechGuard Labs' data lifecycle policy. You acknowledge that the platform may retain audit trail records indefinitely for compliance and quality assurance purposes.</p>
+    </section>
+
+    <section>
+      <h2 class="font-semibold text-gray-800 text-base mb-2">6. Audit Logging</h2>
+      <p>All actions performed on this platform — including logins, file uploads, scope changes, finding status changes, approvals, and report releases — are logged in an immutable audit trail. These logs may be reviewed by TechGuard Labs management for quality assurance, incident investigation, and regulatory compliance purposes. You consent to this logging as a condition of platform access.</p>
+    </section>
+
+    <section>
+      <h2 class="font-semibold text-gray-800 text-base mb-2">7. AI-Assisted Features</h2>
+      <p>This platform uses AI-assisted features (classification, evidence processing, advisory drafts) powered by Anthropic Claude. AI-generated outputs are advisory only and must not be acted upon without human review. No AI system on this platform has authority to approve scope items, confirm severity ratings, release reports, or make binding compliance determinations. Every AI action is logged with an <code class="bg-gray-100 px-1 rounded">actor=agent</code> tag in the audit trail.</p>
+    </section>
+
+    <section>
+      <h2 class="font-semibold text-gray-800 text-base mb-2">8. Non-Disclosure</h2>
+      <p>You must not disclose any client name, engagement details, findings, technical vulnerabilities, evidence contents, or platform data to any third party without explicit written authorization from both TechGuard Labs and the relevant client. This obligation survives termination of your engagement with TechGuard Labs.</p>
+    </section>
+
+    <section>
+      <h2 class="font-semibold text-gray-800 text-base mb-2">9. Credential Security</h2>
+      <p>You are responsible for maintaining the confidentiality of your platform credentials. You must not share your login credentials with any other person, including colleagues. Suspected unauthorized access must be reported to your TechGuard Labs platform administrator immediately. Multi-factor authentication (MFA) must be enabled if required by your organization's security policy.</p>
+    </section>
+
+    <section>
+      <h2 class="font-semibold text-gray-800 text-base mb-2">10. Consequences of Breach</h2>
+      <p>Breach of these terms may result in immediate suspension of platform access, disciplinary action up to and including termination, civil liability for damages caused to clients or TechGuard Labs, and referral to relevant regulatory authorities where legal obligations have been violated.</p>
+    </section>
+
+    <div class="border-t pt-4 text-xs text-gray-500">
+      <p>These terms are effective as of <strong>1 June 2026</strong> and supersede all prior platform usage policies. For queries contact your TechGuard Labs platform administrator.</p>
+      <p class="mt-1">Document version: <strong>TG-AO-TOS-2026-06</strong></p>
+    </div>
+  </div>
+
+  {% if not already_accepted %}
+  <div class="bg-white rounded-lg shadow p-5">
+    <form action="/ui/terms/accept" method="post">
+      <div class="flex items-start gap-3 mb-4">
+        <input type="checkbox" id="agree" name="agree" value="1" required
+          class="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+        <label for="agree" class="text-sm text-gray-700">
+          I have read and I agree to all of the above terms and conditions. I understand my obligations regarding evidence confidentiality, authorized use, and audit logging.
+        </label>
+      </div>
+      <button type="submit"
+        class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded text-sm font-medium btn-submit">
+        Accept Terms &amp; Continue
+      </button>
+    </form>
+  </div>
+  {% else %}
+  <div class="bg-green-50 border border-green-200 rounded-lg p-4 text-sm text-green-800">
+    You have already accepted these terms.
+    <a href="/ui/clients" class="underline font-medium">Return to dashboard →</a>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

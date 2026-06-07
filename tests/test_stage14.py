@@ -77,7 +77,7 @@ class TestOrganizationTenant:
         db, admin_id = _db
         org = make_org(db, name="Second Org")
         for i in range(3):
-            c = Client(name=f"MultiClient {i}", organization_id=org.id)
+            c = Client(entity_name=f"MultiClient {i}", organization_id=org.id)
             db.add(c)
         db.commit()
 

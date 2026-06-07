@@ -4,10 +4,12 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.db import get_db
-from app.deps import get_current_user
+from app.deps import get_current_user, require_permission
 from app.models.clients import Client, Project
 from app.models.users import User
 from app.schemas.projects import ProjectCreate, ProjectOut, ProjectUpdate
+
+_PROJECT_WRITE_ROLES = ("platform_admin", "partner", "pm")
 
 router = APIRouter(prefix="/projects", tags=["projects"])
 
@@ -38,7 +40,7 @@ def list_projects(
 def create_project(
     body: ProjectCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_permission(*_PROJECT_WRITE_ROLES)),
 ):
     if db.get(Client, body.client_id) is None:
         raise HTTPException(status_code=404, detail="Client not found")
@@ -69,7 +71,7 @@ def update_project(
     project_id: str,
     body: ProjectUpdate,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    _: User = Depends(require_permission(*_PROJECT_WRITE_ROLES)),
 ):
     project = db.get(Project, project_id)
     if project is None:
@@ -85,7 +87,7 @@ def update_project(
 def delete_project(
     project_id: str,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    _: User = Depends(require_permission("platform_admin", "partner")),
 ):
     project = db.get(Project, project_id)
     if project is None:

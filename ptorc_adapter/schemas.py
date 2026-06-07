@@ -13,17 +13,18 @@ from pydantic import BaseModel, field_validator
 _VALID_SEVERITIES = {"info", "low", "medium", "high", "critical"}
 
 _VALID_PROFILES = {
-    "external", "internal", "web", "api", "ai_llm", "cloud", "ad", "hybrid",
+    "external", "internal", "web", "api", "ai_llm", "cloud", "ad", "hybrid", "retest",
 }
 
 _VALID_RETEST_STATUSES = {"n/a", "pending", "in_progress", "passed", "failed", "partial"}
 
-# Phases from PT-Orc — v1 + v2 new phases
+# Phases match PT-Orc script prefixes per vapt.md Step 4
+# v1: 01_dns, 02_ip, 03_network, 04_tls, 05_web, 06_wordpress, 07_service
+# v2: 08_app_api, 09_ai_llm, 12_report
 _VALID_PHASES = {
-    "01_recon", "02_enum", "03_vuln_scan", "04_exploitation",
-    "05_post_exploit", "06_exfil", "07_report",
-    # v2
-    "08_app_api", "09_ai_llm",
+    "01_dns", "02_ip", "03_network", "04_tls", "05_web",
+    "06_wordpress", "07_service",
+    "08_app_api", "09_ai_llm", "12_report",
 }
 
 # Offensive narrative keys that must never be promoted to core models.

@@ -22,10 +22,14 @@
         <tbody class="divide-y divide-gray-100">
           {% for client in clients %}
           <tr class="hover:bg-gray-50">
-            <td class="px-4 py-3 font-medium">{{ client.name }}</td>
+            <td class="px-4 py-3 font-medium">
+              <a href="/ui/clients/{{ client.id }}" class="hover:underline text-blue-700">{{ client.entity_name }}</a>
+            </td>
             <td class="px-4 py-3 text-gray-500">{{ client.sector or "—" }}</td>
             <td class="px-4 py-3 text-gray-400">{{ client.created_at.strftime('%Y-%m-%d') }}</td>
-            <td class="px-4 py-3 text-right">
+            <td class="px-4 py-3 text-right space-x-3">
+              <a href="/ui/clients/{{ client.id }}"
+                class="text-gray-500 hover:underline text-xs">Edit</a>
               <a href="/ui/clients/{{ client.id }}/projects/new"
                 class="text-blue-600 hover:underline text-xs">+ Project</a>
             </td>

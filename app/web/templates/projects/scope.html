@@ -6,66 +6,256 @@
 </div>
 <h1 class="text-xl font-bold text-gray-800 mb-5">Scope Builder</h1>
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-  <div class="lg:col-span-2">
-    {% if scope_items %}
-    <div class="bg-white rounded-lg shadow overflow-hidden">
-      <table class="w-full">
-        <thead class="bg-gray-50 border-b">
-          <tr>
-            <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500">Kind</th>
-            <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500">Value</th>
-            <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500">Approved</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-gray-100">
-          {% for item in scope_items %}
-          <tr class="hover:bg-gray-50">
-            <td class="px-4 py-2 font-medium">{{ item.kind }}</td>
-            <td class="px-4 py-2 text-gray-700">{{ item.value }}</td>
-            <td class="px-4 py-2">
-              {% if item.approved %}
-              <span class="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-xs">Approved</span>
-              {% else %}
-              <span class="px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700 text-xs">Pending</span>
-              {% endif %}
-            </td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
-    {% else %}
-    <p class="text-gray-500">No scope items yet.</p>
-    {% endif %}
-  </div>
+<!-- Tab nav -->
+<div class="flex gap-1 mb-5 border-b border-gray-200">
+  <button onclick="showTab('scope')" id="tab-scope"
+    class="px-4 py-2 text-sm font-medium rounded-t border-b-2 border-blue-600 text-blue-700 bg-white">
+    Scope Items
+  </button>
+  <button onclick="showTab('roe')" id="tab-roe"
+    class="px-4 py-2 text-sm font-medium rounded-t border-b-2 border-transparent text-gray-500 hover:text-gray-700 bg-white">
+    Rules of Engagement
+  </button>
+</div>
 
-  <div class="bg-white rounded-lg shadow p-5">
-    <h2 class="font-semibold text-gray-700 mb-3">Add Scope Item</h2>
-    <form action="/ui/projects/{{ project.id }}/scope" method="post" class="space-y-3">
-      <div>
-        <label class="block text-xs font-medium text-gray-600 mb-1">Kind</label>
-        <select name="kind" required
-          class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
-          <option value="asset">Asset</option>
-          <option value="business_unit">Business Unit</option>
-          <option value="inclusion">Inclusion</option>
-          <option value="exclusion">Exclusion</option>
-          <option value="assumption">Assumption</option>
-          <option value="constraint">Constraint</option>
-        </select>
+<!-- Scope Items tab -->
+<div id="panel-scope">
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-2">
+      {% if scope_items %}
+      <div class="bg-white rounded-lg shadow overflow-hidden">
+        <table class="w-full">
+          <thead class="bg-gray-50 border-b">
+            <tr>
+              <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500">Kind</th>
+              <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500">Value</th>
+              <th class="px-4 py-2 text-left text-xs font-semibold text-gray-500">Approved</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            {% for item in scope_items %}
+            <tr class="hover:bg-gray-50">
+              <td class="px-4 py-2 font-medium capitalize">{{ item.kind }}</td>
+              <td class="px-4 py-2 text-gray-700">{{ item.value }}</td>
+              <td class="px-4 py-2">
+                {% if item.approved %}
+                <span class="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-xs">Approved</span>
+                {% else %}
+                <span class="px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-700 text-xs">Pending</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
       </div>
-      <div>
-        <label class="block text-xs font-medium text-gray-600 mb-1">Value</label>
-        <input type="text" name="value" required
-          class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
-      </div>
-      <p class="text-xs text-gray-400">Changes require partner approval (Gate 1).</p>
-      <button type="submit"
-        class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded text-sm font-medium">
-        Add Item
-      </button>
-    </form>
+      {% else %}
+      <p class="text-gray-500">No scope items yet.</p>
+      {% endif %}
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-5">
+      <h2 class="font-semibold text-gray-700 mb-3">Add Scope Item</h2>
+      <form action="/ui/projects/{{ project.id }}/scope" method="post" class="space-y-3">
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1">Kind</label>
+          <select name="kind" required
+            class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+            <option value="asset">Asset</option>
+            <option value="business_unit">Business Unit</option>
+            <option value="inclusion">Inclusion</option>
+            <option value="exclusion">Exclusion</option>
+            <option value="assumption">Assumption</option>
+            <option value="constraint">Constraint</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1">Value</label>
+          <input type="text" name="value" required
+            class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+        </div>
+        <p class="text-xs text-gray-400">Changes require partner approval (Gate 1).</p>
+        <button type="submit"
+          class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded text-sm font-medium btn-submit">
+          Add Item
+        </button>
+      </form>
+    </div>
   </div>
 </div>
+
+<!-- Rules of Engagement tab -->
+<div id="panel-roe" style="display:none">
+  {% set roe = project.roe_data or {} %}
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+    <!-- Authorization / RoE text -->
+    <div class="bg-white rounded-lg shadow p-5 lg:col-span-2">
+      <h2 class="font-semibold text-gray-700 mb-1">Authorization &amp; Rules of Engagement</h2>
+      <p class="text-xs text-gray-400 mb-3">Written authorization clause confirming the client has consented to testing activities. This text appears on all deliverables.</p>
+      <form action="/ui/projects/{{ project.id }}/scope/roe" method="post" class="space-y-4">
+        <input type="hidden" name="section" value="authorization">
+        <textarea name="authorization_text" rows="4"
+          placeholder="e.g. TechGuard Labs is authorized to conduct security testing against the systems and infrastructure described in this scope document on behalf of [Client]. All testing is authorized under written agreement dated [date]."
+          class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">{{ roe.get('authorization_text', '') }}</textarea>
+        <button type="submit"
+          class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-medium btn-submit">
+          Save Authorization
+        </button>
+      </form>
+    </div>
+
+    <!-- Testing Windows -->
+    <div class="bg-white rounded-lg shadow p-5">
+      <h2 class="font-semibold text-gray-700 mb-1">Testing Windows</h2>
+      <p class="text-xs text-gray-400 mb-3">Authorized time periods during which active testing may occur.</p>
+
+      {% if roe.get('testing_windows') %}
+      <div class="space-y-2 mb-4">
+        {% for w in roe['testing_windows'] %}
+        <div class="text-xs bg-gray-50 rounded p-2 flex justify-between items-center">
+          <span class="font-medium text-gray-700">{{ w.get('start', '') }}</span>
+          <span class="text-gray-400">→</span>
+          <span class="font-medium text-gray-700">{{ w.get('end', '') }}</span>
+          {% if w.get('description') %}
+          <span class="text-gray-500 truncate ml-2">{{ w['description'] }}</span>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <form action="/ui/projects/{{ project.id }}/scope/roe" method="post" class="space-y-3">
+        <input type="hidden" name="section" value="testing_window">
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Start</label>
+            <input type="datetime-local" name="window_start"
+              class="w-full border rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">End</label>
+            <input type="datetime-local" name="window_end"
+              class="w-full border rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1">Description (optional)</label>
+          <input type="text" name="window_description" placeholder="e.g. Business hours only"
+            class="w-full border rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+        </div>
+        <button type="submit"
+          class="w-full bg-blue-600 hover:bg-blue-700 text-white py-1.5 rounded text-sm font-medium btn-submit">
+          Add Testing Window
+        </button>
+      </form>
+    </div>
+
+    <!-- Escalation Contacts -->
+    <div class="bg-white rounded-lg shadow p-5">
+      <h2 class="font-semibold text-gray-700 mb-1">Escalation Contacts</h2>
+      <p class="text-xs text-gray-400 mb-3">Client contacts to notify in case of critical findings or incidents during testing.</p>
+
+      {% if roe.get('escalation_contacts') %}
+      <div class="space-y-2 mb-4">
+        {% for c in roe['escalation_contacts'] %}
+        <div class="text-xs bg-gray-50 rounded p-2">
+          <p class="font-medium text-gray-800">{{ c.get('name', '') }}{% if c.get('role') %} <span class="text-gray-500 font-normal">· {{ c['role'] }}</span>{% endif %}</p>
+          {% if c.get('phone') %}<p class="text-gray-600">📞 {{ c['phone'] }}</p>{% endif %}
+          {% if c.get('email') %}<p class="text-gray-600">✉ {{ c['email'] }}</p>{% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <form action="/ui/projects/{{ project.id }}/scope/roe" method="post" class="space-y-2">
+        <input type="hidden" name="section" value="escalation_contact">
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1">Name</label>
+          <input type="text" name="contact_name" required placeholder="Jane Smith"
+            class="w-full border rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1">Role</label>
+          <input type="text" name="contact_role" placeholder="CISO"
+            class="w-full border rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Phone</label>
+            <input type="tel" name="contact_phone" placeholder="+91 …"
+              class="w-full border rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Email</label>
+            <input type="email" name="contact_email" placeholder="jane@client.com"
+              class="w-full border rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+          </div>
+        </div>
+        <button type="submit"
+          class="w-full bg-blue-600 hover:bg-blue-700 text-white py-1.5 rounded text-sm font-medium btn-submit">
+          Add Contact
+        </button>
+      </form>
+    </div>
+
+    <!-- Data Sensitivity -->
+    <div class="bg-white rounded-lg shadow p-5 lg:col-span-2">
+      <h2 class="font-semibold text-gray-700 mb-1">Data Sensitivity &amp; Handling</h2>
+      <p class="text-xs text-gray-400 mb-3">Classification of data encountered during the engagement and special handling requirements.</p>
+      <form action="/ui/projects/{{ project.id }}/scope/roe" method="post" class="space-y-3">
+        <input type="hidden" name="section" value="data_sensitivity">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Data Classification</label>
+            <select name="data_classification"
+              class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+              <option value="public" {{ 'selected' if roe.get('data_sensitivity', {}).get('classification') == 'public' else '' }}>Public</option>
+              <option value="internal" {{ 'selected' if roe.get('data_sensitivity', {}).get('classification') == 'internal' else '' }}>Internal</option>
+              <option value="confidential" {{ 'selected' if roe.get('data_sensitivity', {}).get('classification', 'confidential') == 'confidential' else '' }}>Confidential</option>
+              <option value="restricted" {{ 'selected' if roe.get('data_sensitivity', {}).get('classification') == 'restricted' else '' }}>Restricted</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Personal Data Involved?</label>
+            <select name="personal_data"
+              class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+              <option value="no" {{ 'selected' if not roe.get('data_sensitivity', {}).get('personal_data') else '' }}>No</option>
+              <option value="yes" {{ 'selected' if roe.get('data_sensitivity', {}).get('personal_data') else '' }}>Yes</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1">Handling Notes</label>
+          <textarea name="handling_notes" rows="2"
+            placeholder="e.g. Evidence files must not be retained beyond 90 days. PII must be masked in reports."
+            class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">{{ roe.get('data_sensitivity', {}).get('handling_notes', '') }}</textarea>
+        </div>
+        <button type="submit"
+          class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-medium btn-submit">
+          Save Data Handling
+        </button>
+      </form>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function showTab(name) {
+  document.getElementById('panel-scope').style.display = name === 'scope' ? '' : 'none';
+  document.getElementById('panel-roe').style.display = name === 'roe' ? '' : 'none';
+  ['scope','roe'].forEach(t => {
+    const btn = document.getElementById('tab-' + t);
+    if (t === name) {
+      btn.classList.add('border-blue-600','text-blue-700');
+      btn.classList.remove('border-transparent','text-gray-500');
+    } else {
+      btn.classList.remove('border-blue-600','text-blue-700');
+      btn.classList.add('border-transparent','text-gray-500');
+    }
+  });
+}
+</script>
 {% endblock %}

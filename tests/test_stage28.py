@@ -67,7 +67,7 @@ def seeded(engine, _SessionLocal):
         db.add(org)
         db.flush()
 
-        client_obj = Client(name="S28 Client", organization_id=org.id)
+        client_obj = Client(entity_name="S28 Client", organization_id=org.id)
         db.add(client_obj)
         db.flush()
 

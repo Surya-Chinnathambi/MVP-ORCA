@@ -3,7 +3,7 @@
 {% block content %}
 <div class="mb-2 text-sm text-gray-500">
   <a href="/ui/clients" class="hover:underline">Clients</a> /
-  <span>{{ client.name if client else project.client_id }}</span>
+  <span>{{ client.entity_name if client else project.client_id }}</span>
 </div>
 <div class="flex items-start justify-between mb-6">
   <div>
@@ -18,12 +18,13 @@
 </div>
 
 <!-- Stats row -->
-<div class="grid grid-cols-4 gap-4 mb-6">
+<div class="grid grid-cols-5 gap-4 mb-6">
   {% for label, count, link in [
     ('Findings', findings_count, 'findings'),
     ('Tasks', tasks_count, 'tasks'),
     ('Evidence', evidence_count, 'evidence'),
     ('Open Requests', open_requests, 'evidence-requests'),
+    ('Team Members', team_count, 'team'),
   ] %}
   <a href="/ui/projects/{{ project.id }}/{{ link }}"
     class="bg-white rounded-lg shadow p-4 hover:shadow-md transition">
@@ -50,10 +51,13 @@
 <!-- Quick links -->
 <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
   {% for label, path in [
-    ('Scope Builder', 'scope'), ('Pack / Plan', 'pack'),
-    ('Evidence Requests', 'evidence-requests'), ('Evidence Review', 'evidence'),
-    ('Task Board', 'tasks'), ('Findings', 'findings'),
+    ('Team', 'team'), ('Scope Builder', 'scope'),
+    ('Pack / Plan', 'pack'), ('Evidence Requests', 'evidence-requests'),
+    ('Evidence Review', 'evidence'), ('Task Board', 'tasks'),
+    ('Findings', 'findings'), ('PT-Orc Commands', 'scans'),
     ('Deliverables', 'deliverables'), ('Remediation', 'remediation'),
+    ('Audit Trail', 'audit'), ('Final Report', 'report'),
+    ('Timeline', 'timeline'), ('Frameworks', 'frameworks'),
   ] %}
   <a href="/ui/projects/{{ project.id }}/{{ path }}"
     class="bg-white rounded-lg shadow px-4 py-3 text-sm font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition">

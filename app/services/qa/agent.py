@@ -1,4 +1,14 @@
-"""Deterministic QA agent — driven by pack qa_rules, never mutates data."""
+"""Deterministic QA agent — driven by pack qa_rules, never mutates data.
+
+Rules per vapt.md Step 10 (7 required rules):
+  every_finding_has_evidence  — each finding has ≥1 accepted evidence item
+  severity_consistent         — critical/high findings are not stuck in draft
+  evidence_requests_resolved  — all evidence requests are received or waived
+  requirements_covered        — every requirement has at least one linked finding
+  remediation_has_owner       — findings at remediation_planned+ have a RemediationAction with owner
+  scope_finding_match         — no finding references a phase outside the approved scope
+  no_draft_findings           — no findings remain at draft at report time
+"""
 from dataclasses import dataclass, field
 from typing import List, Optional
 
@@ -8,7 +18,7 @@ from app.models.clients import Project
 from app.models.delivery import RemediationAction
 from app.models.evidence import EvidenceRequest, EvidenceRequestStatus
 from app.models.scope import Requirement
-from app.models.tasks import Finding
+from app.models.tasks import Finding, FindingStatus
 
 
 @dataclass
@@ -48,7 +58,7 @@ class QAReport:
         }
 
 
-# ── Individual rule checks ─────────────────────────────────────────────────
+# ── Rule implementations ───────────────────────────────────────────────────
 
 def _check_every_finding_has_evidence(db: Session, project_id: str) -> Optional[QAIssue]:
     without = [
@@ -65,7 +75,28 @@ def _check_every_finding_has_evidence(db: Session, project_id: str) -> Optional[
     return None
 
 
-def _check_open_evidence_requests_flagged(db: Session, project_id: str) -> Optional[QAIssue]:
+def _check_severity_consistent(db: Session, project_id: str) -> Optional[QAIssue]:
+    """Critical and high findings that are still in draft state haven't been reviewed."""
+    stale = [
+        f.id for f in db.query(Finding)
+        .filter(
+            Finding.project_id == project_id,
+            Finding.severity.in_(["critical", "high"]),
+            Finding.status == FindingStatus.draft.value,
+        ).all()
+    ]
+    if stale:
+        return QAIssue(
+            rule="severity_consistent",
+            severity="warning",
+            message=f"{len(stale)} critical/high finding(s) still in draft — review required.",
+            item_ids=stale,
+        )
+    return None
+
+
+def _check_evidence_requests_resolved(db: Session, project_id: str) -> Optional[QAIssue]:
+    """All evidence requests must be received or waived (not still open)."""
     open_ers = [
         er.id for er in db.query(EvidenceRequest)
         .filter_by(project_id=project_id, status=EvidenceRequestStatus.open)
@@ -73,15 +104,16 @@ def _check_open_evidence_requests_flagged(db: Session, project_id: str) -> Optio
     ]
     if open_ers:
         return QAIssue(
-            rule="open_evidence_requests_flagged",
+            rule="evidence_requests_resolved",
             severity="warning",
-            message=f"{len(open_ers)} evidence request(s) still open.",
+            message=f"{len(open_ers)} evidence request(s) still open (not received or waived).",
             item_ids=open_ers,
         )
     return None
 
 
-def _check_all_requirements_assessed(db: Session, project_id: str) -> Optional[QAIssue]:
+def _check_requirements_covered(db: Session, project_id: str) -> Optional[QAIssue]:
+    """Every requirement must have at least one linked finding."""
     all_reqs = db.query(Requirement).filter_by(project_id=project_id).all()
     covered = {
         f.requirement_id
@@ -91,7 +123,7 @@ def _check_all_requirements_assessed(db: Session, project_id: str) -> Optional[Q
     uncovered = [r.id for r in all_reqs if r.id not in covered]
     if uncovered:
         return QAIssue(
-            rule="all_requirements_assessed",
+            rule="requirements_covered",
             severity="warning",
             message=f"{len(uncovered)} requirement(s) have no linked findings.",
             item_ids=uncovered,
@@ -99,73 +131,81 @@ def _check_all_requirements_assessed(db: Session, project_id: str) -> Optional[Q
     return None
 
 
-def _check_severity_consistent(db: Session, project_id: str) -> Optional[QAIssue]:
-    """Flag critical findings still in open status (no progression made)."""
-    stale = [
+def _check_remediation_has_owner(db: Session, project_id: str) -> Optional[QAIssue]:
+    """Findings at remediation_planned or later must have a RemediationAction with an owner."""
+    _REMEDIATION_STATUSES = {
+        FindingStatus.remediation_planned.value,
+        FindingStatus.retest_pending.value,
+        FindingStatus.closed.value,
+        FindingStatus.risk_accepted.value,
+    }
+    findings_needing_rem = db.query(Finding).filter(
+        Finding.project_id == project_id,
+        Finding.status.in_(list(_REMEDIATION_STATUSES)),
+    ).all()
+    without_owner = []
+    for f in findings_needing_rem:
+        rem = db.query(RemediationAction).filter_by(
+            finding_id=f.id
+        ).filter(RemediationAction.owner_id.isnot(None)).first()
+        if rem is None:
+            without_owner.append(f.id)
+    if without_owner:
+        return QAIssue(
+            rule="remediation_has_owner",
+            severity="error",
+            message=f"{len(without_owner)} finding(s) in remediation stage have no owned RemediationAction.",
+            item_ids=without_owner,
+        )
+    return None
+
+
+def _check_scope_finding_match(db: Session, project_id: str) -> Optional[QAIssue]:
+    """No finding should reference a PT-Orc phase that implies out-of-scope testing.
+
+    This checks that imported findings have phase_tags matching known PT-Orc phases.
+    Unknown/malformed phase tags indicate a scope boundary issue.
+    """
+    from ptorc_adapter.schemas import _VALID_PHASES
+    bad = [
+        f.id for f in db.query(Finding).filter_by(project_id=project_id).all()
+        if f.phase_tag and f.phase_tag not in _VALID_PHASES
+    ]
+    if bad:
+        return QAIssue(
+            rule="scope_finding_match",
+            severity="warning",
+            message=f"{len(bad)} finding(s) have unrecognised phase tags — verify scope boundary.",
+            item_ids=bad,
+        )
+    return None
+
+
+def _check_no_draft_findings(db: Session, project_id: str) -> Optional[QAIssue]:
+    """No findings should remain in draft state at report time."""
+    drafts = [
         f.id for f in db.query(Finding)
-        .filter_by(project_id=project_id, severity="critical", status="open")
+        .filter_by(project_id=project_id, status=FindingStatus.draft.value)
         .all()
     ]
-    if stale:
+    if drafts:
         return QAIssue(
-            rule="severity_consistent",
-            severity="warning",
-            message=f"{len(stale)} critical finding(s) remain in 'open' status.",
-            item_ids=stale,
-        )
-    return None
-
-
-def _check_critical_findings_have_remediation(db: Session, project_id: str) -> Optional[QAIssue]:
-    critical = db.query(Finding).filter_by(project_id=project_id, severity="critical").all()
-    without_rem = []
-    for f in critical:
-        has = db.query(RemediationAction).filter_by(finding_id=f.id).count() > 0
-        if not has:
-            without_rem.append(f.id)
-    if without_rem:
-        return QAIssue(
-            rule="critical_findings_have_remediation",
-            severity="warning",
-            message=f"{len(without_rem)} critical finding(s) have no remediation action.",
-            item_ids=without_rem,
-        )
-    return None
-
-
-def _check_evidence_lifecycle_ready(db: Session, project_id: str) -> Optional[QAIssue]:
-    """Warn if accepted evidence items are not yet in 'classified' lifecycle state."""
-    from app.models.evidence import EvidenceItem, EvidenceLifecycleState, ReviewerStatus
-    not_classified = [
-        i.id for i in db.query(EvidenceItem)
-        .filter(
-            EvidenceItem.project_id == project_id,
-            EvidenceItem.reviewer_status == ReviewerStatus.accepted.value,
-            EvidenceItem.internal_lifecycle_state.notin_([
-                EvidenceLifecycleState.classified.value,
-                EvidenceLifecycleState.packaged.value,
-                EvidenceLifecycleState.delivered.value,
-                EvidenceLifecycleState.archived.value,
-            ]),
-        ).all()
-    ]
-    if not_classified:
-        return QAIssue(
-            rule="evidence_lifecycle_ready",
-            severity="warning",
-            message=f"{len(not_classified)} accepted evidence item(s) not yet classified for release.",
-            item_ids=not_classified,
+            rule="no_draft_findings",
+            severity="error",
+            message=f"{len(drafts)} finding(s) still in draft — must be reviewed before report.",
+            item_ids=drafts,
         )
     return None
 
 
 _RULE_HANDLERS = {
-    "every_finding_has_evidence":       _check_every_finding_has_evidence,
-    "open_evidence_requests_flagged":   _check_open_evidence_requests_flagged,
-    "all_requirements_assessed":        _check_all_requirements_assessed,
-    "severity_consistent":              _check_severity_consistent,
-    "critical_findings_have_remediation": _check_critical_findings_have_remediation,
-    "evidence_lifecycle_ready":         _check_evidence_lifecycle_ready,
+    "every_finding_has_evidence":   _check_every_finding_has_evidence,
+    "severity_consistent":          _check_severity_consistent,
+    "evidence_requests_resolved":   _check_evidence_requests_resolved,
+    "requirements_covered":         _check_requirements_covered,
+    "remediation_has_owner":        _check_remediation_has_owner,
+    "scope_finding_match":          _check_scope_finding_match,
+    "no_draft_findings":            _check_no_draft_findings,
 }
 
 

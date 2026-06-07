@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.db import get_db
-from app.deps import get_current_user
+from app.deps import get_current_user, require_permission
 from app.models.clients import Project
 from app.models.tasks import Finding
 from app.models.users import User
@@ -59,12 +59,15 @@ def list_findings(
     return q.order_by(Finding.created_at.desc()).all()
 
 
+_FINDING_WRITE_ROLES = ("platform_admin", "partner", "pm", "lead_consultant", "analyst", "senior_reviewer")
+
+
 @router.post("/", response_model=FindingOut, status_code=status.HTTP_201_CREATED)
 def create_finding(
     project_id: str,
     body: FindingCreate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_permission(*_FINDING_WRITE_ROLES)),
 ):
     _project_or_404(project_id, db)
     finding = Finding(
@@ -111,7 +114,7 @@ def update_finding(
     finding_id: str,
     body: FindingUpdate,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_permission(*_FINDING_WRITE_ROLES)),
 ):
     """Update non-gated fields (title, description, owner, evidence_item_ids).
     Use /change-severity and /change-status for approval-gated changes."""
@@ -142,7 +145,7 @@ def change_severity(
     finding_id: str,
     body: ChangeSeverity,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_permission(*_FINDING_WRITE_ROLES)),
 ):
     """Request a severity change — always routed through the approval gateway."""
     _project_or_404(project_id, db)
@@ -156,7 +159,7 @@ def change_severity(
         target_type="finding_severity_change",
         target_id=finding_id,
         reason=body.reason,
-        approver_role="reviewer",
+        approver_role="senior_reviewer",
         change_before={"severity": finding.severity},
         change_after={"severity": body.severity},
         requested_by=current_user.id,
@@ -172,7 +175,7 @@ def change_status(
     finding_id: str,
     body: ChangeStatus,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_permission(*_FINDING_WRITE_ROLES)),
 ):
     """Request a status change — always routed through the approval gateway."""
     _project_or_404(project_id, db)
@@ -186,7 +189,7 @@ def change_status(
         target_type="finding_status_change",
         target_id=finding_id,
         reason=body.reason,
-        approver_role="reviewer",
+        approver_role="senior_reviewer",
         change_before={"status": finding.status},
         change_after={"status": body.status},
         requested_by=current_user.id,

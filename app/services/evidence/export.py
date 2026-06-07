@@ -54,6 +54,26 @@ def export_evidence(
     if item is None:
         raise ValueError(f"EvidenceItem {evidence_item_id!r} not found")
 
+    # RBAC.md §6 rule 5: client_contributor and readonly are unconditionally blocked
+    _ALWAYS_BLOCKED = frozenset({"client_contributor", "readonly"})
+    actor_roles = {
+        r.name for r in (
+            db.query(Role)
+            .join(Permission, Permission.role_id == Role.id)
+            .filter(Permission.user_id == actor_id)
+            .all()
+        )
+    }
+    if actor_roles and actor_roles.issubset(_ALWAYS_BLOCKED):
+        record_event(db, action="evidence.export.blocked", target_type="evidence_item",
+                     target_id=evidence_item_id, actor_id=actor_id,
+                     project_id=item.project_id,
+                     after={"reason": "role client_contributor/readonly unconditionally blocked"})
+        db.flush()
+        raise PermissionError(
+            f"Role {actor_roles} is not permitted to export evidence under any circumstances"
+        )
+
     if item.is_restricted and not _has_evidence_item_permission(db, actor_id, evidence_item_id):
         record_event(
             db,

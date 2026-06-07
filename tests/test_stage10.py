@@ -66,7 +66,7 @@ def seed(engine, SessionTest):
         db.add(admin)
         db.flush()
 
-        client = Client(name="Acme Corp")
+        client = Client(entity_name="Acme Corp")
         db.add(client)
         db.flush()
 

@@ -72,7 +72,7 @@ def project(db: Session):
     org = Organization(name="S27 Org")
     db.add(org)
     db.flush()
-    client = Client(name="S27 Client", organization_id=org.id)
+    client = Client(entity_name="S27 Client", organization_id=org.id)
     db.add(client)
     db.flush()
     proj = Project(

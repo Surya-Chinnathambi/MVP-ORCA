@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.orm import Session
 
 from app.db import get_db
-from app.deps import get_current_user
+from app.deps import check_evidence_access, get_current_user, require_permission
 from app.models.clients import Project
 from app.models.evidence import EvidenceItem, EvidenceRequest, ReviewerStatus
 from app.models.users import User
@@ -16,6 +16,11 @@ from app.services.evidence.ingest import ingest_file
 from app.services.evidence.manifest import append_item
 
 router = APIRouter(prefix="/projects/{project_id}/evidence-items", tags=["evidence-items"])
+
+# Per RBAC.md §3 permission matrix
+_UPLOAD_ROLES = ("platform_admin", "partner", "pm", "lead_consultant", "analyst", "client_contributor")
+_REVIEW_ROLES = ("platform_admin", "partner", "pm", "lead_consultant", "senior_reviewer")
+_BLOCKED_FROM_SENSITIVE = frozenset({"client_contributor", "readonly"})
 
 
 def _project_or_404(project_id: str, db: Session) -> Project:
@@ -38,7 +43,7 @@ async def upload_evidence(
     file: UploadFile = File(...),
     evidence_request_id: Optional[str] = None,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_permission(*_UPLOAD_ROLES)),
 ):
     """Upload a file, extract text, classify, persist as EvidenceItem."""
     _project_or_404(project_id, db)
@@ -74,18 +79,37 @@ async def upload_evidence(
     return item
 
 
+def _check_sensitive_role(user: User, db: Session) -> None:
+    """Raise 403 if the user's highest role is client_contributor or readonly."""
+    from app.models.users import Permission, Role
+    role_names = {
+        r.name for r in db.query(Role)
+        .join(Permission, Permission.role_id == Role.id)
+        .filter(Permission.user_id == user.id)
+        .all()
+    }
+    if role_names and role_names.issubset(_BLOCKED_FROM_SENSITIVE):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="Your role cannot access sensitive evidence")
+
+
 @router.get("/", response_model=List[EvidenceItemOut])
 def list_evidence_items(
     project_id: str,
     reviewer_status: Optional[str] = None,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
     _project_or_404(project_id, db)
     q = db.query(EvidenceItem).filter_by(project_id=project_id)
     if reviewer_status:
         q = q.filter_by(reviewer_status=reviewer_status)
-    return q.all()
+    items = q.all()
+    # Strip restricted items the caller cannot access (§6 rule 5)
+    return [
+        item for item in items
+        if not item.is_restricted or check_evidence_access(item, current_user, db)
+    ]
 
 
 @router.get("/{item_id}", response_model=EvidenceItemOut)
@@ -93,10 +117,14 @@ def get_evidence_item(
     project_id: str,
     item_id: str,
     db: Session = Depends(get_db),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
 ):
     _project_or_404(project_id, db)
-    return _item_or_404(project_id, item_id, db)
+    item = _item_or_404(project_id, item_id, db)
+    if item.is_restricted and not check_evidence_access(item, current_user, db):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="Access to this restricted evidence item is not permitted")
+    return item
 
 
 @router.post("/{item_id}/link", response_model=EvidenceItemOut)
@@ -105,7 +133,7 @@ def link_evidence_item(
     item_id: str,
     body: EvidenceItemLink,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_permission(*_REVIEW_ROLES)),
 ):
     """Link this item to an evidence request (and its associated requirement)."""
     _project_or_404(project_id, db)
@@ -138,7 +166,7 @@ def review_evidence_item(
     item_id: str,
     body: ReviewDecide,
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(require_permission(*_REVIEW_ROLES)),
 ):
     """Accept (direct) or reject (approval-gated) an evidence item.
     Reject returns ApprovalOut; accept returns EvidenceItemOut."""
@@ -170,7 +198,7 @@ def review_evidence_item(
         target_type="evidence_rejection",
         target_id=item_id,
         reason=body.reason or "Evidence item rejected by reviewer",
-        approver_role="pm",
+        approver_role="senior_reviewer",
         change_before={"reviewer_status": item.reviewer_status},
         change_after={"reviewer_status": "rejected"},
         requested_by=current_user.id,

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Frameworks — {{ project.id[:8] }}{% endblock %}
+{% block content %}
+<div class="mb-2 text-sm text-gray-500">
+  <a href="/ui/projects/{{ project.id }}" class="hover:underline">← Project</a>
+</div>
+<h1 class="text-xl font-bold text-gray-800 mb-1">Framework Library</h1>
+<p class="text-gray-500 text-sm mb-6">Select the compliance and assessment frameworks applicable to this engagement. Selected frameworks drive requirement generation when a methodology pack is applied.</p>
+
+{% set selected = project.framework_ids or [] %}
+
+<form action="/ui/projects/{{ project.id }}/frameworks" method="post">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+    {% for fw in all_frameworks %}
+    <label class="flex items-start gap-3 bg-white rounded-lg shadow p-4 cursor-pointer
+                  hover:bg-blue-50 transition {{ 'ring-2 ring-blue-500 bg-blue-50' if fw.key in selected else '' }}">
+      <input type="checkbox" name="framework_ids" value="{{ fw.key }}"
+        class="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+        {{ 'checked' if fw.key in selected else '' }}>
+      <div>
+        <div class="font-medium text-gray-800 text-sm">{{ fw.title }}</div>
+        <div class="text-xs text-gray-500 mt-0.5">{{ fw.description }}</div>
+        {% if fw.key in selected %}
+        <span class="mt-1 inline-block px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">Active</span>
+        {% endif %}
+      </div>
+    </label>
+    {% endfor %}
+  </div>
+  <div class="flex gap-3">
+    <button type="submit"
+      class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded text-sm font-medium btn-submit">
+      Save Framework Selection
+    </button>
+    <a href="/ui/projects/{{ project.id }}"
+      class="px-5 py-2 rounded text-sm font-medium border border-gray-300 text-gray-700 hover:bg-gray-50">
+      Cancel
+    </a>
+  </div>
+</form>
+{% endblock %}

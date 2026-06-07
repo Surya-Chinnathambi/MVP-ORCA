@@ -43,7 +43,7 @@ def seeded_db(engine, SessionTest):
         for name in [r.value for r in RoleName]:
             db.add(Role(name=name))
         db.flush()
-        admin_role = db.query(Role).filter_by(name=RoleName.admin).first()
+        admin_role = db.query(Role).filter_by(name=RoleName.platform_admin).first()
         admin = User(
             email="admin@stage4.local",
             password_hash=hash_password("admin123"),
@@ -132,7 +132,7 @@ def test_generate_dpdp_plan(SessionTest):
     """generate_plan creates correct requirement/ER/task counts for DPDP."""
     pack = load_pack("dpdp")
     with SessionTest() as db:
-        client_row = Client(name="Plan Test Corp DPDP")
+        client_row = Client(entity_name="Plan Test Corp DPDP")
         db.add(client_row)
         db.flush()
         project = Project(
@@ -177,7 +177,7 @@ def test_generate_plan_idempotent(SessionTest):
     """Calling generate_plan twice does not create duplicate rows."""
     pack = load_pack("dpdp")
     with SessionTest() as db:
-        client_row = Client(name="Idempotent Corp")
+        client_row = Client(entity_name="Idempotent Corp")
         db.add(client_row)
         db.flush()
         project = Project(client_id=client_row.id, service_type=ServiceType.dpdp, pack_id="dpdp")
@@ -199,7 +199,7 @@ def test_generate_plan_idempotent(SessionTest):
 def test_generate_vapt_plan(SessionTest):
     pack = load_pack("vapt")
     with SessionTest() as db:
-        client_row = Client(name="Plan Test Corp VAPT")
+        client_row = Client(entity_name="Plan Test Corp VAPT")
         db.add(client_row)
         db.flush()
         project = Project(client_id=client_row.id, service_type=ServiceType.vapt, pack_id="vapt")

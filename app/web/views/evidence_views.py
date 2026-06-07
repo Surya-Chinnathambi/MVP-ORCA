@@ -1,13 +1,13 @@
 """Web views — Evidence requests and evidence items."""
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Form, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from app.db import get_db
 from app.models.clients import Project
-from app.models.evidence import EvidenceItem, EvidenceRequest
-from app.web.deps import LOGIN_REDIRECT, get_web_user
+from app.models.evidence import EvidenceItem, EvidenceRequest, ReviewerStatus
+from app.web.deps import LOGIN_REDIRECT, base_ctx, get_web_user
 
 router = APIRouter(tags=["web-evidence"])
 templates = Jinja2Templates(directory="app/web/templates")
@@ -33,7 +33,7 @@ def evidence_requests_page(
     )
     return templates.TemplateResponse(
         request, "projects/evidence_requests.html",
-        {"user": user, "project": project, "evidence_requests": ev_requests},
+        {**base_ctx(user, db), "project": project, "evidence_requests": ev_requests},
     )
 
 
@@ -57,5 +57,28 @@ def evidence_page(
     )
     return templates.TemplateResponse(
         request, "projects/evidence.html",
-        {"user": user, "project": project, "evidence_items": items},
+        {**base_ctx(user, db), "project": project, "evidence_items": items},
     )
+
+
+@router.post("/projects/{project_id}/evidence/{ev_id}/review")
+def review_evidence_web(
+    project_id: str,
+    ev_id: str,
+    request: Request,
+    action: str = Form(...),
+    db: Session = Depends(get_db),
+    user=Depends(get_web_user),
+):
+    if user is None:
+        return LOGIN_REDIRECT
+    item = db.get(EvidenceItem, ev_id)
+    if item and item.project_id == project_id:
+        if action == "accept":
+            item.reviewer_status = ReviewerStatus.accepted.value
+        elif action == "reject":
+            item.reviewer_status = ReviewerStatus.rejected.value
+        elif action == "reset":
+            item.reviewer_status = ReviewerStatus.pending.value
+    db.commit()
+    return RedirectResponse(f"/ui/projects/{project_id}/evidence", status_code=302)

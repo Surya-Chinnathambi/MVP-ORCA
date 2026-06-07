@@ -52,7 +52,7 @@ def _seed(_engine):
         db.add(admin)
         db.flush()
 
-        client = Client(name="Web Test Corp")
+        client = Client(entity_name="Web Test Corp")
         db.add(client)
         db.flush()
 

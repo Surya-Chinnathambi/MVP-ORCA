@@ -96,6 +96,28 @@ def decide_approval(
     if approval.status != ApprovalStatus.pending:
         raise ValueError(f"Cannot decide approval with status {approval.status!r}")
 
+    # Verify the decider holds the required approver_role (RBAC.md §4)
+    # platform_admin and partner bypass all role checks
+    from app.models.users import Permission, Role, RoleName, User as UserModel
+    _BYPASS_ROLES = {RoleName.platform_admin, RoleName.partner}
+    decider_roles = set(
+        row[0] for row in
+        db.query(Role.name)
+        .join(Permission, Permission.role_id == Role.id)
+        .filter(Permission.user_id == decider_id)
+        .all()
+    )
+    if not (decider_roles & _BYPASS_ROLES):
+        required_role = db.query(Role).filter_by(name=approval.approver_role).first()
+        if required_role is not None:
+            has_role = db.query(Permission).filter_by(
+                user_id=decider_id, role_id=required_role.id
+            ).first()
+            if has_role is None:
+                raise ValueError(
+                    f"Decider does not hold required approver role: {approval.approver_role!r}"
+                )
+
     new_status = ApprovalStatus.approved if approved else ApprovalStatus.rejected
     approval.status = new_status
     approval.decided_by = decider_id

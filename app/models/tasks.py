@@ -2,7 +2,7 @@ import enum
 from datetime import date
 from typing import TYPE_CHECKING, Any, Optional
 
-from sqlalchemy import Date, Enum, ForeignKey, JSON, String, Text
+from sqlalchemy import Date, Enum, ForeignKey, Index, JSON, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base
@@ -71,6 +71,7 @@ class FindingSource(str, enum.Enum):
 
 class Task(TimestampMixin, Base):
     __tablename__ = "tasks"
+    __table_args__ = (Index("ix_tasks_project_id", "project_id"),)
 
     project_id: Mapped[str] = mapped_column(
         String(36), ForeignKey("projects.id"), nullable=False
@@ -93,6 +94,10 @@ class Task(TimestampMixin, Base):
 
 class Finding(TimestampMixin, Base):
     __tablename__ = "findings"
+    __table_args__ = (
+        Index("ix_findings_project_id", "project_id"),
+        Index("ix_findings_severity", "severity"),
+    )
 
     project_id: Mapped[str] = mapped_column(
         String(36), ForeignKey("projects.id"), nullable=False
@@ -126,7 +131,9 @@ class Finding(TimestampMixin, Base):
     pack_scoped_data: Mapped[Optional[Any]] = mapped_column(JSON, nullable=True)
 
     project: Mapped["Project"] = relationship(back_populates="findings")
-    requirement: Mapped[Optional["Requirement"]] = relationship("Requirement")
+    requirement: Mapped[Optional["Requirement"]] = relationship(
+        "Requirement", back_populates="findings", foreign_keys=[requirement_id]
+    )
     owner: Mapped[Optional["User"]] = relationship("User", foreign_keys=[owner_id])
     remediation_actions: Mapped[list["RemediationAction"]] = relationship(
         back_populates="finding", cascade="all, delete-orphan"
