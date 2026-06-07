@@ -359,6 +359,12 @@ test_target() {
     # Per-target finding counter reset
     _FIND_CTR=0
 
+    # New-test result accumulators (used in SUMMARY_ROW)
+    local cookie_issues=0
+    local sensitive_found=0
+    local verbose_errors=0
+    local authz_issues=0
+
     log "API review: ${base} [tier=${TIER}]"
 
     # ── 1. HTTP Method Enumeration ─────────────────────────────────────────
@@ -802,18 +808,244 @@ test_target() {
             "Add the missing HTTP security headers to all API responses. Configure X-Content-Type-Options: nosniff, X-Frame-Options: DENY, and a restrictive Content-Security-Policy. Enable Strict-Transport-Security with includeSubDomains for HTTPS endpoints." \
             "ev-08-${host_safe}-011"
     fi
+    _tier_pause
+
+    # ── 9. Cookie Security Analysis ───────────────────────────────────────────
+    local cookie_out="${dir}/app_cookies_${port}_${ts}.txt"
+    {
+        echo "# Cookie Security Analysis — ${base}"
+        echo "# Engagement: ${PROJECT_NAME}"
+        echo "# Date/Time:  $(_now)"
+        echo "---"
+        local cookie_paths=("/" "/login" "/api/login" "/api/auth" "/auth")
+        for cpath in "${cookie_paths[@]}"; do
+            local resp
+            resp=$(_curl -c /dev/null -I "${base}${cpath}")
+            local cookies; cookies=$(echo "$resp" | grep -i "^Set-Cookie:" || true)
+            [[ -z "$cookies" ]] && continue
+            echo "  Path: ${cpath}"
+            echo "$cookies"
+            echo ""
+            while IFS= read -r cookie_line; do
+                [[ -z "$cookie_line" ]] && continue
+                local cname; cname=$(echo "$cookie_line" | sed 's/Set-Cookie: //i' | cut -d= -f1 | tr -d ' \r')
+                echo "  Cookie: ${cname}"
+                if ! echo "$cookie_line" | grep -qi "HttpOnly"; then
+                    echo "  MISSING_HTTPONLY: ${cname}"
+                    log_warn "  Cookie '${cname}' on ${cpath} lacks HttpOnly"
+                    (( cookie_issues++ )) || true
+                fi
+                if ! echo "$cookie_line" | grep -qi "Secure"; then
+                    echo "  MISSING_SECURE: ${cname}"
+                    log_warn "  Cookie '${cname}' on ${cpath} lacks Secure flag"
+                    (( cookie_issues++ )) || true
+                fi
+                if ! echo "$cookie_line" | grep -qi "SameSite"; then
+                    echo "  MISSING_SAMESITE: ${cname}"
+                fi
+            done <<< "$cookies"
+            _tier_pause
+        done
+        echo ""
+        echo "Cookie attribute issues: ${cookie_issues}"
+        [[ "$cookie_issues" -gt 0 ]] && echo "COOKIE_SECURITY_ISSUES: ${cookie_issues}"
+    } | tee "$cookie_out"
+    log_ok "  Cookie security: ${cookie_out}"
+
+    if grep -q "COOKIE_SECURITY_ISSUES:" "$cookie_out" 2>/dev/null; then
+        emit_finding "$host_safe" \
+            "Insecure Cookie Attributes — Missing HttpOnly or Secure Flag" \
+            "medium" \
+            "One or more session or authentication cookies on ${base} are missing required security attributes. HttpOnly prevents JavaScript access (mitigates XSS session theft). Secure ensures cookies are only transmitted over HTTPS." \
+            "Set HttpOnly on all session cookies. Set the Secure flag on all cookies served over HTTPS. Configure SameSite=Strict or SameSite=Lax to prevent CSRF. Audit cookie configuration in web server, load balancer, and application framework." \
+            "ev-08-${host_safe}-012"
+    fi
+    _tier_pause
+
+    # ── 10. Sensitive Data Exposure ───────────────────────────────────────────
+    local sensitive_out="${dir}/app_sensitive_${port}_${ts}.txt"
+    {
+        echo "# Sensitive Data Exposure — ${base}"
+        echo "# Engagement: ${PROJECT_NAME}"
+        echo "# Date/Time:  $(_now)"
+        echo "---"
+        local sensitive_paths=("/api/users" "/api/profile" "/api/me" "/api/data" "/api/export")
+        for spath in "${sensitive_paths[@]}"; do
+            local sc body
+            sc=$(_curl -o /dev/null -w "%{http_code}" "${base}${spath}")
+            if [[ "${sc:-000}" == "000" || "${sc:-000}" == "404" ]]; then continue; fi
+            body=$(_curl "${base}${spath}" | head -c 2000)
+            echo "  [${sc}] ${spath}"
+            echo "  Response (first 2000 bytes):"
+            echo "$body"
+            echo ""
+            # Email addresses
+            if echo "$body" | grep -qoE '[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}'; then
+                echo "  PII_EMAIL: email addresses found"
+                log_warn "  PII email in ${spath}"
+                (( sensitive_found++ )) || true
+            fi
+            # API key / secret prefixes
+            if echo "$body" | grep -qoE '(sk|pk|AKIA|ghp|gho|glpat|xoxb|xoxp)[_\-][A-Za-z0-9]{10,}'; then
+                echo "  SECRET_KEY: API key pattern found"
+                log_warn "  API key pattern in ${spath}"
+                (( sensitive_found++ )) || true
+            fi
+            # Plaintext password fields in JSON
+            if echo "$body" | grep -qiE '"password"\s*:\s*"[^"]{4,}"|"passwd"\s*:\s*"[^"]{4,}"'; then
+                echo "  PII_PASSWORD: plaintext password field in response"
+                log_warn "  Plaintext password in JSON response at ${spath}"
+                (( sensitive_found++ )) || true
+            fi
+            _tier_pause
+        done
+        echo ""
+        echo "Sensitive data findings: ${sensitive_found}"
+        [[ "$sensitive_found" -gt 0 ]] && echo "SENSITIVE_DATA_EXPOSED: ${sensitive_found}"
+    } | tee "$sensitive_out"
+    log_ok "  Sensitive data: ${sensitive_out}"
+
+    if grep -q "SENSITIVE_DATA_EXPOSED:" "$sensitive_out" 2>/dev/null; then
+        emit_finding "$host_safe" \
+            "Sensitive Data Exposure in API Responses" \
+            "high" \
+            "The API at ${base} returns sensitive data in responses — including email addresses, API key patterns, or plaintext password fields. This allows data harvesting by anyone who can reach these endpoints." \
+            "Apply response filtering with explicit field allowlists. Mask or redact PII and credentials in all API responses. Enforce HTTPS end-to-end. Conduct a full data classification review for all API endpoints." \
+            "ev-08-${host_safe}-013"
+    fi
+    _tier_pause
+
+    # ── 11. Error Handling Verbosity ──────────────────────────────────────────
+    local error_out="${dir}/app_errors_${port}_${ts}.txt"
+    {
+        echo "# Error Handling Verbosity — ${base}"
+        echo "# Engagement: ${PROJECT_NAME}"
+        echo "# Date/Time:  $(_now)"
+        echo "---"
+        # Trigger error responses via malformed input
+        local -a probe_specs=(
+            "POST|/api/login|application/json|{bad json"
+            "GET|/api/users?id=1'--|application/json|"
+            "GET|/api/../etc/passwd|application/json|"
+            "POST|/api/|application/json|{\"a\":\"$(printf '%0.sa' {1..500})\"}"
+        )
+        for spec in "${probe_specs[@]}"; do
+            local pmethod ppath pctype pbody
+            IFS='|' read -r pmethod ppath pctype pbody <<< "$spec"
+            echo "--- Probe: ${pmethod} ${ppath}"
+            local presp psc
+            if [[ "$pmethod" == "POST" ]]; then
+                presp=$(_curl -X POST -H "Content-Type: ${pctype}" -d "${pbody}" \
+                    -w "\n__SC__%{http_code}" "${base}${ppath}")
+            else
+                presp=$(_curl -H "Accept: */*" -w "\n__SC__%{http_code}" "${base}${ppath}")
+            fi
+            psc=$(echo "$presp" | grep '__SC__' | sed 's/__SC__//' | tr -d '\r\n' || echo "000")
+            local rbody; rbody=$(echo "$presp" | grep -v '__SC__' | head -c 1500)
+            echo "  HTTP: ${psc}"
+            echo "  Body:"
+            echo "$rbody"
+            echo ""
+            if echo "$rbody" | grep -qiE \
+                "Traceback|stack trace|at line [0-9]|Exception in|java\.lang\.|NullPointerException|\.py.*line|/home/|/var/www/|/usr/local/|DEBUG=True|SQLSTATE|ORA-[0-9]+|syntax error near|ProgrammingError|OperationalError|psycopg2|sqlite3\.OperationalError|django|flask|express|laravel"; then
+                echo "  VERBOSE_ERROR: internal detail in error response"
+                log_warn "  Verbose error at ${pmethod} ${ppath}"
+                (( verbose_errors++ )) || true
+            fi
+            _tier_pause
+        done
+        echo ""
+        echo "Verbose error findings: ${verbose_errors}"
+        [[ "$verbose_errors" -gt 0 ]] && echo "VERBOSE_ERRORS_FOUND: ${verbose_errors}"
+    } | tee "$error_out"
+    log_ok "  Error handling: ${error_out}"
+
+    if grep -q "VERBOSE_ERRORS_FOUND:" "$error_out" 2>/dev/null; then
+        emit_finding "$host_safe" \
+            "Verbose Error Messages Expose Internal Details" \
+            "medium" \
+            "Error responses from ${base} include stack traces, internal file paths, framework version information, or database error messages. This assists an attacker in fingerprinting the technology stack and crafting targeted exploits." \
+            "Configure production error handlers to return generic messages only. Disable debug mode (DEBUG=False). Log detailed errors server-side only. Ensure all frameworks use production-grade error handling. Never echo back internal paths, SQL errors, or exception names in HTTP responses." \
+            "ev-08-${host_safe}-014"
+    fi
+    _tier_pause
+
+    # ── 12. Authorization / Broken Function Level Authorization (BFLA) ─────────
+    local authz_out="${dir}/app_authz_${port}_${ts}.txt"
+    {
+        echo "# Authorization / BFLA Test — ${base}"
+        echo "# Engagement: ${PROJECT_NAME}"
+        echo "# Date/Time:  $(_now)"
+        echo "---"
+        # Probe admin and privileged paths without credentials
+        local admin_paths=(
+            "/admin" "/api/admin" "/api/v1/admin" "/api/admin/users"
+            "/api/admin/settings" "/api/management" "/api/internal"
+            "/api/system" "/actuator" "/actuator/env" "/actuator/mappings"
+            "/api/debug" "/.well-known/admin"
+        )
+        echo "=== Unauthenticated admin endpoint probe ==="
+        for apath in "${admin_paths[@]}"; do
+            local asc
+            asc=$(_curl -o /dev/null -w "%{http_code}" "${base}${apath}")
+            asc="${asc:-000}"
+            echo "  [${asc}] ${apath}"
+            if [[ "$asc" != "404" && "$asc" != "000" && "$asc" != "401" && "$asc" != "403" && "$asc" != "301" && "$asc" != "302" ]]; then
+                echo "  BFLA_CANDIDATE: ${apath} returned ${asc} without authentication"
+                log_warn "  BFLA: admin path ${apath} → ${asc}"
+                (( authz_issues++ )) || true
+            fi
+            _tier_pause
+        done
+
+        # HTTP verb tampering — try HEAD/OPTIONS on restricted paths
+        echo ""
+        echo "=== HTTP Verb Tampering ==="
+        for apath in "/api/admin" "/api/admin/users"; do
+            for verb in HEAD OPTIONS; do
+                local vsc
+                vsc=$(_curl -X "$verb" -o /dev/null -w "%{http_code}" "${base}${apath}")
+                vsc="${vsc:-000}"
+                echo "  [${verb} ${vsc}] ${apath}"
+                if [[ "$vsc" == "200" || "$vsc" == "204" ]]; then
+                    echo "  VERB_TAMPER_HIT: ${verb} ${apath} → ${vsc}"
+                    log_warn "  Verb tamper: ${verb} ${apath} → ${vsc}"
+                    (( authz_issues++ )) || true
+                fi
+            done
+            _tier_pause
+        done
+
+        echo ""
+        echo "Authorization issues: ${authz_issues}"
+        [[ "$authz_issues" -gt 0 ]] && echo "AUTHZ_ISSUES_FOUND: ${authz_issues}"
+    } | tee "$authz_out"
+    log_ok "  Authorization: ${authz_out}"
+
+    if grep -q "AUTHZ_ISSUES_FOUND:" "$authz_out" 2>/dev/null; then
+        emit_finding "$host_safe" \
+            "Broken Function Level Authorization (BFLA/OWASP API5)" \
+            "high" \
+            "Administrative or privileged API endpoints at ${base} are accessible without proper authentication or authorization. Unauthenticated access to admin paths, or HTTP verb tampering bypasses were confirmed, allowing unauthorized users access to restricted functions." \
+            "Apply function-level authorization checks on all sensitive endpoints — never rely on obscurity alone. Implement RBAC at the API gateway or middleware level. Remove or disable debug/actuator endpoints in production. Conduct a complete endpoint authorization review against all defined roles." \
+            "ev-08-${host_safe}-015"
+    fi
 
     log_ok "Done: ${base} | findings so far: ${_FIND_CTR}"
     echo ""
 
     # Return per-target summary values via printed tokens for main() to parse
-    printf "SUMMARY_ROW|%s|%s|%d|%d|%d|%d|%d\n" \
+    printf "SUMMARY_ROW|%s|%s|%d|%d|%d|%d|%d|%d|%d|%d|%d\n" \
         "$ip" "$port" \
         "$_FIND_CTR" \
         "$schema_exposed" \
         "$auth_bypass_found" \
         "$(grep -c "RATE_LIMIT: MISSING" "${rate_out:-/dev/null}" 2>/dev/null || echo 0)" \
-        "$(grep -c "CORS_MISCONFIG_HIGH:\|CORS_MISCONFIG_LOW:" "${cors_out:-/dev/null}" 2>/dev/null || echo 0)"
+        "$(grep -c "CORS_MISCONFIG_HIGH:\|CORS_MISCONFIG_LOW:" "${cors_out:-/dev/null}" 2>/dev/null || echo 0)" \
+        "${cookie_issues}" \
+        "${sensitive_found}" \
+        "${verbose_errors}" \
+        "${authz_issues}"
 }
 
 # =============================================================================
@@ -847,8 +1079,8 @@ main() {
 # App / API Review Summary — ${PROJECT_NAME}
 *Generated: $(_now) | Session: ${SESSION_TS} | Tier: ${TIER}*
 
-| host | tests_run | findings_count | schema_exposed | auth_bypass | rate_limit_missing | cors_issue |
-|------|-----------|----------------|----------------|-------------|-------------------|------------|
+| host | tests | findings | schema | auth_bypass | rate_limit | cors | cookies | sensitive | errors | authz |
+|------|-------|----------|--------|-------------|------------|------|---------|-----------|--------|-------|
 EOF
 
     # Initialise findings JSONL
@@ -877,17 +1109,18 @@ EOF
         row_line=$(test_target "$t_ip" "$t_port" 2>&1 | grep "^SUMMARY_ROW|" | tail -1 || true)
 
         if [[ -n "$row_line" ]]; then
-            local r_host r_port r_finds r_schema r_auth r_rate r_cors
-            IFS='|' read -r _ r_host r_port r_finds r_schema r_auth r_rate r_cors <<< "$row_line"
+            local r_host r_port r_finds r_schema r_auth r_rate r_cors r_cookie r_sensitive r_error r_authz
+            IFS='|' read -r _ r_host r_port r_finds r_schema r_auth r_rate r_cors r_cookie r_sensitive r_error r_authz <<< "$row_line"
             (( total_findings += r_finds )) || true
-            printf "| %s:%s | 8 | %s | %s | %s | %s | %s |\n" \
+            printf "| %s:%s | 12 | %s | %s | %s | %s | %s | %s | %s | %s | %s |\n" \
                 "$r_host" "$r_port" \
-                "${r_finds:-0}" "${r_schema:-0}" "${r_auth:-0}" \
-                "${r_rate:-0}" "${r_cors:-0}" \
+                "${r_finds:-0}" "${r_schema:-0}" "${r_auth:-0}" "${r_rate:-0}" \
+                "${r_cors:-0}" "${r_cookie:-0}" "${r_sensitive:-0}" \
+                "${r_error:-0}" "${r_authz:-0}" \
                 >> "$summary_file"
         else
             # Fallback row if parsing failed
-            printf "| %s:%s | 8 | ? | ? | ? | ? | ? |\n" "$t_ip" "$t_port" >> "$summary_file"
+            printf "| %s:%s | 12 | ? | ? | ? | ? | ? | ? | ? | ? | ? |\n" "$t_ip" "$t_port" >> "$summary_file"
         fi
     done <<< "$targets"
 
@@ -910,7 +1143,11 @@ EOF
              -name "app_cors_*" -o \
              -name "app_mass_assign_*" -o \
              -name "app_idor_*" -o \
-             -name "app_api_headers_*" \) 2>/dev/null | \
+             -name "app_api_headers_*" -o \
+             -name "app_cookies_*" -o \
+             -name "app_sensitive_*" -o \
+             -name "app_errors_*" -o \
+             -name "app_authz_*" \) 2>/dev/null | \
              sort | sed 's/^/- /'
         echo ""
         echo "---"

@@ -130,6 +130,12 @@ OPT_RETEST=0
 OPT_API_KEY=""
 OPT_PROJECT_ID=""
 
+# Profile-based step selection — sourced from pt-orc.conf; overridden by --profile CLI arg.
+# Each profile maps to a pre-planned ordered step sequence so the operator does not run
+# all 10 steps for every engagement type.
+# Values: external | internal | web | api | ai_llm | cloud | ad | hybrid | retest | full
+ENGAGEMENT_PROFILE="${ENGAGEMENT_PROFILE:-full}"
+
 # Result tracking (steps 1-9 and 12)
 declare -A STEP_STATUS
 declare -A STEP_DURATION
@@ -173,6 +179,17 @@ Usage: sudo ./00_pt-orc.sh [OPTIONS]
   --api-key <key>       09: bearer / API key for authenticated LLM endpoint testing
   --project-id <uuid>   12: override ORCHESTRATOR_PROJECT_ID from pt-orc.conf
   --retest              12: set retest_status=pending in report_bundle (retest runs)
+  --profile <name>      Pre-planned step workflow (overrides ENGAGEMENT_PROFILE in conf):
+                          external  → 1 2 3 4 5 6 7 12    DNS→IP→scan→TLS→web→WP→svc→report
+                          internal  → 2 3 7 12             IP→scan→svc→report
+                          web       → 4 5 8 12             TLS→web→API review→report
+                          api       → 8 12                 API review→report
+                          ai_llm    → 9 12                 AI/LLM review→report
+                          cloud     → 1 2 3 4 5 8 12       DNS→IP→scan→TLS→web→API→report
+                          ad        → 2 3 7 12             IP→scan→svc→report (AD focus)
+                          hybrid    → 1 2 3 4 5 6 7 8 9 12 full suite
+                          retest    → 8 9 12               App+LLM+report
+                          full      → 1 2 3 4 5 6 7 8 9 12 all steps (default)
   -h|--help             Show this help and exit
 
 Steps:
@@ -225,10 +242,34 @@ while [[ $# -gt 0 ]]; do
         --api-key)           OPT_API_KEY="$2"; shift 2 ;;
         --project-id)        OPT_PROJECT_ID="$2"; shift 2 ;;
         --retest)            OPT_RETEST=1; shift ;;
+        --profile)           ENGAGEMENT_PROFILE="$2"; shift 2 ;;
         -h|--help)           usage; exit 0 ;;
         *) log_err "Unknown argument: $1"; usage; exit 1 ;;
     esac
 done
+
+# =============================================================================
+# MRK:00_PROFILE — PROFILE STEP RESOLUTION | profile,steps,workflow,sequence
+# NAV-RULE: no-insert-before
+# =============================================================================
+# Maps ENGAGEMENT_PROFILE → ordered list of step numbers to run.
+# Evaluated after argument parsing so --profile CLI override is respected.
+# --skip / --from / --only flags still filter within the profile's step list.
+_profile_steps() {
+    case "${ENGAGEMENT_PROFILE:-full}" in
+        external)  echo "1 2 3 4 5 6 7 12" ;;   # DNS→IP→scan→TLS→web→WPScan→svc→report
+        internal)  echo "2 3 7 12" ;;            # IP→scan→svc→report (no DNS)
+        web)       echo "4 5 8 12" ;;            # TLS→web enum→App/API→report
+        api)       echo "8 12" ;;                # App/API review→report only
+        ai_llm)    echo "9 12" ;;                # AI/LLM review→report only
+        cloud)     echo "1 2 3 4 5 8 12" ;;      # DNS→IP→scan→TLS→web→API→report
+        ad)        echo "2 3 7 12" ;;            # IP→scan→svc (AD service probes)→report
+        hybrid)    echo "1 2 3 4 5 6 7 8 9 12" ;; # every step
+        retest)    echo "8 9 12" ;;              # App/API + AI/LLM retest run
+        full|*)    echo "1 2 3 4 5 6 7 8 9 12" ;; # default: all steps
+    esac
+}
+read -ra PROFILE_STEPS <<< "$(_profile_steps)"
 
 # =============================================================================
 # MRK:00_DISCOVER — SCRIPT DISCOVERY | discover,script,discovery,find,subscript | L216-245
@@ -356,7 +397,7 @@ print_summary() {
 
     local all_ok=1
     local n
-    for n in 1 2 3 4 5 6 7 8 9 12; do
+    for n in "${PROFILE_STEPS[@]}"; do
         local status="${STEP_STATUS[$n]:-—}"
         local dur="${STEP_DURATION[$n]:-—}"
         local scr="${STEP_SCRIPT[$n]:-—}"
@@ -382,7 +423,7 @@ print_summary() {
         echo "=== PT-Orc Suite Summary ==="
         echo "Project: ${PROJECT_NAME:-[project]}"
         [[ -n "$total" ]] && echo "Total elapsed: ${total}"
-        for n in 1 2 3 4 5 6 7 8 9 12; do
+        for n in "${PROFILE_STEPS[@]}"; do
             printf "  Step %-2s  %-22s  %-14s  %s\n" \
                 "$n" "${names[$n]}" "${STEP_STATUS[$n]:-—}" "${STEP_DURATION[$n]:-—}"
         done
@@ -408,6 +449,8 @@ main() {
     printf "  %-22s %s\n" "Project:"   "${PROJECT_NAME:-[see pt-orc.conf]}"
     printf "  %-22s %s\n" "Mode:"      "${MODE}"
     printf "  %-22s %s\n" "Tier:"      "${GLOBAL_TIER}"
+    printf "  %-22s %s\n" "Profile:"   "${ENGAGEMENT_PROFILE}"
+    printf "  %-22s %s\n" "Steps:"     "${PROFILE_STEPS[*]}"
     printf "  %-22s %s\n" "Auto-yes:"  "$([ "$AUTO_YES" -eq 1 ] && echo 'YES — no prompts' || echo 'NO — prompts active')"
     printf "  %-22s %s\n" "Dry-run:"   "$([ "$DRY_RUN"  -eq 1 ] && echo 'YES' || echo 'no')"
     [[ "$FROM_STEP"  -gt 1 ]] && printf "  %-22s %s\n" "Starting from:" "step ${FROM_STEP}"
@@ -423,6 +466,8 @@ main() {
         echo "Project:   ${PROJECT_NAME:-[project]}"
         echo "Mode:      ${MODE}"
         echo "Tier:      ${GLOBAL_TIER}"
+        echo "Profile:   ${ENGAGEMENT_PROFILE}"
+        echo "Steps:     ${PROFILE_STEPS[*]}"
         echo "Session:   ${SESSION_TS}"
         echo "Auto-yes:  ${AUTO_YES}"
         echo "Dry-run:   ${DRY_RUN}"
@@ -437,7 +482,7 @@ main() {
     local suite_start; suite_start=$(date +%s)
     local n
 
-    for n in 1 2 3 4 5 6 7 8 9 12; do
+    for n in "${PROFILE_STEPS[@]}"; do
         if ! should_run "$n"; then
             STEP_STATUS[$n]="SKIP"
             STEP_DURATION[$n]="—"
