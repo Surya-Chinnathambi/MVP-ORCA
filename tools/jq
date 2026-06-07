@@ -1,0 +1,362 @@
+#!/usr/bin/env python3
+"""Minimal jq shim for PT-Orc scripts. Handles all patterns used by 08/09/12."""
+import json, re, sys
+
+def _slurp_json(text):
+    results, decoder, pos = [], json.JSONDecoder(), 0
+    text = text.strip()
+    while pos < len(text):
+        try:
+            obj, end = decoder.raw_decode(text, pos)
+            results.append(obj)
+            pos = end
+            while pos < len(text) and text[pos] in ' \t\n\r':
+                pos += 1
+        except json.JSONDecodeError:
+            break
+    return results
+
+
+def _eval(expr, data, variables):
+    expr = expr.strip()
+    if not expr:
+        return data
+
+    # Pipe: split on top-level | 
+    depth = 0
+    for i, ch in enumerate(expr):
+        if ch in '({[': depth += 1
+        elif ch in ')}]': depth -= 1
+        elif ch == '|' and depth == 0:
+            left = expr[:i].strip()
+            right = expr[i+1:].strip()
+            mid = _eval(left, data, variables)
+            # Auto-iterate only for explicit streaming expressions
+            is_stream = (left.endswith('.[]') or left.endswith('[]?') or
+                         left in {'.[]', '.[]?', 'to_entries', 'keys', 'values'} or
+                         left.startswith('map(') or left.startswith('to_entries') or
+                         left.startswith('keys'))
+            if isinstance(mid, list) and is_stream:
+                results = [_eval(right, item, variables) for item in mid]
+                return [r for r in results if r is not None]
+            return _eval(right, mid, variables)
+
+    # // alternative operator (check BEFORE .field)
+    depth = 0
+    for i in range(len(expr)-1):
+        c = expr[i]
+        if c in '({[': depth += 1
+        elif c in ')}]': depth -= 1
+        elif expr[i:i+2] == '//' and depth == 0 and i > 0:
+            left = expr[:i].strip()
+            right = expr[i+2:].strip()
+            val = _eval(left, data, variables)
+            if val is None or val is False:
+                return _eval(right, data, variables)
+            return val
+
+    # Update expression: .field = value  (must check BEFORE plain .field access)
+    m = re.match(r'^\.(\w+)\s*=\s*(.+)$', expr, re.DOTALL)
+    if m:
+        field = m.group(1)
+        value_expr = m.group(2).strip()
+        val = _eval(value_expr, data, variables)
+        if isinstance(data, dict):
+            result = dict(data)
+            result[field] = val
+            return result
+        return data
+
+    # Nested update: .field.subfield = value
+    m = re.match(r'^\.(\w+)\.(\w+)\s*=\s*(.+)$', expr, re.DOTALL)
+    if m:
+        f1, f2, value_expr = m.group(1), m.group(2), m.group(3).strip()
+        val = _eval(value_expr, data, variables)
+        if isinstance(data, dict):
+            result = dict(data)
+            sub = dict(result.get(f1, {})) if isinstance(result.get(f1), dict) else {}
+            sub[f2] = val
+            result[f1] = sub
+            return result
+        return data
+
+    # Identity
+    if expr == '.':
+        return data
+
+    # .[] iterate
+    if expr == '.[]':
+        if isinstance(data, list): return data
+        if isinstance(data, dict): return list(data.values())
+        return []
+
+    # .field access (after // check)
+    if expr.startswith('.') and not expr.startswith('.[') and expr != '.[]':
+        field = expr[1:].rstrip('?')
+        if not field:
+            return data
+        parts = field.split('.')
+        result = data
+        for part in parts:
+            result = result.get(part) if isinstance(result, dict) else None
+        return result
+
+    # $varname
+    if expr.startswith('$'):
+        return variables.get(expr[1:])
+
+    # String literal "..."
+    if expr.startswith('"') and expr.endswith('"'):
+        return expr[1:-1]
+
+    # Null/bool literals
+    if expr == 'null': return None
+    if expr == 'true': return True
+    if expr == 'false': return False
+
+    # Numeric literals
+    for conv in (int, float):
+        try: return conv(expr)
+        except ValueError: pass
+
+    # [] / {}
+    if expr == '[]': return []
+    if expr == '{}': return {}
+
+    # @json
+    if expr == '@json':
+        return json.dumps(data, separators=(',', ':'))
+
+    # length / keys / type
+    if expr == 'length':
+        return len(data) if isinstance(data, (str, list, dict)) else 0
+    if expr == 'keys':
+        return sorted(data.keys()) if isinstance(data, dict) else []
+    if expr == 'type':
+        t = type(data)
+        if data is None: return 'null'
+        if isinstance(data, bool): return 'boolean'
+        if isinstance(data, (int, float)): return 'number'
+        if isinstance(data, str): return 'string'
+        if isinstance(data, list): return 'array'
+        if isinstance(data, dict): return 'object'
+
+    # select(condition) — pass-through, filter upstream
+    if expr.startswith('select('):
+        inner = expr[7:-1]
+        try:
+            result = _eval(inner, data, variables)
+            return data if result else None
+        except Exception:
+            return data
+
+    # Object construction {k:v, ...}
+    if expr.startswith('{') and expr.endswith('}'):
+        inner = expr[1:-1].strip()
+        obj, depth, current, parts = {}, 0, [], []
+        for ch in inner:
+            if ch in '({[': depth += 1
+            elif ch in ')}]': depth -= 1
+            if ch == ',' and depth == 0:
+                parts.append(''.join(current).strip()); current = []
+            else:
+                current.append(ch)
+        if current:
+            parts.append(''.join(current).strip())
+        for part in parts:
+            kv = part.split(':', 1)
+            if len(kv) == 2:
+                k = kv[0].strip().strip('"')
+                obj[k] = _eval(kv[1].strip(), data, variables)
+        return obj
+
+    # Array construction [expr | select(...)]
+    if expr.startswith('[') and expr.endswith(']'):
+        inner = expr[1:-1].strip()
+        if not inner: return []
+        if 'inputs' in inner:
+            lines = [l for l in sys.stdin.read().splitlines() if l.strip()]
+            return lines
+        result = _eval(inner, data, variables)
+        if isinstance(result, list): return result
+        return [result]
+
+    # if-then-else-end
+    m = re.match(r'^if\s+(.+?)\s+then\s+(.+?)\s+else\s+(.+?)\s+end$', expr, re.DOTALL)
+    if m:
+        cond = _eval(m.group(1), data, variables)
+        return _eval(m.group(2) if cond else m.group(3), data, variables)
+
+    # to_entries / from_entries
+    if expr == 'to_entries':
+        return [{'key': k, 'value': v} for k, v in data.items()] if isinstance(data, dict) else []
+    if expr == 'from_entries':
+        return {i.get('key', i.get('name', '')): i.get('value') for i in data} if isinstance(data, list) else {}
+    if expr == 'add':
+        if isinstance(data, list):
+            if not data: return None
+            r = data[0]
+            for item in data[1:]:
+                if isinstance(r, str): r += item
+                elif isinstance(r, (int, float)): r += item
+                elif isinstance(r, list): r = r + item
+                elif isinstance(r, dict): r = {**r, **item}
+            return r
+    if expr == 'not':
+        return not data
+    if expr == 'empty':
+        return None
+
+    # map(expr)
+    m = re.match(r'^map\((.+)\)$', expr, re.DOTALL)
+    if m:
+        return [_eval(m.group(1), item, variables) for item in (data or [])]
+
+    # has("key")
+    m = re.match(r'^has\("(.+?)"\)$', expr)
+    if m:
+        return m.group(1) in data if isinstance(data, dict) else False
+
+    # env.VAR
+    if expr.startswith('env.'):
+        import os
+        return os.environ.get(expr[4:])
+
+    # reduce .[] as $x (acc; expr) — basic
+    m = re.match(r'^reduce\s+(.+?)\s+as\s+\$(\w+)\s*\((.+?)\s*;\s*(.+)\)$', expr, re.DOTALL)
+    if m:
+        iterable = _eval(m.group(1), data, variables)
+        var_name = m.group(2)
+        acc = _eval(m.group(3), data, variables)
+        body = m.group(4)
+        if isinstance(iterable, list):
+            for item in iterable:
+                v = dict(variables); v[var_name] = item; v['__acc'] = acc
+                acc = _eval(body.replace('.' + var_name, f'${var_name}'), acc, v)
+        return acc
+
+    # ascii_downcase / upcase
+    if expr == 'ascii_downcase': return data.lower() if isinstance(data, str) else data
+    if expr == 'ascii_upcase': return data.upper() if isinstance(data, str) else data
+
+    # split/join
+    m = re.match(r'^split\("(.*)"\)$', expr)
+    if m: return data.split(m.group(1)) if isinstance(data, str) else data
+    m = re.match(r'^join\("(.*)"\)$', expr)
+    if m: return m.group(1).join(str(x) for x in data) if isinstance(data, list) else data
+
+    # ltrimstr / rtrimstr
+    m = re.match(r'^ltrimstr\("(.*)"\)$', expr)
+    if m:
+        s = m.group(1); return data[len(s):] if isinstance(data, str) and data.startswith(s) else data
+    m = re.match(r'^rtrimstr\("(.*)"\)$', expr)
+    if m:
+        s = m.group(1); return data[:-len(s)] if isinstance(data, str) and data.endswith(s) else data
+
+    # test(regex)
+    m = re.match(r'^test\("(.+)"\)$', expr)
+    if m:
+        return bool(re.search(m.group(1), str(data) if data is not None else ''))
+
+    # floor / ceil / round
+    if expr == 'floor': return int(data) if isinstance(data, float) else data
+    if expr == 'ceil': import math; return math.ceil(data) if isinstance(data, (int, float)) else data
+    if expr == 'round': return round(data) if isinstance(data, (int, float)) else data
+
+    # tostring / tonumber
+    if expr == 'tostring': return str(data) if not isinstance(data, str) else data
+    if expr == 'tonumber':
+        try: return int(data)
+        except: 
+            try: return float(data)
+            except: return None
+
+    # Fallback: return data unchanged
+    return data
+
+
+def main():
+    argv, null_input, raw_input = sys.argv[1:], False, False
+    slurp, compact, raw_output = False, False, False
+    variables, expr = {}, '.'
+
+    i = 0
+    while i < len(argv):
+        a = argv[i]
+        if re.match(r'^-[^-]', a):
+            for f in a[1:]:
+                null_input |= f == 'n'; raw_input |= f == 'R'
+                slurp |= f == 's'; compact |= f == 'c'; raw_output |= f == 'r'
+            i += 1
+        elif a == '--null-input': null_input = True; i += 1
+        elif a == '--raw-input': raw_input = True; i += 1
+        elif a == '--slurp': slurp = True; i += 1
+        elif a in ('--compact-output', '-c'): compact = True; i += 1
+        elif a == '--raw-output': raw_output = True; i += 1
+        elif a == '--arg' and i + 2 < len(argv):
+            variables[argv[i+1]] = argv[i+2]; i += 3
+        elif a == '--argjson' and i + 2 < len(argv):
+            try: variables[argv[i+1]] = json.loads(argv[i+2])
+            except: variables[argv[i+1]] = argv[i+2]
+            i += 3
+        elif not a.startswith('-'):
+            expr = a; i += 1
+        else:
+            i += 1
+
+    def emit(val):
+        if raw_output and isinstance(val, str):
+            print(val)
+        elif val is None and raw_output:
+            pass
+        else:
+            sep = (',', ':') if compact else (', ', ': ')
+            print(json.dumps(val, separators=sep, ensure_ascii=False))
+
+    if null_input:
+        if 'inputs' in expr:
+            lines = [l for l in sys.stdin.read().splitlines() if l.strip()]
+            emit(lines)
+        else:
+            emit(_eval(expr, None, variables))
+        return
+
+    raw_text = sys.stdin.read()
+
+    if raw_input and not slurp:
+        for line in raw_text.splitlines():
+            r = _eval(expr, line.rstrip('\n'), variables)
+            emit(r)
+        return
+
+    if raw_input and slurp:
+        emit(_eval(expr, raw_text, variables))
+        return
+
+    data = _slurp_json(raw_text.strip())
+    if slurp:
+        emit(_eval(expr, data, variables))
+        return
+
+    if len(data) == 1:
+        data = data[0]
+        result = _eval(expr, data, variables)
+        if isinstance(result, list) and expr not in ('.', '[]') and not expr.startswith('['):
+            for item in result:
+                emit(item)
+        else:
+            emit(result)
+    elif data:
+        for item in data:
+            emit(_eval(expr, item, variables))
+    else:
+        emit(None)
+
+if __name__ == '__main__':
+    try:
+        main()
+    except BrokenPipeError:
+        pass
+    except Exception as e:
+        sys.stderr.write(f'jq error ({e})\n')
+        sys.exit(1)

@@ -1,0 +1,96 @@
+{
+  "key": "incident_response",
+  "title": "Incident Response Capability Assessment Pack",
+  "frameworks": ["tg_baseline", "nist"],
+  "intake_questions": [
+    {"id": "ir1", "text": "Does the organisation have a documented Incident Response Plan (IRP)?"},
+    {"id": "ir2", "text": "Has the IRP been tested (tabletop exercise or live drill) in the last 12 months?"},
+    {"id": "ir3", "text": "Is there a Security Operations Centre (SOC) or equivalent monitoring function?"},
+    {"id": "ir4", "text": "Are incident severity levels and escalation paths formally defined?"},
+    {"id": "ir5", "text": "Has the organisation experienced a significant security incident in the last 24 months?"}
+  ],
+  "scope_template": [
+    {"kind": "business_unit", "prompt": "Identify which teams are involved in incident detection, response, and recovery"},
+    {"kind": "asset", "prompt": "List systems considered critical for incident scope classification"},
+    {"kind": "exclusion", "prompt": "Confirm incident types or systems explicitly excluded from this assessment"}
+  ],
+  "requirements": [
+    {
+      "ref_code": "IR-PLAN-01",
+      "category": "planning",
+      "text": "A documented, management-approved Incident Response Plan must exist covering roles, responsibilities, detection, classification, containment, eradication, recovery, and post-incident review.",
+      "evidence_expectation": "IRP document with version control; management approval; role assignments; escalation matrix; contact directory"
+    },
+    {
+      "ref_code": "IR-DETECT-01",
+      "category": "detection",
+      "text": "Mechanisms for detecting security incidents must be in place including SIEM/monitoring, alert thresholds, and 24/7 coverage aligned to NIST DE.CM.",
+      "evidence_expectation": "Detection tool inventory; SIEM configuration; monitoring coverage matrix; on-call schedule; alert ruleset documentation"
+    },
+    {
+      "ref_code": "IR-CONTAIN-01",
+      "category": "response",
+      "text": "Containment and eradication procedures must be documented per incident type with defined authorisation levels for containment actions.",
+      "evidence_expectation": "Containment playbooks by incident type; authority matrix for containment actions; isolation procedures"
+    },
+    {
+      "ref_code": "IR-TEST-01",
+      "category": "testing",
+      "text": "The IRP must be tested through tabletop exercises or live drills at least annually, with lessons learned documented and acted upon.",
+      "evidence_expectation": "Tabletop exercise plan and results (within 12 months); lessons-learned report; IRP update evidence post-exercise"
+    },
+    {
+      "ref_code": "IR-NOTIFY-01",
+      "category": "notification",
+      "text": "Notification procedures must cover regulatory reporting obligations (72-hour GDPR/DPDP notification), internal escalation, and external communication including clients and insurers.",
+      "evidence_expectation": "Notification procedure; regulatory reporting templates; stakeholder communication matrix; cyber insurance policy excerpt"
+    }
+  ],
+  "evidence_requests": [
+    {"requirement_ref": "IR-PLAN-01", "title": "Incident Response Plan", "description": "Current IRP document with version history, management approval, role assignments, and escalation matrix"},
+    {"requirement_ref": "IR-DETECT-01", "title": "Detection Capability Evidence", "description": "SIEM/detection tool documentation, monitoring coverage matrix, on-call schedule, and sample alert log"},
+    {"requirement_ref": "IR-CONTAIN-01", "title": "Containment Playbooks", "description": "Incident-type playbooks for at least ransomware, data breach, and account compromise scenarios"},
+    {"requirement_ref": "IR-TEST-01", "title": "Most Recent Tabletop Exercise Report", "description": "Tabletop exercise scenario, participant list, findings, and lessons-learned implementation evidence"},
+    {"requirement_ref": "IR-NOTIFY-01", "title": "Notification Procedures and Templates", "description": "Regulatory notification templates, stakeholder communication matrix, and cyber insurance evidence"}
+  ],
+  "task_templates": [
+    {"kind": "review", "title": "Review IRP for completeness against NIST SP 800-61 framework"},
+    {"kind": "review", "title": "Assess detection and monitoring capability coverage"},
+    {"kind": "review", "title": "Evaluate containment playbooks for key incident types"},
+    {"kind": "review", "title": "Assess tabletop exercise quality and lessons-learned implementation"},
+    {"kind": "review", "title": "Review notification procedures for regulatory compliance"},
+    {"kind": "interview", "title": "Interview IR team lead on detection-to-containment process"},
+    {"kind": "analysis", "title": "Assess mean-time-to-detect (MTTD) and mean-time-to-respond (MTTR) metrics"}
+  ],
+  "finding_templates": [
+    {"category": "planning", "title_pattern": "IRP missing required element: {element}"},
+    {"category": "detection", "title_pattern": "Detection coverage gap: {system_or_threat_type}"},
+    {"category": "response", "title_pattern": "No playbook for incident type: {incident_type}"},
+    {"category": "testing", "title_pattern": "IRP not tested within required period; last test: {last_test_date}"},
+    {"category": "notification", "title_pattern": "Notification procedure gap: {regulatory_or_stakeholder_type}"}
+  ],
+  "qa_rules": [
+    "every_finding_has_evidence",
+    "all_requirements_assessed",
+    "open_evidence_requests_flagged",
+    "evidence_lifecycle_ready"
+  ],
+  "severity_model": {
+    "critical": "No documented or tested IRP; inability to detect or respond to incidents; regulatory notification failure risk",
+    "high": "Significant IR capability gap; key incident type without playbook or detection coverage absent",
+    "medium": "IR process weakness; playbooks incomplete or tests overdue; notification gaps present",
+    "low": "Minor IR improvement; playbooks need refresh or tabletop scenario coverage should be broadened",
+    "informational": "Best-practice enhancement for IR maturity; no immediate capability risk"
+  },
+  "review_gates": [
+    {"id": "G1", "label": "Scope approved", "required_role": "partner"},
+    {"id": "G2", "label": "Evidence complete", "required_role": "qa"},
+    {"id": "G4", "label": "Findings approved", "required_role": "partner"},
+    {"id": "G6", "label": "Report approved", "required_role": "partner"}
+  ],
+  "advisory_clinic_templates": [
+    {"category": "planning", "title": "IRP Design and Update Workshop", "guidance": "Walk through IRP against NIST SP 800-61; identify gaps; update roles, playbooks, and escalation matrix"},
+    {"category": "testing", "title": "Tabletop Exercise Facilitation", "guidance": "Design and facilitate a scenario-based tabletop exercise; produce findings and lessons-learned report"},
+    {"category": "detection", "title": "Detection Engineering Advisory", "guidance": "Review SIEM detection rules against MITRE ATT&CK; recommend high-priority detections for immediate gaps"}
+  ]
+}

@@ -1,0 +1,117 @@
+{
+  "key": "owasp_api10",
+  "title": "OWASP API Security Top 10 (2023)",
+  "version": "2023",
+  "controls": [
+    {
+      "id": "API1-BOLA",
+      "title": "API1:2023 — Broken Object Level Authorization (BOLA/IDOR)",
+      "text": "APIs that accept object identifiers from clients must verify the requesting user is authorised to access the specific object. Lack of per-object authorisation is the most common and impactful API vulnerability.",
+      "evidence_expectation": "BOLA/IDOR test cases with cross-account object access proof; affected endpoints and object types",
+      "assessment_procedure": "Map all endpoints that accept object IDs; authenticate as User A and attempt to access User B's objects; test with manipulated IDs (sequential, UUID swap, encoded variants); verify authorisation enforced server-side",
+      "risk_theme": "access_control",
+      "related_frameworks": ["owasp_asvs", "owasp_wstg"],
+      "cross_framework_refs": {"owasp_asvs": ["ASVS-V4.2"]},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "API2-BAU",
+      "title": "API2:2023 — Broken Authentication",
+      "text": "API authentication mechanisms are misconfigured or missing: weak tokens, no rate limiting on auth endpoints, predictable credentials, lack of MFA, or insecure token storage.",
+      "evidence_expectation": "Authentication endpoint testing results; token strength analysis; brute-force test evidence; credential stuffing resilience results",
+      "assessment_procedure": "Test auth endpoints for rate limiting; analyse token randomness and expiry; attempt credential stuffing; verify MFA enforced on sensitive operations; check for token leakage in logs or URLs",
+      "risk_theme": "authentication",
+      "related_frameworks": ["owasp_asvs", "owasp_wstg"],
+      "cross_framework_refs": {"owasp_asvs": ["ASVS-V2.1"]},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "API3-BOPLA",
+      "title": "API3:2023 — Broken Object Property Level Authorization",
+      "text": "APIs fail to filter object properties based on the user's access level, exposing sensitive fields in responses or allowing mass assignment of protected properties.",
+      "evidence_expectation": "Response body analysis showing over-exposed fields; mass assignment test results; role-based property access comparison",
+      "assessment_procedure": "Compare API responses across user roles; check for sensitive fields returned to unauthorised users; test mass assignment by injecting non-allowed properties in requests; verify server-side allowlisting",
+      "risk_theme": "access_control",
+      "related_frameworks": ["owasp_asvs"],
+      "cross_framework_refs": {"owasp_asvs": ["ASVS-V4.2"]},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "API4-URC",
+      "title": "API4:2023 — Unrestricted Resource Consumption",
+      "text": "APIs lack rate limiting or resource consumption controls, enabling DoS attacks through mass requests, large payload abuse, or long-running queries that exhaust server resources.",
+      "evidence_expectation": "Rate limiting test results; large payload acceptance results; resource consumption measurement under load",
+      "assessment_procedure": "Test request rate limits on all API endpoints; send oversized payloads; test with deeply nested JSON; measure response degradation; verify limits enforced per user/IP/API key",
+      "risk_theme": "availability",
+      "related_frameworks": ["owasp_asvs"],
+      "cross_framework_refs": {"owasp_asvs": ["ASVS-V13.2"]},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "API5-BFLA",
+      "title": "API5:2023 — Broken Function Level Authorization (BFLA)",
+      "text": "Administrative or privileged API functions are accessible to regular or unauthenticated users due to missing server-side authorisation checks on function-level access.",
+      "evidence_expectation": "Admin function access test results; role-bypassed function calls; privilege escalation evidence",
+      "assessment_procedure": "Map all API endpoints including administrative paths; authenticate as low-privilege user; attempt access to admin endpoints; test HTTP method switching (GET→POST→DELETE); test parameter-based role bypass",
+      "risk_theme": "access_control",
+      "related_frameworks": ["owasp_asvs", "owasp_wstg"],
+      "cross_framework_refs": {"owasp_asvs": ["ASVS-V4.1"]},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "API6-SSRF",
+      "title": "API6:2023 — Server-Side Request Forgery (SSRF)",
+      "text": "APIs that accept URLs or remote resource references without validation enable SSRF attacks, allowing attackers to reach internal services, cloud metadata endpoints, or internal network resources.",
+      "evidence_expectation": "SSRF proof-of-concept showing internal resource access; cloud metadata endpoint access evidence; DNS callback confirmation",
+      "assessment_procedure": "Identify all URL-accepting parameters; test with internal IP ranges, cloud metadata URLs (169.254.169.254), localhost; use Burp Collaborator/interactsh to confirm out-of-band SSRF; test protocol smuggling",
+      "risk_theme": "injection",
+      "related_frameworks": ["owasp_asvs"],
+      "cross_framework_refs": {"owasp_asvs": ["ASVS-V12.6"]},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "API7-MISC",
+      "title": "API7:2023 — Security Misconfiguration",
+      "text": "APIs expose sensitive information through default configurations, unnecessary HTTP methods, verbose error messages, missing security headers, or insecure CORS policies.",
+      "evidence_expectation": "Security headers audit; CORS policy analysis; error message content review; HTTP method enumeration results",
+      "assessment_procedure": "Review security headers; test CORS with arbitrary origins; verify error messages do not expose stack traces; check allowed HTTP methods; test for exposed API documentation (Swagger/OpenAPI) in production",
+      "risk_theme": "configuration",
+      "related_frameworks": ["owasp_asvs", "owasp_wstg"],
+      "cross_framework_refs": {"owasp_asvs": ["ASVS-V14.4"]},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "API8-INJECT",
+      "title": "API8:2023 — Security Misconfiguration (Injection)",
+      "text": "API inputs passed to interpreters (SQL, OS, LDAP, GraphQL) without proper validation or sanitisation enable injection attacks that can lead to data exfiltration, authentication bypass, or remote code execution.",
+      "evidence_expectation": "Injection test results; payload responses showing successful injection; affected endpoint and parameter list",
+      "assessment_procedure": "Test all API inputs with injection payloads (SQL, NoSQL, OS command, LDAP, GraphQL); use automated scanning; verify input sanitisation applied server-side; test for GraphQL introspection and injection",
+      "risk_theme": "injection",
+      "related_frameworks": ["owasp_asvs", "owasp_wstg"],
+      "cross_framework_refs": {"owasp_asvs": ["ASVS-V5.3"], "owasp_wstg": ["WSTG-INPV-05"]},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "API9-IIM",
+      "title": "API9:2023 — Improper Inventory Management",
+      "text": "Outdated, undocumented, or shadow API versions remain accessible, exposing users to older vulnerabilities or bypassing security controls present in newer versions.",
+      "evidence_expectation": "API version discovery results; old/shadow API endpoint inventory; version comparison security gap analysis",
+      "assessment_procedure": "Enumerate all API versions accessible (/v1, /v2, /api/legacy); test whether security controls are equivalent across versions; check for undocumented endpoints via path fuzzing; review API gateway configuration",
+      "risk_theme": "asset_management",
+      "related_frameworks": ["owasp_asvs"],
+      "cross_framework_refs": {"owasp_asvs": ["ASVS-V14.2"]},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "API10-UAE",
+      "title": "API10:2023 — Unsafe Consumption of APIs",
+      "text": "Applications that integrate third-party APIs without proper validation of responses are vulnerable to supply-chain attacks where a compromised upstream API delivers malicious payloads.",
+      "evidence_expectation": "Third-party API integration review; response validation analysis; supply chain dependency audit",
+      "assessment_procedure": "Map all third-party API integrations; review whether responses are validated before use; check for SSRF risks in integration paths; assess whether upstream API credentials are stored securely; review dependency versions for known vulnerabilities",
+      "risk_theme": "supply_chain",
+      "related_frameworks": ["owasp_asvs"],
+      "cross_framework_refs": {"owasp_asvs": ["ASVS-V14.2"]},
+      "applicable_packs": ["vapt"]
+    }
+  ]
+}

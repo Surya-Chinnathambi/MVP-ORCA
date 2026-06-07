@@ -1,0 +1,2377 @@
+{
+  "key": "dpdp",
+  "title": "DPDP Readiness Pack v2 — Multi-Sector",
+  "frameworks": [
+    "dpdp_act",
+    "iso_27701",
+    "eu_gdpr"
+  ],
+  "intake_questions": [
+    {
+      "id": "q1",
+      "text": "List all business units that collect or process personal data of Indian residents."
+    },
+    {
+      "id": "q2",
+      "text": "Which categories of personal data are processed? (name, contact, financial, health, biometric, children's data, location, employment)"
+    },
+    {
+      "id": "q3",
+      "text": "Do you transfer personal data outside India? If yes, to which countries and to which processors?"
+    },
+    {
+      "id": "q4",
+      "text": "Are you a Significant Data Fiduciary? (>1 crore data principals, or processing sensitive data at scale, or designated by Central Government)"
+    },
+    {
+      "id": "q5",
+      "text": "What is the primary lawful basis for processing: consent or legitimate use? Specify per processing activity."
+    },
+    {
+      "id": "q6",
+      "text": "Which sector best describes your organisation? (Healthcare, Manufacturing, Automation/Technology, Financial Services, Education/EdTech, E-Commerce/Retail, Telecom, Government/Public Sector, Other)"
+    },
+    {
+      "id": "q7",
+      "text": "Do you process personal data of children (under 18)? If yes, describe the age verification and parental consent mechanism."
+    },
+    {
+      "id": "q8",
+      "text": "How many data principals does your organisation process personal data for (approximate)? This determines SDF threshold assessment."
+    }
+  ],
+  "scope_template": [
+    {
+      "kind": "business_unit",
+      "prompt": "Identify each business unit processing personal data of Indian residents"
+    },
+    {
+      "kind": "asset",
+      "prompt": "List all systems, applications, and databases storing or transmitting personal data"
+    },
+    {
+      "kind": "processor",
+      "prompt": "Identify all data processors (third-party vendors handling personal data on your behalf)"
+    },
+    {
+      "kind": "transfer",
+      "prompt": "Identify all cross-border personal data transfers including cloud providers"
+    },
+    {
+      "kind": "exclusion",
+      "prompt": "Confirm any systems explicitly excluded from DPDP scope with justification"
+    }
+  ],
+  "requirements": [
+    {
+      "ref_code": "DPDP-NOTICE-01",
+      "category": "notice",
+      "text": "A notice must be provided to data principals at or before collection stating: personal data to be collected, purpose, how to exercise rights, and how to complain to DPBI.",
+      "evidence_expectation": "Current privacy notice document; screenshot of notice at all collection points (web, app, paper forms, APIs)"
+    },
+    {
+      "ref_code": "DPDP-NOTICE-02",
+      "category": "notice",
+      "text": "The notice must be available in English and at least one Eighth Schedule language upon request.",
+      "evidence_expectation": "Language versions of the privacy notice; process documentation for responding to translated notice requests"
+    },
+    {
+      "ref_code": "DPDP-NOTICE-03",
+      "category": "notice",
+      "text": "For personal data collected prior to the Act, a notice must have been provided at the time of collection or re-issued within the prescribed transition period.",
+      "evidence_expectation": "Evidence of legacy notice re-issuance or confirmation of pre-Act collection notices; transition plan documentation"
+    },
+    {
+      "ref_code": "DPDP-CONSENT-01",
+      "category": "consent",
+      "text": "Consent must be free, specific, informed, unconditional, and unambiguous via a clear affirmative action. No pre-ticked boxes, bundled consents, or deceptive patterns.",
+      "evidence_expectation": "Consent UI screenshots; consent log samples; dark pattern assessment; affirmative action mechanism description"
+    },
+    {
+      "ref_code": "DPDP-CONSENT-02",
+      "category": "consent",
+      "text": "Data principals must be able to withdraw consent as easily as it was given. Withdrawal must trigger cessation of processing not covered by legitimate use.",
+      "evidence_expectation": "Consent withdrawal UI or API; withdrawal audit log; evidence processing stops after withdrawal; no dark patterns blocking withdrawal"
+    },
+    {
+      "ref_code": "DPDP-CONSENT-03",
+      "category": "consent",
+      "text": "Consent records must be maintained demonstrating who consented, when, for which specific purpose, and the mechanism used.",
+      "evidence_expectation": "Consent database schema or log extract with timestamp, purpose, and data principal identity; consent record retention policy"
+    },
+    {
+      "ref_code": "DPDP-PURPOSE-01",
+      "category": "purpose",
+      "text": "Personal data must only be processed for the specific purpose for which consent was given or legitimate use applies. Secondary use requires fresh consent.",
+      "evidence_expectation": "Records of Processing Activities (RoPA) linking each data element to a lawful basis; evidence no secondary use without consent"
+    },
+    {
+      "ref_code": "DPDP-PURPOSE-02",
+      "category": "purpose",
+      "text": "Personal data must not be retained beyond the period necessary for the stated purpose or as mandated by law. Deletion or anonymisation must be triggered at end of retention.",
+      "evidence_expectation": "Data retention schedule per category and sector law; automated deletion or archival policy; deletion audit logs"
+    },
+    {
+      "ref_code": "DPDP-RIGHTS-01",
+      "category": "rights",
+      "text": "Data principals have the right to access a summary of personal data being processed, identities of processors, and data shared with other fiduciaries.",
+      "evidence_expectation": "Access request SOP; technical mechanism for providing data summary; SLA; sample fulfilled request (anonymised)"
+    },
+    {
+      "ref_code": "DPDP-RIGHTS-02",
+      "category": "rights",
+      "text": "Data principals have the right to correction, completion, updating, and erasure of personal data. Requests must be fulfilled within prescribed SLA.",
+      "evidence_expectation": "Correction/erasure workflow documentation; technical deletion mechanism with cascading to processors; SLA tracking records"
+    },
+    {
+      "ref_code": "DPDP-RIGHTS-03",
+      "category": "rights",
+      "text": "A grievance redressal mechanism must be established with a designated officer whose contact details are publicly accessible. Grievances must be addressed within prescribed period.",
+      "evidence_expectation": "Grievance officer designation; public-facing contact; portal or email; SLA; sample resolved grievances with response times"
+    },
+    {
+      "ref_code": "DPDP-SEC-01",
+      "category": "security",
+      "text": "Reasonable security safeguards must be implemented to prevent personal data breach, including encryption, access controls, monitoring, and regular security testing.",
+      "evidence_expectation": "Information security policy; encryption evidence for PII at rest and in transit; access control records; pentest report (last 12 months)"
+    },
+    {
+      "ref_code": "DPDP-SEC-02",
+      "category": "security",
+      "text": "All data processors must be bound by written Data Processing Agreements including security, purpose limitation, and breach notification obligations.",
+      "evidence_expectation": "Signed DPAs with all data processors; processor security assessment records; DPA breach notification clause"
+    },
+    {
+      "ref_code": "DPDP-BREACH-01",
+      "category": "breach",
+      "text": "In case of a personal data breach, the DPBI and affected data principals must be notified without delay in the prescribed manner.",
+      "evidence_expectation": "Incident response plan with breach notification SOP; DPBI notification templates; data principal notification capability; tabletop exercise record"
+    },
+    {
+      "ref_code": "DPDP-TRANSFER-01",
+      "category": "transfer",
+      "text": "Personal data must only be transferred outside India to countries on the Central Government approved list, with appropriate contractual safeguards for foreign processors.",
+      "evidence_expectation": "Cross-border transfer mapping; receiving country compliance assessment; DPAs with foreign processors including DPDP protections"
+    },
+    {
+      "ref_code": "DPDP-GOVERNANCE-01",
+      "category": "governance",
+      "text": "A Data Protection Officer or point of contact must be designated. For Significant Data Fiduciaries, the DPO must report to the board and be based in India.",
+      "evidence_expectation": "DPO appointment letter; public-facing DPO contact; board reporting evidence (for SDF); India residency evidence (for SDF)"
+    },
+    {
+      "ref_code": "DPDP-SDF-01",
+      "category": "sdf",
+      "text": "Significant Data Fiduciaries must conduct Data Protection Impact Assessments (DPIA) for high-risk processing activities including AI/ML, large-scale biometrics, and health data.",
+      "evidence_expectation": "SDF threshold assessment; DPIA methodology; completed DPIAs for qualifying activities; DPBI reporting records"
+    },
+    {
+      "ref_code": "DPDP-CHILDREN-01",
+      "category": "children",
+      "text": "Before processing personal data of a child (under 18), verifiable parental or guardian consent must be obtained. Children's data must not be used for tracking, profiling, or behavioural advertising.",
+      "evidence_expectation": "Age verification mechanism; parental consent flow; technical age gate; evidence children's data excluded from profiling and advertising"
+    }
+  ],
+  "evidence_requests": [
+    {
+      "requirement_ref": "DPDP-NOTICE-01",
+      "title": "Privacy Notice — current version",
+      "description": "Current privacy notice shown at all collection points including web, mobile app, and API responses"
+    },
+    {
+      "requirement_ref": "DPDP-NOTICE-02",
+      "title": "Multilingual notice evidence",
+      "description": "Available language versions or documented process for translated notice on request"
+    },
+    {
+      "requirement_ref": "DPDP-NOTICE-03",
+      "title": "Legacy data notice evidence",
+      "description": "Evidence of pre-Act data notice re-issuance or transition plan"
+    },
+    {
+      "requirement_ref": "DPDP-CONSENT-01",
+      "title": "Consent mechanism screenshots and dark pattern assessment",
+      "description": "Screenshots of consent UI, dark pattern review evidence, and affirmative action confirmation"
+    },
+    {
+      "requirement_ref": "DPDP-CONSENT-02",
+      "title": "Consent withdrawal mechanism demo",
+      "description": "Demo or docs of withdrawal process, audit log showing withdrawal processed, downstream cessation evidence"
+    },
+    {
+      "requirement_ref": "DPDP-CONSENT-03",
+      "title": "Consent records extract",
+      "description": "Sample consent log showing who, when, purpose, mechanism; retention policy for consent records"
+    },
+    {
+      "requirement_ref": "DPDP-PURPOSE-01",
+      "title": "Records of Processing Activities (RoPA)",
+      "description": "Full RoPA linking each data element, purpose, lawful basis, retention period, and processors"
+    },
+    {
+      "requirement_ref": "DPDP-PURPOSE-02",
+      "title": "Data retention schedule and deletion evidence",
+      "description": "Retention schedule per data category; automated deletion configuration; sample deletion audit logs"
+    },
+    {
+      "requirement_ref": "DPDP-RIGHTS-01",
+      "title": "Data access request SOP and sample",
+      "description": "SOP for access requests, technical mechanism, SLA, and an anonymised sample fulfilled request"
+    },
+    {
+      "requirement_ref": "DPDP-RIGHTS-02",
+      "title": "Erasure and correction workflow",
+      "description": "Technical and procedural documentation for erasure and correction, cascading deletion to processors"
+    },
+    {
+      "requirement_ref": "DPDP-RIGHTS-03",
+      "title": "Grievance portal, SLA, and sample resolutions",
+      "description": "Grievance officer details, portal/email, SLA documentation, and sample resolved grievances"
+    },
+    {
+      "requirement_ref": "DPDP-SEC-01",
+      "title": "Security safeguards evidence pack",
+      "description": "IS policy, encryption configuration, access control records, MFA evidence, latest pentest report"
+    },
+    {
+      "requirement_ref": "DPDP-SEC-02",
+      "title": "Data Processing Agreements with all processors",
+      "description": "Signed DPAs with all vendors handling personal data; processor security questionnaire results"
+    },
+    {
+      "requirement_ref": "DPDP-BREACH-01",
+      "title": "Incident response and breach notification plan",
+      "description": "IRP with DPBI notification SOP, notification templates, tabletop exercise record"
+    },
+    {
+      "requirement_ref": "DPDP-TRANSFER-01",
+      "title": "Cross-border transfer mapping and safeguards",
+      "description": "Data flow diagram showing international transfers; receiving country list; foreign processor DPAs"
+    },
+    {
+      "requirement_ref": "DPDP-GOVERNANCE-01",
+      "title": "DPO appointment and public contact evidence",
+      "description": "DPO designation record, public-facing contact page, board reporting evidence"
+    },
+    {
+      "requirement_ref": "DPDP-SDF-01",
+      "title": "DPIA records and SDF threshold assessment",
+      "description": "SDF determination document; DPIA methodology; completed DPIAs for qualifying processing activities"
+    },
+    {
+      "requirement_ref": "DPDP-CHILDREN-01",
+      "title": "Children's data controls and parental consent mechanism",
+      "description": "Age verification system docs; parental consent flow; evidence children excluded from profiling/advertising"
+    }
+  ],
+  "task_templates": [
+    {
+      "kind": "interview",
+      "title": "DPO/CISO interview — data processing overview, lawful basis register, and governance structure"
+    },
+    {
+      "kind": "interview",
+      "title": "Legal/compliance interview — consent architecture, rights fulfilment SLAs, and grievance handling"
+    },
+    {
+      "kind": "interview",
+      "title": "IT/engineering interview — data systems inventory, encryption, access controls, and deletion automation"
+    },
+    {
+      "kind": "workshop",
+      "title": "Data mapping workshop — personal data flows, RoPA construction, and cross-border transfer identification"
+    },
+    {
+      "kind": "workshop",
+      "title": "Sector-specific risk workshop — industry data types, sector law overlaps, and residual risk assessment"
+    },
+    {
+      "kind": "review",
+      "title": "Privacy notice and consent mechanism review — dark pattern check and language accessibility test"
+    },
+    {
+      "kind": "review",
+      "title": "Security safeguards and DPA review — processor inventory, DPA completeness, and security controls"
+    },
+    {
+      "kind": "review",
+      "title": "Breach response and grievance process review — IRP DPDP alignment and SLA assessment"
+    },
+    {
+      "kind": "review",
+      "title": "Children's data controls review — age gate testing and parental consent verification"
+    },
+    {
+      "kind": "review",
+      "title": "Cross-border transfer review — transfer mapping, approved country list compliance, and foreign DPAs"
+    },
+    {
+      "kind": "test",
+      "title": "Consent withdrawal and access request functional test — end-to-end rights exercise"
+    },
+    {
+      "kind": "test",
+      "title": "Erasure cascade test — verify deletion propagates to all downstream processors"
+    },
+    {
+      "kind": "workshop",
+      "title": "DPIA facilitation — high-risk processing activities identification and impact assessment"
+    }
+  ],
+  "finding_templates": [
+    {
+      "category": "notice",
+      "title_pattern": "Privacy notice gap: {area}"
+    },
+    {
+      "category": "consent",
+      "title_pattern": "Consent mechanism deficiency: {area}"
+    },
+    {
+      "category": "rights",
+      "title_pattern": "Data principal rights gap: {area}"
+    },
+    {
+      "category": "purpose",
+      "title_pattern": "Purpose limitation or retention gap: {area}"
+    },
+    {
+      "category": "security",
+      "title_pattern": "Security safeguard weakness: {area}"
+    },
+    {
+      "category": "breach",
+      "title_pattern": "Breach response gap: {area}"
+    },
+    {
+      "category": "transfer",
+      "title_pattern": "Cross-border transfer compliance gap: {area}"
+    },
+    {
+      "category": "governance",
+      "title_pattern": "Governance or DPO gap: {area}"
+    },
+    {
+      "category": "sdf",
+      "title_pattern": "Significant Data Fiduciary obligation gap: {area}"
+    },
+    {
+      "category": "children",
+      "title_pattern": "Children's data protection gap: {area}"
+    },
+    {
+      "category": "sector",
+      "title_pattern": "Sector-specific DPDP gap: {area}"
+    }
+  ],
+  "report_templates": [
+    "gap_matrix",
+    "roadmap",
+    "summary"
+  ],
+  "qa_rules": [
+    "every_finding_has_evidence",
+    "severity_consistent",
+    "all_requirements_assessed",
+    "open_evidence_requests_flagged",
+    "sector_overlay_requirements_assessed",
+    "children_data_controls_tested_if_applicable"
+  ],
+  "approval_triggers": [
+    "scope_change",
+    "severity_change",
+    "report_release",
+    "sdf_determination_change",
+    "new_processor_added",
+    "cross_border_transfer_added"
+  ],
+  "severity_model": {
+    "critical": "Fundamental legal violation: processing without any lawful basis, complete absence of consent mechanism, total failure to respond to data principal rights, or no DPBI breach notification capability — creates immediate enforcement risk and potential DPBI penalty.",
+    "high": "Significant DPDP non-compliance: materially deficient privacy notice, inadequate consent records, no DPAs with processors, missing breach notification SOP, or SDF obligations (DPIA/DPO) not met.",
+    "medium": "Partial compliance gap: notice missing required elements, consent withdrawal difficult, rights fulfilment process has SLA gaps, security safeguards partially implemented, or cross-border transfers not fully mapped.",
+    "low": "Minor procedural gap: notice language improvements needed, consent records incomplete for historical data, retention schedules not fully documented, or governance documentation requires updating.",
+    "informational": "Best-practice enhancement with no immediate legal risk: improved consent UX, enhanced grievance portal, stronger encryption, or proactive DPIA for lower-risk processing."
+  },
+  "review_gates": [
+    {
+      "id": "G1",
+      "label": "Scope, data inventory, and sector classification approved",
+      "required_role": "partner"
+    },
+    {
+      "id": "G2",
+      "label": "All evidence requests issued and processor DPA inventory complete",
+      "required_role": "lead_consultant"
+    },
+    {
+      "id": "G3",
+      "label": "Evidence collection complete or exceptions approved",
+      "required_role": "lead_consultant"
+    },
+    {
+      "id": "G4",
+      "label": "Findings reviewed, sector overlays assessed, gap severity confirmed",
+      "required_role": "partner"
+    },
+    {
+      "id": "G5",
+      "label": "Draft readiness report QA complete",
+      "required_role": "qa"
+    },
+    {
+      "id": "G6",
+      "label": "Final readiness report approved for delivery",
+      "required_role": "partner"
+    },
+    {
+      "id": "G7",
+      "label": "Remediation roadmap accepted and governance plan agreed",
+      "required_role": "partner"
+    }
+  ],
+  "advisory_clinic_templates": [
+    {
+      "category": "consent",
+      "title": "Consent Architecture Design Workshop",
+      "guidance": "Review current consent collection, storage, and withdrawal mechanisms. Map against DPDP Act Section 6 requirements. Identify dark patterns, bundled consents, and forced consent scenarios. Design a compliant consent management flow with full audit trail. Output: consent implementation specification and technical requirements."
+    },
+    {
+      "category": "rights",
+      "title": "Data Principal Rights Fulfilment Process Design",
+      "guidance": "Walk through access, correction, and erasure request handling. Define automated vs manual steps, SLA tracking, and escalation paths. Map cascading deletion to all processors. Produce rights fulfilment workflow with RACI chart and system integration requirements."
+    },
+    {
+      "category": "governance",
+      "title": "DPO Appointment and Governance Framework Advisory",
+      "guidance": "Review DPO role requirements for Significant Data Fiduciaries. Advise on appointment, independence, board reporting structure, and India residency. Design ongoing DPDP compliance monitoring programme including periodic DPIA review cycles."
+    },
+    {
+      "category": "security",
+      "title": "Personal Data Security Architecture Review",
+      "guidance": "Review encryption at rest and in transit for personal data systems. Assess access control, tokenisation, pseudonymisation, and data masking. Map security controls against DPDP security safeguards obligation. Produce security gap remediation roadmap prioritised by personal data criticality."
+    },
+    {
+      "category": "breach",
+      "title": "Breach Detection and DPBI Notification Readiness",
+      "guidance": "Review breach detection capabilities (SIEM, DLP, anomaly detection). Walk through DPBI notification timeline and content requirements. Design data principal notification playbook at scale. Conduct tabletop exercise simulating a breach scenario with DPDP notification obligations."
+    },
+    {
+      "category": "transfer",
+      "title": "Cross-Border Transfer Compliance Programme",
+      "guidance": "Map all international personal data flows including cloud providers, SaaS tools, and offshore processors. Assess receiving country approval status. Design DPA templates for foreign processors. Establish transfer impact assessment process for high-risk destinations."
+    },
+    {
+      "category": "purpose",
+      "title": "RoPA and Data Minimisation Workshop",
+      "guidance": "Facilitate construction of the Records of Processing Activities. Identify data minimisation opportunities per system. Review retention schedules against legal requirements for each sector. Design automated deletion pipeline. Output: compliant RoPA template and retention automation specification."
+    }
+  ],
+  "sector_overlays": {
+    "healthcare": {
+      "label": "Healthcare",
+      "icon": "🏥",
+      "description": "Hospitals, clinics, telemedicine platforms, diagnostic labs, health insurance companies, and medical device manufacturers processing patient health data under the DPDP Act. Health data is sensitive personal data under Indian law and attracts heightened obligations.",
+      "sensitive_data_types": [
+        "Patient health records (PHR)",
+        "Electronic Medical Records (EMR)",
+        "Diagnostic reports and imaging (PACS/DICOM)",
+        "Prescription history",
+        "Insurance claims and underwriting data",
+        "Biometric data (fingerprint for patient identification)",
+        "Genetic data",
+        "Mental health records",
+        "Telemedicine session recordings"
+      ],
+      "applicable_regulations": [
+        "DPDP Act 2023 (Sections 5-16)",
+        "Information Technology Act 2000 (Section 43A)",
+        "Clinical Establishments Act 2010",
+        "National Health Policy 2017",
+        "ABDM (Ayushman Bharat Digital Mission) guidelines",
+        "NABH accreditation standards",
+        "MoHFW Health Data Management Policy"
+      ],
+      "risk_notes": "Health data is among the most sensitive categories under DPDP. Patients have limited bargaining power when consenting to data processing as a condition of treatment, raising concerns about truly free consent. Sector regulators (IRDAI for insurers) may impose additional obligations beyond DPDP.",
+      "additional_requirements": [
+        {
+          "ref_code": "DPDP-HC-01",
+          "category": "consent",
+          "text": "Patient consent for health data processing must be granular — separate consent for treatment, insurance claims, research use, and sharing with other providers. Generic 'I agree to terms' consent is insufficient for health data.",
+          "evidence_expectation": "Granular consent forms or digital consent screens; purpose-specific consent records per patient; consent for research use maintained separately from treatment consent",
+          "sector_law": "DPDP Act S.6 + MoHFW Health Data Management Policy"
+        },
+        {
+          "ref_code": "DPDP-HC-02",
+          "category": "security",
+          "text": "Electronic Medical Records (EMR) and diagnostic imaging systems must implement role-based access control ensuring only treating clinicians can access patient records. EMR access logs must be maintained and reviewed.",
+          "evidence_expectation": "EMR system RBAC configuration; access log samples; privileged access review records; evidence clinician access limited to their patients",
+          "sector_law": "DPDP Act S.8 + ABDM guidelines"
+        },
+        {
+          "ref_code": "DPDP-HC-03",
+          "category": "consent",
+          "text": "Telemedicine consultations must include explicit consent for session recording, data sharing with pharmacy partners, and insurance processing before the consultation begins.",
+          "evidence_expectation": "Telemedicine pre-consultation consent screen; recording disclosure; separate consent for third-party sharing; ABDM health ID linkage consent",
+          "sector_law": "Telemedicine Practice Guidelines 2020 + DPDP Act S.6"
+        },
+        {
+          "ref_code": "DPDP-HC-04",
+          "category": "governance",
+          "text": "Health data sharing with insurance companies, diagnostic labs, and third-party platforms must be governed by written DPAs. Insurers must not use health data for purposes beyond the agreed claim processing.",
+          "evidence_expectation": "DPAs with insurers, labs, and third-party health apps; purpose limitation clauses in all health data sharing agreements; audit of data use by processors",
+          "sector_law": "DPDP Act S.8(8) + IRDAI guidelines"
+        },
+        {
+          "ref_code": "DPDP-HC-05",
+          "category": "purpose",
+          "text": "Patient health data must not be used for secondary purposes such as pharma marketing, research, or AI model training without explicit separate consent. Anonymised or de-identified data used for research must meet DPDP de-identification standards.",
+          "evidence_expectation": "Research data use consent records; de-identification methodology documentation; evidence anonymised datasets cannot be re-identified; pharma marketing data separation",
+          "sector_law": "DPDP Act S.8(1) + ICMR research ethics guidelines"
+        },
+        {
+          "ref_code": "DPDP-HC-06",
+          "category": "rights",
+          "text": "Patients must be able to access, correct, and transfer their health records in machine-readable format. ABDM Health ID linked records must support data portability to other providers.",
+          "evidence_expectation": "Patient data access portal; FHIR/HL7 export capability; ABDM Health ID integration for portability; SLA for health record access requests",
+          "sector_law": "DPDP Act S.11-12 + ABDM FHIR guidelines"
+        },
+        {
+          "ref_code": "DPDP-HC-07",
+          "category": "children",
+          "text": "For paediatric patients, all health data processing must be authorised by a parent or legal guardian. Minor patient records must be segregated and have additional access restrictions.",
+          "evidence_expectation": "Paediatric patient consent forms signed by guardian; age flag in patient management system; restricted access to minor records; guardian notification for data requests",
+          "sector_law": "DPDP Act S.9 + Clinical Establishments Act"
+        },
+        {
+          "ref_code": "DPDP-HC-08",
+          "category": "breach",
+          "text": "A health data breach (e.g. patient records exposed) must be treated as a critical incident with DPBI notification and immediate patient notification given the sensitivity of health information.",
+          "evidence_expectation": "Health data breach classification in IRP; immediate DPBI notification playbook; patient notification template for health breaches; escalation to medical director",
+          "sector_law": "DPDP Act S.8(6)"
+        }
+      ],
+      "intake_questions": [
+        "What EMR/HIS (Hospital Information System) platforms are in use and do they support ABDM integration?",
+        "Do you share patient data with insurance companies, diagnostic labs, or pharmacy networks? If yes, are DPAs in place?",
+        "Do you use patient data for AI/ML model training, research, or pharma analytics? If yes, is separate consent obtained?",
+        "Do you operate a telemedicine platform? If yes, how is pre-consultation consent captured?",
+        "Do you process data of paediatric patients? If yes, describe the guardian consent mechanism.",
+        "Are you NABH accredited? If yes, what privacy-related requirements apply under NABH standards?"
+      ],
+      "evidence_requests": [
+        {
+          "requirement_ref": "DPDP-HC-01",
+          "title": "Granular patient consent forms (treatment / insurance / research)",
+          "description": "All patient consent forms showing separate consent per purpose category"
+        },
+        {
+          "requirement_ref": "DPDP-HC-02",
+          "title": "EMR RBAC configuration and access logs",
+          "description": "EMR system role matrix, access logs, and last access review records"
+        },
+        {
+          "requirement_ref": "DPDP-HC-03",
+          "title": "Telemedicine pre-consultation consent screenshot",
+          "description": "Screenshot of consent screen shown before telemedicine session with recording and sharing disclosures"
+        },
+        {
+          "requirement_ref": "DPDP-HC-04",
+          "title": "Health data processor DPAs (insurers, labs, apps)",
+          "description": "DPAs with all health data processors including insurance companies, diagnostic labs, and third-party health platforms"
+        },
+        {
+          "requirement_ref": "DPDP-HC-05",
+          "title": "Research data use consent and de-identification methodology",
+          "description": "Separate research consent records and de-identification methodology documentation"
+        },
+        {
+          "requirement_ref": "DPDP-HC-07",
+          "title": "Paediatric patient guardian consent records",
+          "description": "Sample guardian consent forms and evidence of paediatric record access restrictions"
+        }
+      ],
+      "advisory_clinic_templates": [
+        {
+          "category": "consent",
+          "title": "Patient Consent Architecture for EMR and Telemedicine",
+          "guidance": "Design granular consent flows for treatment, insurance, research, and ABDM linkage. Map consent to DPDP Act Section 6 and MoHFW guidelines. Review existing consent forms for completeness and dark patterns. Produce consent management specification for EMR integration."
+        },
+        {
+          "category": "purpose",
+          "title": "Medical Data De-identification for Research and Analytics",
+          "guidance": "Review de-identification methodology against ICMR and DPDP standards. Assess re-identification risk for shared datasets. Design safe harbour criteria for health data research use. Produce de-identification policy and technical implementation guide."
+        },
+        {
+          "category": "breach",
+          "title": "Healthcare Data Breach Response and DPBI Notification",
+          "guidance": "Conduct tabletop exercise simulating patient data breach scenario. Review DPBI notification requirements and patient communication at scale. Design breach response playbook specific to health data sensitivity. Include medical director escalation and regulator liaison protocols."
+        }
+      ]
+    },
+    "manufacturing": {
+      "label": "Manufacturing",
+      "icon": "🏭",
+      "description": "Factories, production plants, supply chain operations, and industrial companies processing employee data, contractor data, and visitor records. Key concerns include biometric attendance systems, CCTV surveillance, and OT/IoT device data.",
+      "sensitive_data_types": [
+        "Employee biometric data (fingerprint, face for attendance)",
+        "Worker productivity and performance monitoring data",
+        "CCTV footage from production floors, entry points",
+        "Safety incident and near-miss records",
+        "Medical fitness records (pre-employment and periodic)",
+        "Contractor and visitor personal data",
+        "Union membership data",
+        "Supply chain partner employee data"
+      ],
+      "applicable_regulations": [
+        "DPDP Act 2023",
+        "Information Technology Act 2000",
+        "Industrial Disputes Act 1947",
+        "Factories Act 1948 (safety data)",
+        "Contract Labour (Regulation and Abolition) Act 1970",
+        "Shops and Establishments Acts (state-specific)",
+        "Biometric Attendance System (BAS) norms"
+      ],
+      "risk_notes": "Employees have limited ability to refuse consent where processing is tied to employment terms. Manufacturing environments often collect biometric data at scale for attendance without adequate notice. OT/ICS systems may incidentally collect personal data through worker activity monitoring. Labour law obligations around employment data may extend retention requirements beyond what DPDP permits.",
+      "additional_requirements": [
+        {
+          "ref_code": "DPDP-MFG-01",
+          "category": "consent",
+          "text": "Employee biometric data (fingerprint, face recognition) collected for attendance must be disclosed in the employment contract or a separate biometric data notice. Employees must be informed of storage location, access controls, and retention period.",
+          "evidence_expectation": "Employment contract biometric clause or standalone biometric consent form; biometric system vendor DPA; biometric data retention schedule; deletion mechanism at employment end",
+          "sector_law": "DPDP Act S.5-6 + Factories Act"
+        },
+        {
+          "ref_code": "DPDP-MFG-02",
+          "category": "notice",
+          "text": "CCTV surveillance notices must be prominently displayed at all camera locations across the facility. The notice must state the purpose (safety/security), retention period, and who has access to footage.",
+          "evidence_expectation": "CCTV notice boards at all camera locations; CCTV policy with purpose, retention, and access definition; evidence cameras not installed in prohibited areas (restrooms, changing areas)",
+          "sector_law": "DPDP Act S.5 + Factories Act S.11A"
+        },
+        {
+          "ref_code": "DPDP-MFG-03",
+          "category": "governance",
+          "text": "Contract labour processed through third-party contractors must be covered by data processing agreements. The principal employer remains accountable for personal data processed by contract labour agencies on its behalf.",
+          "evidence_expectation": "DPAs with all contract labour agencies; evidence agencies comply with DPDP obligations; contractor data handling induction records",
+          "sector_law": "DPDP Act S.8(8) + Contract Labour Act"
+        },
+        {
+          "ref_code": "DPDP-MFG-04",
+          "category": "purpose",
+          "text": "Worker productivity monitoring systems (keyloggers, machine output tracking, real-time location within facility) must be disclosed in employment terms. Data must be used only for stated safety or quality purposes, not for individual performance profiling without separate notice.",
+          "evidence_expectation": "Employment terms disclosing monitoring systems; productivity monitoring policy; evidence monitoring data not used for individual profiling without separate disclosure",
+          "sector_law": "DPDP Act S.8(1)"
+        },
+        {
+          "ref_code": "DPDP-MFG-05",
+          "category": "security",
+          "text": "OT/ICS systems that interface with employee access control, safety systems, or HR integrations must be assessed for personal data flows. Personal data must not traverse unsecured OT networks.",
+          "evidence_expectation": "OT/IT network segmentation evidence; personal data flow assessment for OT-connected systems; access control for OT systems handling employee data",
+          "sector_law": "DPDP Act S.8(5)"
+        },
+        {
+          "ref_code": "DPDP-MFG-06",
+          "category": "rights",
+          "text": "Workers must be able to access, correct, and request erasure of their personal data upon employment termination. Biometric data must be deleted within prescribed period after offboarding.",
+          "evidence_expectation": "Offboarding data deletion checklist including biometric systems; sample fulfilled employee data access request; erasure SLA for ex-employees",
+          "sector_law": "DPDP Act S.12 + Industrial Disputes Act"
+        }
+      ],
+      "intake_questions": [
+        "What biometric systems are deployed (fingerprint attendance, face recognition, access control)?",
+        "How many CCTV cameras are installed, and are notices displayed at all locations?",
+        "Do you use contract labour agencies? Are DPAs in place with them?",
+        "What productivity monitoring or real-time worker tracking systems are deployed on the shop floor?",
+        "Do OT/ICS systems (SCADA, PLC) interface with HR, access control, or payroll systems?",
+        "What is the employee biometric data deletion procedure at end of employment?"
+      ],
+      "evidence_requests": [
+        {
+          "requirement_ref": "DPDP-MFG-01",
+          "title": "Biometric data consent clause and DPA with biometric vendor",
+          "description": "Employment contract biometric clause or separate consent; biometric system vendor DPA and retention schedule"
+        },
+        {
+          "requirement_ref": "DPDP-MFG-02",
+          "title": "CCTV notice evidence and surveillance policy",
+          "description": "Photos of CCTV notices at camera locations; CCTV policy with purpose, retention, and access controls"
+        },
+        {
+          "requirement_ref": "DPDP-MFG-03",
+          "title": "Contract labour agency DPAs",
+          "description": "DPAs with all contract labour agencies covering DPDP obligations"
+        },
+        {
+          "requirement_ref": "DPDP-MFG-06",
+          "title": "Offboarding data deletion checklist and biometric erasure evidence",
+          "description": "Offboarding procedure showing biometric deletion step and sample deletion records"
+        }
+      ],
+      "advisory_clinic_templates": [
+        {
+          "category": "consent",
+          "title": "Biometric Data Governance for Factory Attendance Systems",
+          "guidance": "Review biometric data collection consent across attendance and access control systems. Map to DPDP Act Section 6 requirements. Design biometric data governance policy covering enrolment, storage, access, and deletion. Produce DPDP-compliant biometric notice templates for employment contracts."
+        },
+        {
+          "category": "notice",
+          "title": "Worker Surveillance and Monitoring Policy Design",
+          "guidance": "Audit all monitoring systems (CCTV, productivity tracking, machine output, location within facility). Design compliant surveillance policy with purpose limitation and proportionality assessment. Create CCTV notice templates. Establish monitoring data access controls and retention schedules aligned to labour law."
+        },
+        {
+          "category": "governance",
+          "title": "Supply Chain and Contract Labour Data Processor Onboarding",
+          "guidance": "Review data flows to contract labour agencies, supply chain partners, and logistics operators. Identify all processors handling employee and contractor personal data. Design DPA templates for manufacturing sector. Establish processor onboarding and periodic review process."
+        }
+      ]
+    },
+    "automation": {
+      "label": "Automation / Industry 4.0",
+      "icon": "🤖",
+      "description": "Technology companies, RPA implementers, AI/ML platforms, IoT device manufacturers, and Industry 4.0 solution providers processing personal data through automated systems, sensors, and AI decision-making.",
+      "sensitive_data_types": [
+        "AI model training datasets containing personal data",
+        "Biometric data from computer vision and facial recognition systems",
+        "Behavioural data from IoT sensors and wearables",
+        "Automated decision-making output data (credit scores, performance ratings, risk classifications)",
+        "Digital twin data with worker activity inference",
+        "RPA bot audit logs containing personal data",
+        "Vehicle tracking and telematics data"
+      ],
+      "applicable_regulations": [
+        "DPDP Act 2023 (Sections 5-16)",
+        "Information Technology (Amendment) Act 2008",
+        "SEBI guidelines on algorithmic trading (where applicable)",
+        "IRDAI guidelines on AI-based underwriting",
+        "MeitY AI governance framework (draft)",
+        "EU AI Act (for India-EU data flows)",
+        "ISO/IEC 42001 AI management system"
+      ],
+      "risk_notes": "Automation and AI systems raise unique DPDP concerns: automated decisions affecting individuals (credit, employment, insurance) require disclosure under DPDP even if no specific right to explanation is yet mandated. Large-scale training datasets may contain personal data collected without adequate consent. IoT devices collecting ambient data may incidentally capture personal data without explicit collection moments.",
+      "additional_requirements": [
+        {
+          "ref_code": "DPDP-AUTO-01",
+          "category": "purpose",
+          "text": "AI and ML model training datasets must be audited to confirm all personal data was collected with consent or legitimate use for the specific training purpose. Consent obtained for one purpose (e.g. service delivery) does not automatically extend to AI model training.",
+          "evidence_expectation": "Training data provenance records; consent basis for each training dataset; data lineage documentation; evidence re-consent obtained where original consent did not cover AI training",
+          "sector_law": "DPDP Act S.8(1) + MeitY AI governance framework"
+        },
+        {
+          "ref_code": "DPDP-AUTO-02",
+          "category": "notice",
+          "text": "Where automated decision-making systems make or significantly influence decisions affecting data principals (employment screening, credit decisions, insurance pricing), a notice must inform data principals that automated processing is occurring and the logic involved.",
+          "evidence_expectation": "Disclosure in privacy notice about automated decision-making; evidence notice precedes automated processing; process for human review of automated decisions upon request",
+          "sector_law": "DPDP Act S.5 + emerging DPDP rules on automated decisions"
+        },
+        {
+          "ref_code": "DPDP-AUTO-03",
+          "category": "security",
+          "text": "AI model inversion and membership inference attacks can expose personal training data. Models trained on personal data must implement differential privacy, model access controls, and regular adversarial robustness testing.",
+          "evidence_expectation": "AI model security assessment; differential privacy implementation evidence; model access controls; adversarial testing records; data poisoning prevention measures",
+          "sector_law": "DPDP Act S.8(5)"
+        },
+        {
+          "ref_code": "DPDP-AUTO-04",
+          "category": "purpose",
+          "text": "RPA bots that process personal data must operate under explicit DPAs with the RPA platform vendor. Bot activity logs must not retain personal data beyond the immediate processing transaction unless separately justified.",
+          "evidence_expectation": "RPA platform DPA; bot personal data inventory; bot log retention policy; evidence personal data purged from bot logs after transaction completion",
+          "sector_law": "DPDP Act S.8(8)"
+        },
+        {
+          "ref_code": "DPDP-AUTO-05",
+          "category": "notice",
+          "text": "IoT devices and sensors deployed in spaces where individuals are present must display notice of data collection, including device type, data collected, and purpose. Ambient data collection without notice is prohibited.",
+          "evidence_expectation": "IoT device notice labels or digital disclosures; IoT data inventory; personal data minimisation assessment for sensor data; evidence non-personal ambient data is not linked back to individuals",
+          "sector_law": "DPDP Act S.5"
+        },
+        {
+          "ref_code": "DPDP-AUTO-06",
+          "category": "sdf",
+          "text": "AI systems processing biometric data (face recognition), health data, or making automated decisions at scale must undergo DPIA before deployment. Results must be reviewed by the DPO and documented.",
+          "evidence_expectation": "DPIA for qualifying AI systems; DPO sign-off on DPIA; evidence DPIA conducted before deployment; risk treatment decisions documented",
+          "sector_law": "DPDP Act S.10(2)(a)"
+        }
+      ],
+      "intake_questions": [
+        "What AI/ML models are in production that process personal data? List use cases (hiring, credit, insurance, fraud detection, recommendations).",
+        "How was the training data for each model collected, and was consent obtained specifically for AI training use?",
+        "Do you deploy facial recognition, computer vision, or biometric AI systems? Where are they deployed?",
+        "What RPA platforms are in use, and what personal data do bots process during automation workflows?",
+        "Do you manufacture IoT devices? If yes, what data do they collect and how is consent obtained from device users?",
+        "Have you conducted DPIAs for any AI systems? If yes, for which systems?"
+      ],
+      "evidence_requests": [
+        {
+          "requirement_ref": "DPDP-AUTO-01",
+          "title": "AI training data provenance and consent basis records",
+          "description": "Training dataset inventory with consent basis documentation and data lineage records"
+        },
+        {
+          "requirement_ref": "DPDP-AUTO-02",
+          "title": "Automated decision-making disclosure in privacy notice",
+          "description": "Privacy notice sections covering automated processing; human review process documentation"
+        },
+        {
+          "requirement_ref": "DPDP-AUTO-03",
+          "title": "AI model security assessment and differential privacy evidence",
+          "description": "AI security assessment report; differential privacy implementation; model access control configuration"
+        },
+        {
+          "requirement_ref": "DPDP-AUTO-06",
+          "title": "DPIA records for AI systems",
+          "description": "Completed DPIAs for qualifying AI systems with DPO sign-off"
+        }
+      ],
+      "advisory_clinic_templates": [
+        {
+          "category": "purpose",
+          "title": "AI/ML Training Data Governance and Consent Remediation",
+          "guidance": "Audit all training datasets for personal data and consent coverage. Map existing consent to DPDP training data requirements. Design re-consent strategy for datasets where original consent did not cover AI training. Produce training data governance policy and lineage tracking process."
+        },
+        {
+          "category": "notice",
+          "title": "Automated Decision-Making Transparency and Human Review Design",
+          "guidance": "Inventory all automated decision systems affecting individuals. Design disclosure notices for each. Define human review trigger criteria and process. Produce explainability standard per model type (credit, HR, insurance). Align with emerging DPDP rules on automated decisions."
+        },
+        {
+          "category": "sdf",
+          "title": "AI DPIA Methodology and Deployment Governance",
+          "guidance": "Design DPIA methodology for AI systems covering data inputs, model outputs, affected individuals, and mitigations. Conduct DPIA for highest-risk system as a pilot. Establish AI deployment governance gate requiring DPIA completion. Produce DPIA template and DPO review checklist."
+        }
+      ]
+    },
+    "financial_services": {
+      "label": "Financial Services / Fintech",
+      "icon": "💳",
+      "description": "Banks, NBFCs, insurance companies, payment aggregators, stock brokers, lending platforms, and fintech companies processing financial personal data of Indian customers. Subject to DPDP Act plus RBI, SEBI, IRDAI, and NPCI regulations.",
+      "sensitive_data_types": [
+        "KYC data (Aadhaar, PAN, passport, voter ID)",
+        "Bank account and transaction history",
+        "Credit score and credit history",
+        "Insurance policy and claims data",
+        "Investment portfolio and trading history",
+        "Salary and income data",
+        "UPI transaction data",
+        "Loan application data (income, assets, liabilities)",
+        "Fraud detection behavioural data"
+      ],
+      "applicable_regulations": [
+        "DPDP Act 2023",
+        "RBI Master Direction on Digital Payment Security Controls",
+        "RBI Guidelines on KYC (2016, amended)",
+        "IRDAI Data Localization Circular 2022",
+        "SEBI Cybersecurity Framework 2023",
+        "NPCI Operating Circulars on data handling",
+        "Prevention of Money Laundering Act (PMLA) — retention obligations",
+        "Aadhaar and Other Laws (Amendment) Act 2019"
+      ],
+      "risk_notes": "Financial personal data is among the most sensitive under DPDP. KYC data involving Aadhaar is subject to additional UIDAI restrictions. Retention obligations under PMLA and tax laws may extend beyond DPDP's storage limitation principles, requiring documented justification. Credit scoring and automated lending decisions create automated decision-making disclosure obligations. Cross-border transfer restrictions intersect with RBI's data localisation mandate.",
+      "additional_requirements": [
+        {
+          "ref_code": "DPDP-FIN-01",
+          "category": "purpose",
+          "text": "KYC data collected under regulatory obligation (RBI guidelines) must be used only for identity verification and AML compliance. KYC data must not be used for credit scoring, marketing profiling, or cross-sold to affiliates without separate consent.",
+          "evidence_expectation": "KYC data use policy limiting use to regulatory purpose; technical controls preventing KYC data use in marketing systems; evidence Aadhaar data handled per UIDAI guidelines",
+          "sector_law": "DPDP Act S.8(1) + RBI KYC Master Direction + UIDAI guidelines"
+        },
+        {
+          "ref_code": "DPDP-FIN-02",
+          "category": "notice",
+          "text": "Customers must be informed when automated credit decisions, insurance underwriting decisions, or fraud risk classifications are made about them using their personal data. Customers must have a mechanism to seek human review of adverse automated decisions.",
+          "evidence_expectation": "Credit/underwriting decision disclosure in terms or notification; human review process for adverse decisions; audit log of automated decision triggers",
+          "sector_law": "DPDP Act S.5 + IRDAI AI guidelines"
+        },
+        {
+          "ref_code": "DPDP-FIN-03",
+          "category": "consent",
+          "text": "Behavioural profiling of customers for cross-sell marketing, investment product recommendations, or third-party data sharing must be based on explicit separate consent, distinct from product terms of service.",
+          "evidence_expectation": "Separate consent for marketing profiling; opt-in mechanism for cross-sell; evidence product access not conditioned on marketing consent; consent withdrawal does not affect core product",
+          "sector_law": "DPDP Act S.6"
+        },
+        {
+          "ref_code": "DPDP-FIN-04",
+          "category": "transfer",
+          "text": "RBI mandates data localisation for payment systems data. Financial personal data covered by RBI data localisation requirements must be stored in India. Cross-border transfers of this data are prohibited except for permitted limited mirroring.",
+          "evidence_expectation": "Data localisation compliance assessment; payment data storage location evidence (India-based servers); cross-border transfer prohibition implementation; RBI audit reports",
+          "sector_law": "DPDP Act S.16 + RBI Data Localisation Directive"
+        },
+        {
+          "ref_code": "DPDP-FIN-05",
+          "category": "purpose",
+          "text": "Transaction data and financial history must be retained for the minimum period mandated by PMLA, Income Tax Act, and sector regulations. Retention beyond minimum must be justified and documented. Post-retention period, data must be deleted or anonymised.",
+          "evidence_expectation": "Retention schedule by data type citing specific legal mandate; evidence of automated deletion after retention period; anonymisation process for analytical data post-retention",
+          "sector_law": "DPDP Act S.8(3) + PMLA 2002 + Income Tax Act 1961"
+        },
+        {
+          "ref_code": "DPDP-FIN-06",
+          "category": "governance",
+          "text": "Financial institutions must designate a DPO or Privacy Officer aligned to both DPDP obligations and RBI/SEBI/IRDAI compliance requirements. The DPO must be involved in all new product data assessments.",
+          "evidence_expectation": "DPO or Privacy Officer appointment; DPO involvement in product privacy review process; dual DPDP-sector regulator compliance mandate in DPO charter",
+          "sector_law": "DPDP Act S.10 + SEBI Cybersecurity Framework"
+        }
+      ],
+      "intake_questions": [
+        "Do you process Aadhaar data for KYC? If yes, are you an AUA/KUA under UIDAI? What data minimisation controls are in place?",
+        "Do you use automated credit scoring or insurance underwriting models? How are affected customers informed?",
+        "Does your organisation share customer financial data with affiliates or third-party marketing platforms? On what legal basis?",
+        "Are all payment systems data stored in India per RBI data localisation requirements?",
+        "What is the retention schedule for transaction data, KYC records, and loan files, and which law mandates each retention period?",
+        "Do you operate a credit bureau, loan aggregator, or insurance comparison platform where personal data flows to multiple fiduciaries?"
+      ],
+      "evidence_requests": [
+        {
+          "requirement_ref": "DPDP-FIN-01",
+          "title": "KYC data use policy and UIDAI compliance evidence",
+          "description": "KYC data use restriction policy; UIDAI guidelines compliance evidence; technical controls preventing KYC data use beyond regulatory purpose"
+        },
+        {
+          "requirement_ref": "DPDP-FIN-02",
+          "title": "Automated decision disclosure and human review process",
+          "description": "Customer disclosure for automated credit/underwriting decisions; human review SOP for adverse decisions"
+        },
+        {
+          "requirement_ref": "DPDP-FIN-04",
+          "title": "RBI data localisation compliance evidence",
+          "description": "Data storage location confirmation for payment systems; RBI audit or self-assessment records"
+        },
+        {
+          "requirement_ref": "DPDP-FIN-05",
+          "title": "Financial data retention schedule with legal citations",
+          "description": "Retention schedule citing PMLA, Income Tax, and sector law retention mandates per data type"
+        }
+      ],
+      "advisory_clinic_templates": [
+        {
+          "category": "purpose",
+          "title": "KYC Data Minimisation and Aadhaar Handling Workshop",
+          "guidance": "Review KYC data collection scope across onboarding flows. Assess Aadhaar handling against UIDAI guidelines. Identify over-collection and downstream secondary use. Design KYC data minimisation plan and technical controls for purpose limitation. Produce UIDAI compliance checklist."
+        },
+        {
+          "category": "notice",
+          "title": "Credit Scoring and Automated Underwriting Explainability Design",
+          "guidance": "Review automated decision systems (credit scoring, fraud, insurance). Design customer-facing disclosure for each decision type. Define human review trigger criteria and SLA. Assess alignment with RBI and IRDAI AI guidance. Produce explainability brief per model."
+        },
+        {
+          "category": "transfer",
+          "title": "RBI Data Localisation and DPDP Cross-Border Transfer Programme",
+          "guidance": "Map all financial personal data flows including cloud providers, card networks, and offshore processors. Identify RBI localisation conflicts with current architecture. Design compliant cross-border transfer controls and India-resident storage architecture for regulated data."
+        }
+      ]
+    },
+    "education": {
+      "label": "Education / EdTech",
+      "icon": "🎓",
+      "description": "Schools, colleges, universities, EdTech platforms, online learning providers, and coaching institutes processing student personal data. DPDP Section 9 children's provisions apply to all students under 18.",
+      "sensitive_data_types": [
+        "Student academic performance data",
+        "Biometric data (fingerprint attendance, face recognition in classrooms)",
+        "Online learning behaviour and engagement data",
+        "Assessment and examination results",
+        "Student health and disability records",
+        "Financial aid and scholarship data",
+        "Parental contact and family income data",
+        "Student geolocation and campus access data",
+        "Counselling and mental health records"
+      ],
+      "applicable_regulations": [
+        "DPDP Act 2023 (Section 9 — children's data is critical)",
+        "Right to Education Act 2009",
+        "University Grants Commission regulations",
+        "AICTE guidelines on digital education",
+        "National Education Policy 2020 (data governance provisions)",
+        "Central Board of Secondary Education (CBSE) guidelines",
+        "Protection of Children from Sexual Offences Act (POCSO) — data handling provisions"
+      ],
+      "risk_notes": "DPDP Section 9 requires verifiable parental consent for all processing of personal data of children under 18. The vast majority of school students and many college students fall in this category. EdTech platforms often collect extensive behavioural data (click streams, attention monitoring, video recordings) that goes far beyond what students or parents expect. Children's data must not be used for profiling, behavioural advertising, or algorithmic targeting.",
+      "additional_requirements": [
+        {
+          "ref_code": "DPDP-EDU-01",
+          "category": "children",
+          "text": "For all students under 18, the educational institution must obtain verifiable consent from a parent or guardian before enrolling the student on any digital platform and before processing personal data beyond basic administrative records.",
+          "evidence_expectation": "Parental consent forms for digital platform enrolment; age verification mechanism; consent for each platform or data system the student uses; evidence consent is verifiable not self-certified",
+          "sector_law": "DPDP Act S.9 + RTE Act"
+        },
+        {
+          "ref_code": "DPDP-EDU-02",
+          "category": "purpose",
+          "text": "Student behavioural data collected via EdTech platforms (clickstream, attention monitoring, keystroke dynamics) must be limited to stated educational purposes. This data must not be used for advertising, profiling, or sold to third parties.",
+          "evidence_expectation": "EdTech platform data use policy; evidence behavioural data excluded from advertising or profiling; contracts with EdTech vendors prohibiting secondary use",
+          "sector_law": "DPDP Act S.8(1) + S.9(3)"
+        },
+        {
+          "ref_code": "DPDP-EDU-03",
+          "category": "governance",
+          "text": "All third-party EdTech platforms, assessment tools, and Learning Management Systems (LMS) used by the institution must have signed DPAs that comply with DPDP obligations and explicitly prohibit children's data profiling.",
+          "evidence_expectation": "DPAs with all EdTech vendors, LMS providers, and assessment platforms; children's data prohibition clause; vendor security assessment records",
+          "sector_law": "DPDP Act S.8(8)"
+        },
+        {
+          "ref_code": "DPDP-EDU-04",
+          "category": "security",
+          "text": "Student academic records, examination data, and counselling records must be protected with access controls ensuring only authorised faculty and administrative staff can access individual student records.",
+          "evidence_expectation": "Student information system RBAC configuration; access logs; evidence counselling records have restricted access; pentest or security assessment of student data systems",
+          "sector_law": "DPDP Act S.8(5)"
+        },
+        {
+          "ref_code": "DPDP-EDU-05",
+          "category": "purpose",
+          "text": "Scholarship, financial aid, and family income data collected for fee concession must be used only for the stated purpose and not shared with other departments, analytics platforms, or third parties without consent.",
+          "evidence_expectation": "Financial aid data use policy; evidence of access restriction to admissions or finance office; no sharing with analytics or marketing platforms",
+          "sector_law": "DPDP Act S.8(1)"
+        },
+        {
+          "ref_code": "DPDP-EDU-06",
+          "category": "rights",
+          "text": "Students (or parents for minors) must be able to access, correct, and request erasure of academic records. Records must be transferable to other institutions upon legitimate request.",
+          "evidence_expectation": "Student data access request process; academic record portability procedure; SLA for record transfer requests; erasure procedure for alumni records after legal retention period",
+          "sector_law": "DPDP Act S.11-12"
+        }
+      ],
+      "intake_questions": [
+        "What proportion of students enrolled are under 18? How is age verified and parental consent obtained for digital platform use?",
+        "Which third-party EdTech platforms, LMS, and assessment tools are deployed? Do DPAs exist with all vendors?",
+        "Do any platforms collect behavioural monitoring data (attention tracking, keystroke, clickstream)? What is the data use policy?",
+        "Do you collect family income or scholarship eligibility data? How is it protected and for how long is it retained?",
+        "Are online classes or examination sessions recorded? What is the consent and retention policy for recordings?",
+        "Do you share student data with alumni networks, analytics companies, or government portals?"
+      ],
+      "evidence_requests": [
+        {
+          "requirement_ref": "DPDP-EDU-01",
+          "title": "Parental consent forms and age verification mechanism",
+          "description": "Sample guardian consent forms for digital platform enrolment and age verification system documentation"
+        },
+        {
+          "requirement_ref": "DPDP-EDU-02",
+          "title": "EdTech platform data use policy and profiling prohibition",
+          "description": "EdTech platform contracts and DPAs showing prohibition on student data profiling and advertising"
+        },
+        {
+          "requirement_ref": "DPDP-EDU-03",
+          "title": "DPAs with all EdTech and LMS vendors",
+          "description": "Signed DPAs with all third-party education platforms and assessment tools"
+        },
+        {
+          "requirement_ref": "DPDP-EDU-04",
+          "title": "Student information system access controls",
+          "description": "SIS RBAC configuration, access logs, and restricted access evidence for sensitive records (counselling, health)"
+        }
+      ],
+      "advisory_clinic_templates": [
+        {
+          "category": "children",
+          "title": "Parental Consent Management for Minor Student Data",
+          "guidance": "Design verifiable parental consent architecture for all digital platforms used by under-18 students. Review existing consent forms for adequacy under DPDP Section 9. Design digital consent management portal for parents. Map consent requirements per platform category (LMS, assessment, communication, EdTech)."
+        },
+        {
+          "category": "governance",
+          "title": "EdTech Vendor DPA Review and Privacy Standards",
+          "guidance": "Review all EdTech platform DPAs for DPDP compliance. Identify vendors lacking DPAs or with inadequate children's data provisions. Design standard DPA template for educational institutions. Establish vendor onboarding privacy checklist and annual review process."
+        },
+        {
+          "category": "purpose",
+          "title": "Student Behavioural Data Use Policy and Data Minimisation",
+          "guidance": "Audit EdTech platforms for behavioural data collection (attention monitoring, keystroke, engagement analytics). Assess against Section 9(3) prohibited processing criteria. Design data minimisation policy and platform configuration standards. Produce student data use charter for parent communication."
+        }
+      ]
+    },
+    "ecommerce": {
+      "label": "E-Commerce / Retail",
+      "icon": "🛒",
+      "description": "Online marketplaces, retail platforms, D2C brands, quick commerce, and subscription commerce processing customer purchase data, behavioural profiles, and payment information.",
+      "sensitive_data_types": [
+        "Purchase history and browsing behaviour",
+        "Payment card data and UPI handles",
+        "Customer profiling and recommendation engine data",
+        "Loyalty programme purchase and redemption data",
+        "Delivery address and location history",
+        "Return and refund patterns",
+        "Third-party analytics and tracking data (cookies, pixel data)",
+        "Customer service interaction records",
+        "Wishlist and cart abandonment data"
+      ],
+      "applicable_regulations": [
+        "DPDP Act 2023",
+        "Consumer Protection Act 2019 (e-commerce rules)",
+        "RBI Tokenisation Guidelines (payment data)",
+        "NPCI UPI Operating Circular on data",
+        "Bureau of Indian Standards — e-commerce data quality",
+        "Information Technology (Intermediaries Guidelines and Digital Media Ethics Code) Rules 2021",
+        "PCI-DSS (for card data)"
+      ],
+      "risk_notes": "E-commerce platforms extensively profile customers for personalisation and targeted advertising. Third-party analytics tools (Google Analytics, Meta Pixel, etc.) may constitute data processor relationships requiring DPAs. Cookie-based tracking requires explicit consent mechanisms. Loyalty programme data creates long-term personal data retention obligations that must be balanced against DPDP storage limitation. Payment tokenisation under RBI guidelines must be maintained alongside DPDP security obligations.",
+      "additional_requirements": [
+        {
+          "ref_code": "DPDP-ECOM-01",
+          "category": "consent",
+          "text": "Behavioural profiling for personalised product recommendations, dynamic pricing, and targeted advertising must be based on explicit consent separate from the purchase terms of service. Users must be able to opt out of profiling without affecting their ability to make purchases.",
+          "evidence_expectation": "Separate consent for behavioural profiling; opt-out mechanism for personalisation; evidence purchase service not conditioned on profiling consent; profiling opt-out test",
+          "sector_law": "DPDP Act S.6"
+        },
+        {
+          "ref_code": "DPDP-ECOM-02",
+          "category": "consent",
+          "text": "Third-party analytics tools, advertising pixels, and tracking SDKs embedded in the platform must be covered by a cookie consent mechanism that defaults to non-tracking and requires explicit user opt-in.",
+          "evidence_expectation": "Cookie consent banner defaulting to opt-in model; list of all tracking pixels and SDKs with purpose; evidence non-consent blocks third-party tracking; DPAs with analytics vendors",
+          "sector_law": "DPDP Act S.6 + IT Rules 2021"
+        },
+        {
+          "ref_code": "DPDP-ECOM-03",
+          "category": "governance",
+          "text": "Payment aggregators, logistics partners, and fulfilment warehouses that process customer personal data on behalf of the e-commerce platform must have signed DPAs covering DPDP security and purpose limitation obligations.",
+          "evidence_expectation": "DPAs with payment aggregators, logistics partners, and fulfilment operators; vendor DPA inventory; evidence all third parties processing customer data have signed DPAs",
+          "sector_law": "DPDP Act S.8(8)"
+        },
+        {
+          "ref_code": "DPDP-ECOM-04",
+          "category": "purpose",
+          "text": "Loyalty programme data (purchase history, tier data, redemption behaviour) must be used only for loyalty benefit administration and not sold or shared with brand partners without explicit separate customer consent.",
+          "evidence_expectation": "Loyalty programme data use policy; evidence loyalty data not shared with brand partners without consent; opt-in mechanism for partner data sharing",
+          "sector_law": "DPDP Act S.8(1)"
+        },
+        {
+          "ref_code": "DPDP-ECOM-05",
+          "category": "security",
+          "text": "Payment card and UPI handle data must be tokenised per RBI tokenisation guidelines. Full card numbers must not be stored. Customer payment data must be protected by PCI-DSS compliant controls.",
+          "evidence_expectation": "RBI tokenisation compliance evidence; no full card number storage confirmation; PCI-DSS compliance report or SAQ; UPI handle data encryption evidence",
+          "sector_law": "DPDP Act S.8(5) + RBI Tokenisation Circular"
+        },
+        {
+          "ref_code": "DPDP-ECOM-06",
+          "category": "rights",
+          "text": "Customers must be able to access their full purchase history, profile data, and behavioural data collected by the platform, and request erasure upon account deletion. Account deletion must trigger data deletion across recommendation and analytics systems.",
+          "evidence_expectation": "Account data download feature (DSAR); account deletion procedure with data deletion scope; evidence deletion propagates to analytics and recommendation systems; SLA for account deletion completion",
+          "sector_law": "DPDP Act S.11-12"
+        }
+      ],
+      "intake_questions": [
+        "What third-party analytics tools, advertising pixels, and tracking SDKs are embedded in your platform?",
+        "Do you have a cookie consent mechanism? Does it default to opt-in or opt-out for non-essential tracking?",
+        "Do you profile customers for personalised recommendations or dynamic pricing? Is this covered by separate consent?",
+        "Do you share customer purchase or behavioural data with brand partners or advertisers? On what legal basis?",
+        "What is the account deletion procedure? Does it cascade to all analytics and recommendation systems?",
+        "Are all payment aggregators and logistics partners covered by DPAs?"
+      ],
+      "evidence_requests": [
+        {
+          "requirement_ref": "DPDP-ECOM-01",
+          "title": "Behavioural profiling consent mechanism",
+          "description": "Separate consent UI for profiling; opt-out test evidence; profiling consent records"
+        },
+        {
+          "requirement_ref": "DPDP-ECOM-02",
+          "title": "Cookie consent banner configuration and tracker inventory",
+          "description": "Cookie consent tool configuration; full list of tracking pixels and SDKs deployed; DPAs with analytics vendors"
+        },
+        {
+          "requirement_ref": "DPDP-ECOM-05",
+          "title": "Payment tokenisation and PCI-DSS compliance evidence",
+          "description": "RBI tokenisation compliance documentation; PCI-DSS report or SAQ; confirmation of no full card storage"
+        },
+        {
+          "requirement_ref": "DPDP-ECOM-06",
+          "title": "Account deletion procedure and DSAR capability",
+          "description": "Account deletion workflow showing data scope; DSAR data download feature; deletion propagation evidence"
+        }
+      ],
+      "advisory_clinic_templates": [
+        {
+          "category": "consent",
+          "title": "Cookie Consent and Behavioural Profiling Architecture Review",
+          "guidance": "Audit all tracking technologies deployed (pixels, SDKs, cookies, server-side events). Review consent mechanism against DPDP requirements. Redesign consent banner for DPDP opt-in model. Map each tracker to a purpose and consent basis. Produce tracker inventory and consent mapping document."
+        },
+        {
+          "category": "purpose",
+          "title": "Loyalty Programme and Customer Profiling Privacy Design",
+          "guidance": "Review loyalty programme data flows, partner sharing arrangements, and profiling depth. Assess against DPDP purpose limitation. Design separate consent architecture for partner sharing. Produce loyalty data governance policy and partner DPA template with data use restrictions."
+        },
+        {
+          "category": "rights",
+          "title": "Customer Data Portability and Account Deletion Implementation",
+          "guidance": "Design end-to-end account deletion workflow covering all customer data across recommendation engines, analytics, loyalty, and payment systems. Build DSAR response capability for customer data download. Define deletion SLA and verify cascade deletion to all processors."
+        }
+      ]
+    },
+    "telecom": {
+      "label": "Telecom",
+      "icon": "📡",
+      "description": "Mobile network operators, ISPs, OTT communication platforms, and MVNO operators processing subscriber data, location data, call detail records, and communication content metadata.",
+      "sensitive_data_types": [
+        "Subscriber identity (name, address, Aadhaar for CAF)",
+        "Mobile number and IMEI/IMSI data",
+        "Call Detail Records (CDR) and SMS records",
+        "Real-time and historical location data (tower triangulation, GPS)",
+        "Internet browsing history and DNS queries",
+        "OTT messaging metadata",
+        "Payment recharge and billing data",
+        "Roaming data and international CDRs",
+        "Device fingerprint data"
+      ],
+      "applicable_regulations": [
+        "DPDP Act 2023",
+        "Indian Telegraph Act 1885 (as amended)",
+        "Telecom Regulatory Authority of India (TRAI) regulations",
+        "Department of Telecommunications (DoT) licencing conditions on data",
+        "TRAI Consultation Paper on Data Privacy 2018",
+        "Unified Licence Agreement conditions",
+        "Lawful Interception obligations (Intelligence agencies)"
+      ],
+      "risk_notes": "Location data in telecom is among the most sensitive personal data as it can reveal intimate details of daily life, movements, religious practices, and political affiliations. CDRs can expose social networks and communication patterns. Telecoms face tension between DPDP privacy obligations and lawful interception obligations from intelligence agencies. Roaming data sharing with foreign operators requires careful DPDP cross-border transfer assessment.",
+      "additional_requirements": [
+        {
+          "ref_code": "DPDP-TEL-01",
+          "category": "consent",
+          "text": "Real-time location data may only be used for network operations and emergency services. Commercial use of location data for advertising, analytics, or third-party sharing requires explicit separate subscriber consent and must be easy to withdraw.",
+          "evidence_expectation": "Location data use policy limiting primary use to network operations; explicit opt-in consent for commercial location use; subscriber opt-out mechanism; evidence location data not sold to third parties without consent",
+          "sector_law": "DPDP Act S.6 + TRAI regulations"
+        },
+        {
+          "ref_code": "DPDP-TEL-02",
+          "category": "security",
+          "text": "Call Detail Records (CDR) and subscriber data must be protected with encryption at rest and strict access controls. CDR access must be logged, and access restricted to authorised network operations, billing, and lawful interception teams.",
+          "evidence_expectation": "CDR database encryption configuration; CDR access control and RBAC records; CDR access audit logs; evidence CDR not accessible to marketing or analytics teams without anonymisation",
+          "sector_law": "DPDP Act S.8(5) + Telegraph Act"
+        },
+        {
+          "ref_code": "DPDP-TEL-03",
+          "category": "purpose",
+          "text": "CDR and browsing history data retained for lawful interception or regulatory compliance purposes must not be used for commercial purposes such as profiling, targeted advertising, or market analytics without de-identification and subscriber consent.",
+          "evidence_expectation": "Lawful interception data silo architecture; evidence CDR data not cross-used for commercial analytics; de-identification process for analytics use cases; subscriber consent for commercial use of network data",
+          "sector_law": "DPDP Act S.8(1) + DoT licencing conditions"
+        },
+        {
+          "ref_code": "DPDP-TEL-04",
+          "category": "transfer",
+          "text": "Subscriber data and CDRs shared with foreign operators for international roaming must be governed by DPAs. Only data strictly necessary for roaming service delivery may be transferred. Transfer to non-approved countries requires additional safeguards.",
+          "evidence_expectation": "Roaming DPAs with foreign operators; data minimisation for roaming data transfers; country compliance assessment for roaming partners; cross-border transfer log",
+          "sector_law": "DPDP Act S.16 + Unified Licence Agreement"
+        },
+        {
+          "ref_code": "DPDP-TEL-05",
+          "category": "breach",
+          "text": "A breach affecting CDR, location data, or subscriber identity must be treated as critical given the sensitivity of communication metadata. DPBI notification must be triggered immediately and subscribers notified with specific detail of affected data.",
+          "evidence_expectation": "Telecom breach classification in IRP; CDR/location breach escalation procedure; subscriber notification capability at scale; DPBI notification drill record specific to telecom breach scenario",
+          "sector_law": "DPDP Act S.8(6)"
+        }
+      ],
+      "intake_questions": [
+        "Does the organisation share location data with any third parties? For what purpose and on what legal basis?",
+        "How are CDRs protected and who has access? Are CDR access logs maintained?",
+        "Is subscriber data used for targeted advertising or profiling? How is consent obtained for commercial data use?",
+        "What roaming data is shared with foreign operators? Are DPAs in place with all international roaming partners?",
+        "How does the organisation manage tension between DPDP privacy obligations and lawful interception requirements?",
+        "What is the retention period for CDRs, location data, and browsing history, and which law mandates each?"
+      ],
+      "evidence_requests": [
+        {
+          "requirement_ref": "DPDP-TEL-01",
+          "title": "Location data consent mechanism and commercial use controls",
+          "description": "Subscriber consent UI for location data commercial use; opt-out mechanism; location data use policy"
+        },
+        {
+          "requirement_ref": "DPDP-TEL-02",
+          "title": "CDR encryption and access control configuration",
+          "description": "CDR database encryption evidence; RBAC configuration; CDR access audit logs"
+        },
+        {
+          "requirement_ref": "DPDP-TEL-04",
+          "title": "Roaming DPAs with foreign operators",
+          "description": "DPAs with international roaming partners; data minimisation evidence for roaming transfers"
+        }
+      ],
+      "advisory_clinic_templates": [
+        {
+          "category": "consent",
+          "title": "Location Data Privacy and Commercial Use Consent Framework",
+          "guidance": "Map all location data flows (real-time, historical, aggregated). Assess current commercial use against DPDP consent requirements. Design explicit opt-in mechanism for commercial location use. Define network-operations-only baseline that does not require consent. Produce location data governance policy."
+        },
+        {
+          "category": "security",
+          "title": "CDR Security Architecture and Access Control Review",
+          "guidance": "Review CDR storage architecture, encryption at rest and in transit, access controls, and audit logging. Assess segregation between network operations, billing, and analytics. Design CDR access governance framework. Recommend anonymisation approach for analytics use cases."
+        },
+        {
+          "category": "transfer",
+          "title": "International Roaming Data Transfer Compliance Programme",
+          "guidance": "Map roaming data flows to all international partner networks. Assess partner country DPDP transfer compliance. Design standard DPA template for roaming agreements. Establish data minimisation controls for roaming data. Produce cross-border transfer assessment for top 10 roaming partners."
+        }
+      ]
+    },
+    "government": {
+      "label": "Government / Public Sector",
+      "icon": "🏛️",
+      "description": "Central and state government ministries, departments, PSUs, municipalities, and government-owned platforms processing citizen personal data for public services, welfare schemes, and law enforcement.",
+      "sensitive_data_types": [
+        "Citizen identity data (Aadhaar, voter ID, driving licence, passport)",
+        "Beneficiary data for welfare schemes (income, caste, family composition)",
+        "Tax records and financial declarations",
+        "Health data from government hospitals and health schemes",
+        "Land and property records",
+        "Criminal record and law enforcement data",
+        "Biometric data from e-KYC and DigiLocker integrations",
+        "Student data from government education platforms",
+        "Census and survey response data"
+      ],
+      "applicable_regulations": [
+        "DPDP Act 2023 — Note: Government entities may qualify for exemptions under Section 17",
+        "Aadhaar Act 2016 and regulations",
+        "Right to Information Act 2005",
+        "Official Secrets Act 1923",
+        "Information Technology (Government of India) guidelines",
+        "National Data Governance Framework Policy 2022",
+        "Personal Data Protection Rules (when notified)",
+        "State-specific data governance policies"
+      ],
+      "risk_notes": "Government entities may be exempt from certain DPDP provisions under Section 17 where processing is in the interest of sovereignty, security, public order, or prevention of offences. However, Section 17 exemptions are narrow and do not exempt all government processing. Welfare scheme data involves highly sensitive beneficiary information at scale. Aadhaar-based authentication falls under UIDAI's own regulatory framework in addition to DPDP.",
+      "additional_requirements": [
+        {
+          "ref_code": "DPDP-GOV-01",
+          "category": "purpose",
+          "text": "Government entities using legitimate use as the basis for processing citizen data must document the specific statutory function or public interest that justifies the processing. Blanket claims of government authority are insufficient.",
+          "evidence_expectation": "Statutory mandate or policy order authorising each processing activity; legal basis register for all citizen data processing; evidence processing is proportionate to statutory function",
+          "sector_law": "DPDP Act S.7 + relevant enabling legislation"
+        },
+        {
+          "ref_code": "DPDP-GOV-02",
+          "category": "purpose",
+          "text": "Beneficiary data collected for welfare schemes (PM-KISAN, Ayushman Bharat, MGNREGS, etc.) must be used only for the specific scheme benefit delivery. Cross-scheme data sharing or use for non-welfare purposes requires documented justification.",
+          "evidence_expectation": "Welfare scheme data use policy; technical controls preventing cross-scheme data sharing without authorisation; DPDPA-compliant data sharing protocols between ministries",
+          "sector_law": "DPDP Act S.8(1) + scheme-specific guidelines"
+        },
+        {
+          "ref_code": "DPDP-GOV-03",
+          "category": "security",
+          "text": "Citizen personal data stored on government platforms must meet NIC and CERT-In security guidelines. All e-governance platforms handling sensitive citizen data must undergo annual security audit and VAPT.",
+          "evidence_expectation": "NIC security compliance assessment; CERT-In audit reports; annual VAPT report for citizen-facing platforms; encryption configuration for citizen data at rest and in transit",
+          "sector_law": "DPDP Act S.8(5) + MeitY security guidelines + CERT-In directives"
+        },
+        {
+          "ref_code": "DPDP-GOV-04",
+          "category": "governance",
+          "text": "Where Section 17 exemptions are claimed, the specific exemption and its scope must be documented. Exemptions do not extend beyond what is strictly necessary, and even exempt processing must implement reasonable security safeguards.",
+          "evidence_expectation": "Section 17 exemption claim documentation with legal justification; evidence exemption scope is precisely defined; security safeguards implemented despite exemption claim",
+          "sector_law": "DPDP Act S.17"
+        },
+        {
+          "ref_code": "DPDP-GOV-05",
+          "category": "rights",
+          "text": "Citizens must be able to access and correct their personal data held by government databases including tax records, property records, and health scheme data. The grievance redressal mechanism must be publicly accessible and responsive.",
+          "evidence_expectation": "Online grievance portal for personal data access; SLA for government data access requests; correction process for Aadhaar-linked government records; sample fulfilled citizen data requests",
+          "sector_law": "DPDP Act S.11-13 (where Section 17 exemption does not apply)"
+        },
+        {
+          "ref_code": "DPDP-GOV-06",
+          "category": "governance",
+          "text": "IT vendors and cloud service providers contracted to build or operate government platforms processing citizen data must be bound by DPAs. Vendor access to citizen data must be limited to technical support functions and logged.",
+          "evidence_expectation": "DPAs with all government IT vendors and cloud providers; vendor access control records; audit logs of vendor access to citizen data; data residency clause in government cloud contracts",
+          "sector_law": "DPDP Act S.8(8) + NDGFP 2022"
+        }
+      ],
+      "intake_questions": [
+        "Which DPDP Act Section 17 exemptions does the entity claim, and for which specific processing activities?",
+        "What welfare scheme beneficiary data is processed? Is cross-scheme data sharing authorised and documented?",
+        "Has each citizen-facing e-governance platform undergone VAPT in the last 12 months?",
+        "Are all IT vendors and cloud providers contracted with DPAs that restrict citizen data use to authorised purposes?",
+        "How do citizens currently access and correct their personal data held by the department?",
+        "Does the entity process Aadhaar data? If yes, is the entity registered as AUA/KUA with UIDAI?"
+      ],
+      "evidence_requests": [
+        {
+          "requirement_ref": "DPDP-GOV-01",
+          "title": "Statutory mandate and legal basis register for citizen data processing",
+          "description": "Legal basis register citing specific statutory authority for each citizen data processing activity"
+        },
+        {
+          "requirement_ref": "DPDP-GOV-02",
+          "title": "Welfare scheme data use policy and cross-scheme controls",
+          "description": "Scheme data use policy and technical controls preventing unauthorised cross-scheme data sharing"
+        },
+        {
+          "requirement_ref": "DPDP-GOV-03",
+          "title": "NIC/CERT-In compliance and VAPT reports for e-governance platforms",
+          "description": "CERT-In audit reports and annual VAPT results for all citizen-facing government platforms"
+        },
+        {
+          "requirement_ref": "DPDP-GOV-04",
+          "title": "Section 17 exemption documentation",
+          "description": "Documented Section 17 claims with legal justification and scope definition per processing activity"
+        },
+        {
+          "requirement_ref": "DPDP-GOV-06",
+          "title": "IT vendor DPAs for government platforms",
+          "description": "DPAs with all IT vendors and cloud providers; data residency clauses; vendor access logs"
+        }
+      ],
+      "advisory_clinic_templates": [
+        {
+          "category": "governance",
+          "title": "Section 17 Exemption Mapping and Scope Documentation",
+          "guidance": "Map all government processing activities against Section 17 exemption categories. Identify activities that cannot be exempted and require full DPDP compliance. Produce exemption scope documentation for each claimed exemption with legal justification. Design residual compliance programme for non-exempt processing."
+        },
+        {
+          "category": "purpose",
+          "title": "Welfare Scheme Data Governance and Cross-Ministry Sharing Controls",
+          "guidance": "Map all welfare scheme personal data flows including cross-scheme data sharing. Assess against DPDP purpose limitation and statutory authority. Design data sharing protocol for inter-ministry data flows. Produce data sharing MOU template with DPDP obligations. Define citizen notification for data sharing."
+        },
+        {
+          "category": "security",
+          "title": "E-Governance Platform VAPT and Security Compliance",
+          "guidance": "Review NIC and CERT-In security compliance status for all citizen-facing platforms. Conduct VAPT scoping for highest-risk platforms. Prioritise remediation by citizen data sensitivity and platform scale. Produce security improvement roadmap aligned to MeitY guidelines and DPDP obligations."
+        }
+      ]
+    },
+    "pharma": {
+      "label": "Pharma / Life Sciences",
+      "icon": "💊",
+      "description": "Pharmaceutical companies, Contract Research Organisations (CROs), clinical trial sponsors, medical device manufacturers, and life sciences organisations processing clinical trial participant data, adverse event records, and prescription data. Clinical trial participant consent and CDSCO data sharing obligations intersect directly with DPDP.",
+      "sensitive_data_types": [
+        "Clinical trial participant data (demographics, medical history, outcomes)",
+        "Adverse event and pharmacovigilance reports",
+        "Prescription and dispensing records",
+        "Employee health and occupational medical records",
+        "Biometric access logs for GMP manufacturing areas",
+        "Regulatory submission data (CDSCO/DCGI filings)",
+        "Genetic and biomarker data from trials",
+        "CRO sub-investigator personal data"
+      ],
+      "applicable_regulations": [
+        "DPDP Act 2023 (Sections 5-16)",
+        "Drugs and Cosmetics Act 1940",
+        "Schedule Y — Clinical Trials Regulations",
+        "CDSCO (Central Drugs Standard Control Organisation) Good Clinical Practice guidelines",
+        "ICMR National Ethical Guidelines for Biomedical and Health Research 2017",
+        "Pharmacovigilance Programme of India (PvPI) guidelines",
+        "DCGI New Drugs and Clinical Trials Rules 2019"
+      ],
+      "risk_notes": "AMBER: Clinical trial participants are a vulnerable data principal population where consent must be genuinely free and informed, not conditioned on trial participation benefits. Adverse event data shared with CDSCO under pharmacovigilance obligations may conflict with DPDP data minimisation — document the regulatory necessity for each data element disclosed. CROs acting as data processors require robust DPAs specifying purpose limitation for participant data.",
+      "additional_requirements": [
+        {
+          "ref_code": "DPDP-PHARMA-01",
+          "category": "consent",
+          "text": "Clinical trial participants must provide granular informed consent covering: data collection, processing by the sponsor, sharing with CDSCO/regulatory authorities, transfer to CROs, and any secondary research use. Consent must be obtained before enrolment and must be re-sought if data use purpose changes materially.",
+          "evidence_expectation": "Informed Consent Forms (ICFs) with granular consent per purpose; IRB/IEC approval of ICF; evidence ICF presented before enrolment; process for re-consent on material purpose change; multilingual ICF where trial sites are in non-English-speaking regions",
+          "sector_law": "DPDP Act S.6 + Schedule Y Rule 122DAB + ICMR guidelines"
+        },
+        {
+          "ref_code": "DPDP-PHARMA-02",
+          "category": "governance",
+          "text": "CROs and sub-investigators processing participant data on behalf of the sponsor must be bound by written DPAs covering DPDP obligations, purpose limitation to clinical trial activities, breach notification, and data return or deletion upon trial completion.",
+          "evidence_expectation": "Signed DPAs with all CROs and site management organisations; DPA purpose limitation clause restricted to clinical trial; data return/deletion clause at trial end; evidence DPAs predate participant data transfer",
+          "sector_law": "DPDP Act S.8(8) + CDSCO GCP guidelines"
+        },
+        {
+          "ref_code": "DPDP-PHARMA-03",
+          "category": "transfer",
+          "text": "Transfer of clinical trial participant data to foreign regulatory authorities (FDA, EMA), international sponsors, or global safety databases must be assessed for DPDP cross-border transfer compliance. Transfers to countries without Central Government approval require additional safeguards.",
+          "evidence_expectation": "Cross-border transfer inventory for participant data; DPAs with foreign sponsors and regulatory data repositories; country compliance assessment; Standard Contractual Clauses or equivalent safeguards for each destination",
+          "sector_law": "DPDP Act S.16 + CDSCO New Drugs and Clinical Trials Rules 2019"
+        },
+        {
+          "ref_code": "DPDP-PHARMA-04",
+          "category": "purpose",
+          "text": "Pharmacovigilance and adverse event data submitted to CDSCO/PvPI must use the minimum participant identifiers necessary to fulfil reporting obligations. Full participant identity must not be included in regulatory submissions unless specifically required by CDSCO.",
+          "evidence_expectation": "Adverse event report templates showing pseudonymised participant identifiers; pharmacovigilance data minimisation policy; evidence full identity excluded from CIOMS/E2B reports unless mandated; PvPI submission audit trail",
+          "sector_law": "DPDP Act S.8(1) + PvPI guidelines + ICH E2B guidelines"
+        },
+        {
+          "ref_code": "DPDP-PHARMA-05",
+          "category": "sdf",
+          "text": "AI-based drug discovery platforms and digital biomarker tools that process participant health and genetic data at scale must undergo DPIA before deployment. Outcomes must be reviewed by the DPO and documented.",
+          "evidence_expectation": "DPIA for AI drug discovery platforms; DPO sign-off; evidence DPIA conducted before platform deployment; risk treatment decisions with accepted residual risks documented",
+          "sector_law": "DPDP Act S.10(2)(a) + ICMR AI in healthcare guidelines"
+        },
+        {
+          "ref_code": "DPDP-PHARMA-06",
+          "category": "rights",
+          "text": "Trial participants retain the right to withdraw consent and request erasure of their personal data, subject to overriding regulatory obligations to retain safety data. Where full erasure is not possible due to regulatory mandate, participants must be informed and data pseudonymised.",
+          "evidence_expectation": "Participant withdrawal and data erasure procedure; process for pseudonymisation where full erasure conflicts with regulatory retention; participant communication template for partial erasure; IRB-approved withdrawal handling policy",
+          "sector_law": "DPDP Act S.12 + Schedule Y + ICMR guidelines"
+        },
+        {
+          "ref_code": "DPDP-PHARMA-07",
+          "category": "security",
+          "text": "Clinical trial data management systems (CTMS, EDC, eTMF) must implement role-based access control, audit trails for all data modifications, and encryption for participant data at rest and in transit. Access must be restricted to study-specific personnel only.",
+          "evidence_expectation": "CTMS/EDC RBAC configuration; 21 CFR Part 11 / GCP-compliant audit trail evidence; encryption configuration; access restricted to study team roster; annual security assessment of CTMS and EDC platforms",
+          "sector_law": "DPDP Act S.8(5) + 21 CFR Part 11 + CDSCO GCP"
+        }
+      ],
+      "intake_questions": [
+        "What clinical trial phases are conducted in India and which EDC/CTMS systems are used to manage participant data?",
+        "Do you transfer participant data to foreign regulatory authorities (FDA, EMA) or international sponsor offices? Are DPDP cross-border transfer safeguards in place?",
+        "Are all CROs and sub-investigator sites bound by DPAs covering DPDP obligations?",
+        "How is adverse event pharmacovigilance data submitted to CDSCO — are participant identifiers pseudonymised in submissions?",
+        "Does your organisation use AI or machine learning for drug discovery or digital biomarker analysis on participant data? Have DPIAs been conducted?",
+        "What is the process when a trial participant withdraws consent — how is their data handled when regulatory retention obligations apply?"
+      ],
+      "evidence_requests": [
+        {
+          "requirement_ref": "DPDP-PHARMA-ER-01",
+          "title": "Informed Consent Forms (ICFs) with granular purpose consent",
+          "description": "Sample ICFs from active trials showing separate consent for treatment, regulatory reporting, CRO sharing, and secondary research; IRB/IEC approval records"
+        },
+        {
+          "requirement_ref": "DPDP-PHARMA-ER-02",
+          "title": "CRO and sub-investigator DPAs",
+          "description": "Signed DPAs with all CROs, site management organisations, and sub-investigator sites; DPA purpose limitation and data return clauses"
+        },
+        {
+          "requirement_ref": "DPDP-PHARMA-ER-03",
+          "title": "CTMS and EDC security configuration and audit trails",
+          "description": "RBAC configuration for CTMS/EDC; audit trail sample; encryption configuration; annual security assessment report"
+        },
+        {
+          "requirement_ref": "DPDP-PHARMA-ER-04",
+          "title": "Cross-border participant data transfer inventory and safeguards",
+          "description": "Inventory of all international participant data transfers; country compliance assessment; DPAs or SCCs with foreign sponsors and regulatory repositories"
+        },
+        {
+          "requirement_ref": "DPDP-PHARMA-ER-05",
+          "title": "Participant withdrawal and pseudonymisation procedure",
+          "description": "Documented process for handling withdrawal requests including pseudonymisation where regulatory retention prevents full erasure; participant communication templates"
+        }
+      ],
+      "advisory_clinic_templates": [
+        {
+          "category": "Clinical Trial Informed",
+          "title": "Clinical Trial Informed Consent Architecture Workshop",
+          "guidance": "Review existing ICFs across active and planned trials for DPDP granularity. Map consent to DPDP Section 6 requirements and ICMR guidelines. Identify bundled or insufficient consents. Design granular, purpose-specific ICF templates. Produce ICF design standard and review checklist for future trials."
+        },
+        {
+          "category": "CRO and Investigator",
+          "title": "CRO and Investigator Site DPDP DPA Programme",
+          "guidance": "Review all existing CRO and sub-investigator data processing agreements for DPDP compliance gaps. Design DPDP-compliant DPA template for clinical trial contexts. Establish CRO onboarding privacy checklist and annual DPA review cycle. Produce DPA amendment schedule for non-compliant existing agreements."
+        },
+        {
+          "category": "Pharmacovigilance Data Minimisation",
+          "title": "Pharmacovigilance Data Minimisation and CDSCO Reporting Workshop",
+          "guidance": "Review adverse event and SAE reporting workflows for participant identifier minimisation. Assess CIOMS/E2B report templates against DPDP data minimisation obligations. Design pseudonymisation approach for regulatory submissions. Produce pharmacovigilance data governance policy."
+        }
+      ]
+    },
+    "media": {
+      "label": "Media / Entertainment / OTT",
+      "icon": "🎬",
+      "description": "OTT streaming platforms, digital media companies, news portals, gaming platforms, and entertainment content providers processing viewer profiles, watch history, and behavioural targeting data. DPDP Section 9 children's provisions apply to platforms accessible to minors.",
+      "sensitive_data_types": [
+        "Viewer profiles and demographic data",
+        "Watch history and content engagement data",
+        "Subscription and payment data",
+        "Behavioural targeting and recommendation algorithm data",
+        "Minors' content access logs and parental control settings",
+        "Social login and linked account data",
+        "Location data for geo-restricted content delivery",
+        "Advertising audience segment data"
+      ],
+      "applicable_regulations": [
+        "DPDP Act 2023 (Section 9 — minors on OTT platforms)",
+        "Information Technology Act 2000",
+        "Information Technology (Intermediary Guidelines and Digital Media Ethics Code) Rules 2021",
+        "Cable TV Networks (Regulation) Act 1995",
+        "TRAI OTT Communication Services Consultation 2023",
+        "Prasar Bharati Act 1990",
+        "Advertising Standards Council of India (ASCI) guidelines on digital advertising"
+      ],
+      "risk_notes": "AMBER: OTT and media platforms engage in extensive behavioural profiling for content recommendations and targeted advertising. DPDP Section 9 requires verifiable parental consent before any processing of data for users under 18 — age gating and parental consent mechanisms must be robust, not self-certified. Cross-border content licensing data transfers (to international studios and distributors) require DPDP cross-border transfer compliance. Targeted advertising consent must be opt-in and separable from content access.",
+      "additional_requirements": [
+        {
+          "ref_code": "DPDP-MEDIA-01",
+          "category": "children",
+          "text": "OTT platforms must implement age verification mechanisms that go beyond self-declaration to verify that users are 18 or above before processing their data without parental consent. For identified or suspected minors, verifiable parental consent must be obtained before enrolment and before any profiling.",
+          "evidence_expectation": "Age verification mechanism documentation (not self-declaration alone); parental consent flow for under-18 users; evidence profiling disabled for minors without parental consent; DPDP S.9 compliance assessment",
+          "sector_law": "DPDP Act S.9 + IT Rules 2021"
+        },
+        {
+          "ref_code": "DPDP-MEDIA-02",
+          "category": "consent",
+          "text": "Behavioural profiling for content recommendations, targeted advertising, and audience segmentation must be based on explicit separate consent distinct from subscription terms. Users must be able to access the platform and basic content without consenting to profiling.",
+          "evidence_expectation": "Separate consent for behavioural profiling and advertising; opt-in mechanism not bundled with subscription; evidence content access not conditioned on profiling consent; consent withdrawal test showing profiling ceases",
+          "sector_law": "DPDP Act S.6"
+        },
+        {
+          "ref_code": "DPDP-MEDIA-03",
+          "category": "transfer",
+          "text": "Viewer data and content licensing analytics shared with international studios, content owners, or licensing partners under cross-border content agreements must comply with DPDP cross-border transfer requirements. DPAs must be in place with each international recipient.",
+          "evidence_expectation": "Inventory of cross-border viewer data transfers to studios and licensing partners; DPAs with all international data recipients; country compliance assessment; data minimisation for cross-border content analytics",
+          "sector_law": "DPDP Act S.16"
+        },
+        {
+          "ref_code": "DPDP-MEDIA-04",
+          "category": "purpose",
+          "text": "Watch history, content engagement data, and viewer profiles must not be sold to third-party advertisers or data brokers without explicit viewer consent. Aggregated, anonymised audience data may be shared with advertisers provided it cannot be re-identified.",
+          "evidence_expectation": "Data sharing policy for advertisers; evidence individual viewer data not sold without consent; de-identification methodology for audience analytics shared with advertisers; audit of third-party advertiser data access",
+          "sector_law": "DPDP Act S.8(1) + ASCI digital advertising guidelines"
+        },
+        {
+          "ref_code": "DPDP-MEDIA-05",
+          "category": "rights",
+          "text": "Viewers must be able to access, correct, and request erasure of their profile, watch history, and recommendation data. Account deletion must cascade to advertising audience segments, recommendation engine models trained on their data, and all analytics processors.",
+          "evidence_expectation": "User data download (DSAR) capability; account deletion workflow with data scope confirmation; evidence deletion propagates to recommendation system and advertising segments; SLA for account deletion completion",
+          "sector_law": "DPDP Act S.11-12"
+        },
+        {
+          "ref_code": "DPDP-MEDIA-06",
+          "category": "governance",
+          "text": "Third-party advertising technology vendors, CDN providers, and analytics platforms processing viewer data on behalf of the media platform must be bound by signed DPAs covering DPDP obligations and prohibiting secondary use of viewer data.",
+          "evidence_expectation": "DPAs with all ad-tech vendors, analytics platforms, and CDN providers; prohibition on secondary use clause; vendor inventory; evidence all sub-processors are contractually bound",
+          "sector_law": "DPDP Act S.8(8)"
+        }
+      ],
+      "intake_questions": [
+        "Does your platform have users under 18? How is age verified and how is parental consent obtained for minor users?",
+        "What behavioural profiling is conducted for content recommendations and targeted advertising? Is separate consent obtained for profiling?",
+        "Do you share viewer data with international studios, distributors, or content licensors? Are DPDP cross-border transfer safeguards in place?",
+        "What ad-tech vendors, analytics SDKs, and CDN providers have access to viewer data? Are DPAs in place with all of them?",
+        "What is the account deletion procedure, and does it cascade to recommendation engine training data and advertising audience segments?",
+        "Does your platform serve targeted advertising? Is consent for advertising profiling opt-in and separable from content access?"
+      ],
+      "evidence_requests": [
+        {
+          "requirement_ref": "DPDP-MEDIA-ER-01",
+          "title": "Age verification mechanism and parental consent flow for minors",
+          "description": "Age verification system documentation; parental consent UI screenshots; evidence profiling disabled for minor users without parental consent"
+        },
+        {
+          "requirement_ref": "DPDP-MEDIA-ER-02",
+          "title": "Behavioural profiling consent mechanism",
+          "description": "Separate consent UI for profiling and advertising; opt-in not bundled with subscription; consent withdrawal test showing profiling cessation"
+        },
+        {
+          "requirement_ref": "DPDP-MEDIA-ER-03",
+          "title": "Ad-tech and analytics vendor DPAs",
+          "description": "Signed DPAs with all advertising technology vendors, analytics platforms, and CDN providers; secondary use prohibition clauses"
+        },
+        {
+          "requirement_ref": "DPDP-MEDIA-ER-04",
+          "title": "Account deletion and DSAR capability",
+          "description": "Account deletion workflow with data scope; DSAR data download feature; evidence deletion propagates to recommendation and advertising systems"
+        }
+      ],
+      "advisory_clinic_templates": [
+        {
+          "category": "OTT Minor User",
+          "title": "OTT Minor User Consent and Age Verification Design",
+          "guidance": "Review current age verification and parental consent mechanisms against DPDP Section 9 requirements. Design robust age gating beyond self-declaration. Produce parental consent architecture for minor profiles. Define prohibited processing for minor users and platform configuration standards."
+        },
+        {
+          "category": "Behavioural Profiling Consent",
+          "title": "Behavioural Profiling Consent and Ad-Tech Governance",
+          "guidance": "Audit all behavioural data collection points and ad-tech integrations. Review consent mechanism for profiling separability from subscription. Design DPDP-compliant consent architecture for targeted advertising. Produce ad-tech vendor DPA review checklist and standard DPA template."
+        },
+        {
+          "category": "Cross-Border Content Licensing",
+          "title": "Cross-Border Content Licensing Data Transfer Programme",
+          "guidance": "Map all viewer data flows to international studios, distributors, and licensing partners. Assess DPDP cross-border transfer compliance for each destination. Design DPA template for international content licensing data agreements. Produce cross-border transfer assessment for top 10 data destinations."
+        }
+      ]
+    },
+    "hospitality": {
+      "label": "Hospitality / Travel",
+      "icon": "🏨",
+      "description": "Hotels, airlines, travel agencies, online travel aggregators (OTAs), and hospitality chains processing guest identity documents, travel itineraries, payment data, and loyalty programme information. Mandatory police reporting obligations coexist with DPDP data minimisation principles.",
+      "sensitive_data_types": [
+        "Passport and national ID copies (mandatory check-in)",
+        "Travel itineraries and booking history",
+        "Payment card and UPI data",
+        "Loyalty programme profiles and stay history",
+        "Biometric check-in data (face recognition at hotels and airports)",
+        "Health declarations and vaccination status (post-COVID)",
+        "Foreign guest registration data (FRRO reporting)",
+        "Special service requests (dietary, disability, medical)"
+      ],
+      "applicable_regulations": [
+        "DPDP Act 2023",
+        "Foreigners Act 1946 and Foreigners (Registration) Order 1992 (3-year guest record retention for foreign guests)",
+        "Foreigners Regional Registration Offices (FRRO) reporting requirements",
+        "Ministry of Home Affairs (MHA) C-Form reporting for foreign guest data",
+        "DGCA Civil Aviation Requirements (CAR) for passenger data",
+        "Tourism Act and Ministry of Tourism guidelines",
+        "Prevention of Money Laundering Act (PMLA) for high-value hospitality transactions"
+      ],
+      "risk_notes": "AMBER: Hospitality operators face a direct tension between mandatory police and FRRO reporting obligations (requiring guest identity data retention for up to 3 years) and DPDP data minimisation and storage limitation principles. This conflict must be documented: retain what the law requires, delete what it does not. Loyalty programme data profiling creates long-term retention obligations requiring separate consent. Cross-border hotel chain transfers of guest data to international parent companies require DPDP cross-border transfer compliance.",
+      "additional_requirements": [
+        {
+          "ref_code": "DPDP-HOSP-01",
+          "category": "purpose",
+          "text": "Guest identity data (passport, Aadhaar, voter ID) collected at check-in for mandatory MHA/FRRO reporting must be retained only for the legally mandated period (3 years for foreign guests under Foreigners Order) and deleted thereafter. Data must not be used for loyalty profiling, marketing, or shared with affiliates beyond the check-in compliance purpose.",
+          "evidence_expectation": "Guest data retention schedule citing specific legal mandate (Foreigners Act, FRRO, hotel police reporting obligations); evidence identity data deleted after retention period; technical controls preventing identity data use for marketing; deletion audit logs",
+          "sector_law": "DPDP Act S.8(3) + Foreigners (Registration) Order 1992 + MHA C-Form requirements"
+        },
+        {
+          "ref_code": "DPDP-HOSP-02",
+          "category": "consent",
+          "text": "Loyalty programme enrolment must be based on explicit consent separate from the room booking. Profiling of guest stay history, preferences, and spend patterns for targeted marketing must be opt-in. Guests must be able to withdraw loyalty profiling consent without losing accumulated loyalty points.",
+          "evidence_expectation": "Loyalty programme consent mechanism separate from booking; profiling opt-in evidence; opt-out of profiling not penalising loyalty balance; consent records for loyalty members",
+          "sector_law": "DPDP Act S.6"
+        },
+        {
+          "ref_code": "DPDP-HOSP-03",
+          "category": "transfer",
+          "text": "International hotel chains and OTAs transferring guest data to parent companies or global reservation systems abroad must comply with DPDP cross-border transfer requirements. DPAs must be in place with the foreign parent entity and any global CRS (Central Reservation System) provider.",
+          "evidence_expectation": "Cross-border transfer inventory for guest data; DPAs with international parent company and global CRS providers; country compliance assessment for each destination; data minimisation for international transfers",
+          "sector_law": "DPDP Act S.16"
+        },
+        {
+          "ref_code": "DPDP-HOSP-04",
+          "category": "consent",
+          "text": "Biometric check-in systems (face recognition at hotels and airports) must obtain explicit separate consent from guests before enrolment. Biometric check-in must be offered as an optional service, with non-biometric check-in always available as an alternative.",
+          "evidence_expectation": "Biometric check-in consent form or digital consent mechanism; evidence non-biometric alternative available; biometric data deletion on checkout or upon request; biometric system vendor DPA",
+          "sector_law": "DPDP Act S.6"
+        },
+        {
+          "ref_code": "DPDP-HOSP-05",
+          "category": "governance",
+          "text": "OTA platforms, travel management companies, and booking aggregators processing hotel guest data on behalf of properties must be bound by DPAs. The hotel or airline remains accountable as data fiduciary for guest personal data processed by OTA platforms.",
+          "evidence_expectation": "DPAs with all OTA platforms, travel agencies, and booking aggregators; data processing scope limitation in DPAs; evidence hotels remain accountable for guest data processed by OTAs",
+          "sector_law": "DPDP Act S.8(8)"
+        },
+        {
+          "ref_code": "DPDP-HOSP-06",
+          "category": "security",
+          "text": "Payment card data processed at hotel properties and airline booking systems must comply with PCI-DSS requirements and RBI tokenisation guidelines. Guest payment data must not be retained beyond immediate transaction completion unless tokenised.",
+          "evidence_expectation": "PCI-DSS compliance report or SAQ; RBI tokenisation compliance for UPI/card data; evidence full card numbers not retained; payment system security assessment",
+          "sector_law": "DPDP Act S.8(5) + RBI Tokenisation Circular + PCI-DSS"
+        }
+      ],
+      "intake_questions": [
+        "How does the property comply with MHA/FRRO C-Form reporting? What guest data is collected and for how long is it retained?",
+        "Does the property offer biometric check-in (face recognition)? How is consent obtained and what is the alternative for guests who decline?",
+        "Do you operate or participate in a loyalty programme? Is profiling consent obtained separately from booking consent?",
+        "Is guest data transferred to an international parent company or global reservation system? Are DPDP cross-border transfer safeguards in place?",
+        "Are DPAs in place with all OTA and booking platform partners that have access to guest data?",
+        "What is the procedure for deletion of foreign guest data after the Foreigners Order 3-year retention period?"
+      ],
+      "evidence_requests": [
+        {
+          "requirement_ref": "DPDP-HOSP-ER-01",
+          "title": "Guest data retention schedule and FRRO compliance documentation",
+          "description": "Retention schedule per data category citing specific legal mandate; deletion audit logs for guest identity data post-retention"
+        },
+        {
+          "requirement_ref": "DPDP-HOSP-ER-02",
+          "title": "Loyalty programme consent mechanism",
+          "description": "Loyalty enrolment consent UI separate from booking; profiling opt-in evidence; opt-out test without penalty to loyalty balance"
+        },
+        {
+          "requirement_ref": "DPDP-HOSP-ER-03",
+          "title": "OTA and booking platform DPAs",
+          "description": "Signed DPAs with all OTA platforms and booking aggregators; data processing scope and prohibition on secondary use"
+        },
+        {
+          "requirement_ref": "DPDP-HOSP-ER-04",
+          "title": "Biometric check-in consent and alternative procedure",
+          "description": "Biometric consent form or digital mechanism; non-biometric alternative documentation; biometric deletion records"
+        }
+      ],
+      "advisory_clinic_templates": [
+        {
+          "category": "Guest Data Retention",
+          "title": "Guest Data Retention Conflict Resolution — FRRO vs. DPDP",
+          "guidance": "Map all guest data categories against mandatory retention obligations (Foreigners Act, FRRO, MHA, PMLA) and DPDP storage limitation. Identify and document justified retention windows. Design deletion schedules for data not covered by legal mandates. Produce data retention policy with specific legal citations per data type."
+        },
+        {
+          "category": "Loyalty Programme Profiling",
+          "title": "Loyalty Programme Profiling Consent Architecture",
+          "guidance": "Review loyalty programme data flows and profiling depth. Assess consent mechanism for separability from core booking. Design DPDP-compliant loyalty consent architecture with granular profiling controls. Produce loyalty data governance policy and member communication for consent re-confirmation."
+        },
+        {
+          "category": "Cross-Border Guest Data",
+          "title": "Cross-Border Guest Data Transfer Compliance for International Chains",
+          "guidance": "Map guest data flows to international parent companies and global reservation systems. Assess DPDP cross-border transfer compliance for each destination country. Design DPA framework for intra-group international data transfers. Produce data minimisation standard for cross-border guest data sharing."
+        }
+      ]
+    },
+    "legal": {
+      "label": "Legal / Professional Services",
+      "icon": "⚖️",
+      "description": "Law firms, legal process outsourcing (LPO) companies, chartered accountants, and management consultancies processing client files, KYC documents, financial transaction records, and privileged communications. Attorney-client privilege intersects with DPDP transparency obligations.",
+      "sensitive_data_types": [
+        "Client files and matter documentation",
+        "KYC documents (Aadhaar, PAN, passport, company registration)",
+        "Financial transaction records and beneficial ownership data",
+        "Legal strategy documents and privileged communications",
+        "Court filings and litigation records",
+        "Employee personnel files",
+        "AML/PMLA compliance records",
+        "Due diligence reports containing third-party personal data"
+      ],
+      "applicable_regulations": [
+        "DPDP Act 2023",
+        "Advocates Act 1961",
+        "Bar Council of India Rules on Professional Standards",
+        "Prevention of Money Laundering Act 2002 (PMLA) — mandatory KYC and record retention",
+        "Companies Act 2013 — document retention requirements",
+        "SEBI regulations applicable to legal advisers in securities matters",
+        "Foreign Exchange Management Act (FEMA) — documentation requirements"
+      ],
+      "risk_notes": "AMBER: Attorney-client privilege and professional confidentiality obligations coexist with DPDP transparency requirements — law firms must provide data principal notices and support rights requests while preserving privilege over legal strategy. PMLA mandates KYC data retention for 5 years after client relationship ends, which conflicts with DPDP erasure rights — document this conflict clearly and inform clients that PMLA retention obligations override DPDP erasure for KYC data. Cloud-hosted document management systems require robust DPAs and India-resident storage assessment.",
+      "additional_requirements": [
+        {
+          "ref_code": "DPDP-LEGAL-01",
+          "category": "notice",
+          "text": "Law firms and professional services firms must provide clients with a DPDP-compliant data notice at matter inception covering: personal data collected, processing purpose, processors (cloud DMS, LPO partners), retention periods (including PMLA mandates), and rights. The notice must acknowledge where PMLA retention overrides erasure rights.",
+          "evidence_expectation": "Client engagement letter or standalone data notice with all DPDP S.5 elements; notice provided before data collection; PMLA retention carve-out disclosed in notice; evidence translated to client's preferred language upon request",
+          "sector_law": "DPDP Act S.5 + PMLA 2002 + Bar Council of India Rules"
+        },
+        {
+          "ref_code": "DPDP-LEGAL-02",
+          "category": "purpose",
+          "text": "Client KYC data collected under PMLA obligations must be retained for the PMLA-mandated 5-year period post client relationship. After this period, KYC data must be deleted or anonymised. KYC data must not be used for business development, marketing analytics, or cross-sold to affiliates.",
+          "evidence_expectation": "KYC data retention schedule citing PMLA S.12; automated deletion after 5-year post-relationship period; evidence KYC data excluded from marketing or business development systems; PMLA compliance officer sign-off",
+          "sector_law": "DPDP Act S.8(3) + PMLA S.12"
+        },
+        {
+          "ref_code": "DPDP-LEGAL-03",
+          "category": "governance",
+          "text": "Cloud-based document management systems (DMS), legal research platforms, and LPO partners that process client personal data must be bound by signed DPAs. Contracts must specify India-resident data storage or explicit cross-border transfer safeguards.",
+          "evidence_expectation": "DPAs with all DMS providers, legal tech platforms, and LPO partners; India-resident storage clause or cross-border transfer safeguards; vendor access control records; evidence client data accessible only for stated matter work",
+          "sector_law": "DPDP Act S.8(8) + S.16"
+        },
+        {
+          "ref_code": "DPDP-LEGAL-04",
+          "category": "rights",
+          "text": "Clients may exercise DPDP rights including access and erasure. Firms must respond to access requests with a summary of personal data held, excluding privileged legal strategy. Erasure requests must be fulfilled for non-PMLA data; PMLA data must be retained with client informed of the legal basis.",
+          "evidence_expectation": "Client data access request procedure; privilege review step before responding to access requests; erasure workflow distinguishing PMLA-retained data from DPDP-deletable data; client communication templates for partial erasure",
+          "sector_law": "DPDP Act S.11-12 + PMLA S.12 + Advocates Act"
+        },
+        {
+          "ref_code": "DPDP-LEGAL-05",
+          "category": "security",
+          "text": "Client files, privileged communications, and due diligence reports must be protected by role-based access control ensuring only matter-assigned personnel can access specific client files. External sharing of client documents must be via encrypted channels with link expiry.",
+          "evidence_expectation": "DMS RBAC configuration per matter; evidence client files accessible only to matter team; encrypted file sharing mechanism; link expiry controls; DMS access audit logs reviewed periodically",
+          "sector_law": "DPDP Act S.8(5) + Bar Council of India confidentiality rules"
+        },
+        {
+          "ref_code": "DPDP-LEGAL-06",
+          "category": "governance",
+          "text": "Law firms and professional services firms must appoint a designated Privacy Officer (or DPO if SDF threshold met) responsible for DPDP compliance, client data notice maintenance, rights fulfilment, and breach response. The Privacy Officer must have independence from client-facing revenue functions.",
+          "evidence_expectation": "Privacy Officer appointment record; Privacy Officer charter; independence from client-facing function; evidence Privacy Officer involved in new client intake data review; grievance contact details accessible to clients",
+          "sector_law": "DPDP Act S.10 + S.13"
+        }
+      ],
+      "intake_questions": [
+        "Does your firm provide a DPDP data notice to clients at matter inception? Does it disclose PMLA retention obligations that may override erasure rights?",
+        "What cloud DMS or legal tech platforms process client personal data? Are DPAs in place with all of them, including India-resident storage or cross-border transfer clauses?",
+        "How are PMLA KYC retention obligations balanced against client erasure requests? Is there a documented procedure?",
+        "What process exists for client data access requests — how is privilege reviewed before disclosing matter data to a client?",
+        "Do you share client data with LPO partners or offshore legal support teams? Are DPAs in place?",
+        "Has a Privacy Officer been designated? Is there an accessible grievance mechanism for clients?"
+      ],
+      "evidence_requests": [
+        {
+          "requirement_ref": "DPDP-LEGAL-ER-01",
+          "title": "Client data notice (engagement letter or standalone notice)",
+          "description": "Sample client data notice with DPDP S.5 elements; PMLA retention disclosure; evidence provided at matter inception"
+        },
+        {
+          "requirement_ref": "DPDP-LEGAL-ER-02",
+          "title": "DMS and LPO partner DPAs",
+          "description": "Signed DPAs with all document management systems and LPO partners; India-resident storage or cross-border transfer clause; access restriction to matter team"
+        },
+        {
+          "requirement_ref": "DPDP-LEGAL-ER-03",
+          "title": "KYC retention schedule and PMLA compliance evidence",
+          "description": "KYC retention schedule citing PMLA mandate; evidence of deletion after retention period; exclusion of KYC data from marketing systems"
+        },
+        {
+          "requirement_ref": "DPDP-LEGAL-ER-04",
+          "title": "DMS access controls and matter-team RBAC",
+          "description": "DMS RBAC configuration per matter; access audit logs; encrypted file sharing mechanism with link expiry"
+        }
+      ],
+      "advisory_clinic_templates": [
+        {
+          "category": "Client Data Notice",
+          "title": "Client Data Notice and PMLA-DPDP Conflict Resolution Workshop",
+          "guidance": "Review current client engagement letters and data notices for DPDP completeness. Map PMLA retention obligations against DPDP erasure rights and design disclosure language. Produce DPDP-compliant client data notice template. Design rights request procedure that respects privilege and PMLA obligations."
+        },
+        {
+          "category": "Legal Tech Vendor",
+          "title": "Legal Tech Vendor DPA and Cloud DMS Compliance Review",
+          "guidance": "Inventory all cloud DMS, legal research, and LPO platforms processing client data. Review existing DPAs for DPDP gaps. Design standard DPA template for legal professional services context. Assess India-resident storage vs. cross-border transfer compliance for each platform."
+        },
+        {
+          "category": "Client File Access",
+          "title": "Client File Access Control and Privilege-Aware Rights Fulfilment",
+          "guidance": "Train matter teams on DPDP client data rights obligations and privilege review procedures. Design step-by-step rights fulfilment workflow distinguishing personal data from privileged strategy. Produce rights request handling SOP and client communication templates. Establish escalation path to Privacy Officer."
+        }
+      ]
+    },
+    "agritech": {
+      "label": "Agriculture / AgriTech",
+      "icon": "🌾",
+      "description": "AgriTech platforms, agricultural input companies, commodity trading platforms, rural fintech, and government agricultural scheme administrators processing farmer land records, Aadhaar-linked subsidy data, crop data, and IoT farm sensor data.",
+      "sensitive_data_types": [
+        "Farmer land records and cadastral data",
+        "Aadhaar-linked subsidy and PM-KISAN beneficiary data",
+        "Crop yield and soil health data",
+        "Financial inclusion and agricultural loan records",
+        "Farm IoT sensor data (soil moisture, weather, equipment telematics)",
+        "Commodity trading and price history data",
+        "Farmer cooperative and SHG membership data",
+        "Input purchase and usage history (seeds, fertilizers, pesticides)"
+      ],
+      "applicable_regulations": [
+        "DPDP Act 2023",
+        "Aadhaar Act 2016 (PM-KISAN and scheme authentication)",
+        "PM-KISAN scheme operational guidelines (Aadhaar-linked beneficiary data)",
+        "NABARD data governance and farmer data guidelines",
+        "Seeds Act 1966 and Fertilizers (Control) Order 1985",
+        "State Agricultural Produce Marketing Committee (APMC) Acts",
+        "National Food Security Act 2013 (ration/PDS beneficiary data)"
+      ],
+      "risk_notes": "AMBER: Farmer beneficiary data linked to Aadhaar for PM-KISAN, crop insurance, and PDS schemes involves a population with limited digital literacy and limited ability to exercise informed consent. AgriTech platforms collecting farm IoT data (soil sensors, drone imagery, equipment telematics) may build detailed farm profiles that reveal financial vulnerability — this creates profiling risk. Aadhaar-based authentication for government scheme data is subject to UIDAI regulations in addition to DPDP. Cross-border agricultural commodity trading data transfers require DPDP assessment.",
+      "additional_requirements": [
+        {
+          "ref_code": "DPDP-AGRI-01",
+          "category": "consent",
+          "text": "AgriTech platforms collecting farmer land records, crop data, and financial data must provide notices and obtain consent in the farmer's regional language. Consent obtained through intermediaries (input dealers, cooperative officers) must be verifiable and not structurally coerced.",
+          "evidence_expectation": "Multilingual consent forms or digital consent in farmer's language; evidence consent mechanism accessible to low-digital-literacy users; intermediary consent collection guidelines; consent records with method and location documented",
+          "sector_law": "DPDP Act S.5-6"
+        },
+        {
+          "ref_code": "DPDP-AGRI-02",
+          "category": "purpose",
+          "text": "PM-KISAN and government scheme beneficiary data accessed by AgriTech platforms through API integrations must be used only for the stated scheme-related purpose (eligibility verification, benefit delivery). Data must not be used for commercial crop advisory profiling, credit scoring, or input product marketing without separate farmer consent.",
+          "evidence_expectation": "PM-KISAN API data use restriction policy; technical controls preventing scheme beneficiary data use for commercial profiling; UIDAI authentication log review; evidence farmer data not used for marketing without separate consent",
+          "sector_law": "DPDP Act S.8(1) + Aadhaar Act S.8 + PM-KISAN operational guidelines"
+        },
+        {
+          "ref_code": "DPDP-AGRI-03",
+          "category": "purpose",
+          "text": "Farm IoT sensor data (soil health monitors, weather stations, drone imagery, equipment telematics) must be collected only to the minimum granularity necessary for stated precision agriculture services. Raw IoT data must not be aggregated into farm financial vulnerability profiles shared with lenders without farmer consent.",
+          "evidence_expectation": "IoT data minimisation policy per device type; evidence raw IoT data not shared with lenders or insurers without consent; data flow documentation for farm sensor data; farmer consent for financial profiling using IoT data",
+          "sector_law": "DPDP Act S.8(1)"
+        },
+        {
+          "ref_code": "DPDP-AGRI-04",
+          "category": "transfer",
+          "text": "Cross-border agricultural commodity trading data transfers involving farmer identity or land records must comply with DPDP cross-border transfer requirements. International commodity exchanges and trading platforms receiving Indian farmer data must be covered by DPAs.",
+          "evidence_expectation": "Inventory of cross-border farmer data transfers; DPAs with international commodity trading platforms; data minimisation for cross-border transfers (anonymise where possible); country compliance assessment",
+          "sector_law": "DPDP Act S.16"
+        },
+        {
+          "ref_code": "DPDP-AGRI-05",
+          "category": "security",
+          "text": "Farmer financial data (crop loans, insurance claims, subsidies) and Aadhaar-linked records must be encrypted at rest and in transit. AgriTech platforms handling Aadhaar-linked data must comply with UIDAI security guidelines for authentication record protection.",
+          "evidence_expectation": "Encryption configuration for farmer financial data; UIDAI authentication record security compliance; access controls for scheme beneficiary data; security assessment for AgriTech platform processing Aadhaar-linked data",
+          "sector_law": "DPDP Act S.8(5) + Aadhaar Act + UIDAI guidelines"
+        },
+        {
+          "ref_code": "DPDP-AGRI-06",
+          "category": "rights",
+          "text": "Farmers must be able to access and request correction of their land records, crop data, and scheme eligibility data held by AgriTech platforms. Rights request mechanisms must be accessible in regional languages and via voice/non-digital channels where digital literacy is low.",
+          "evidence_expectation": "Farmer data access request mechanism in regional languages; non-digital access request channel (helpline); SLA for responding to farmer rights requests; evidence correction cascades to land records systems and scheme portals",
+          "sector_law": "DPDP Act S.11-12"
+        }
+      ],
+      "intake_questions": [
+        "Does the platform integrate with PM-KISAN, crop insurance, or other government scheme databases? On what basis is farmer Aadhaar data accessed, and is it used only for scheme purposes?",
+        "How is farmer consent obtained? Is the consent mechanism accessible to farmers with low digital literacy, and is it available in regional languages?",
+        "What IoT sensors or drone systems collect farm data? Is this data minimised, and is it shared with lenders or insurers — if so, with farmer consent?",
+        "Do you share farmer land or financial data with international commodity trading platforms? Are DPDP cross-border transfer safeguards in place?",
+        "What is the security posture for Aadhaar-linked farmer data? Is UIDAI authentication log access controlled?",
+        "How can farmers access, correct, or request deletion of their data? Is there a non-digital rights request channel?"
+      ],
+      "evidence_requests": [
+        {
+          "requirement_ref": "DPDP-AGRI-ER-01",
+          "title": "Multilingual farmer consent mechanism documentation",
+          "description": "Consent forms or UI in regional languages; intermediary consent collection guidelines; sample consent records"
+        },
+        {
+          "requirement_ref": "DPDP-AGRI-ER-02",
+          "title": "PM-KISAN/scheme API data use restriction policy and controls",
+          "description": "Data use restriction policy for government scheme API data; technical controls preventing commercial secondary use; UIDAI authentication logs"
+        },
+        {
+          "requirement_ref": "DPDP-AGRI-ER-03",
+          "title": "Farm IoT data minimisation policy and lender/insurer data sharing controls",
+          "description": "IoT data minimisation policy per device; evidence IoT data not shared with financial institutions without farmer consent"
+        },
+        {
+          "requirement_ref": "DPDP-AGRI-ER-04",
+          "title": "Farmer rights request mechanism (including non-digital channel)",
+          "description": "Farmer data access mechanism; regional language support; helpline or non-digital channel documentation; SLA for rights request fulfilment"
+        }
+      ],
+      "advisory_clinic_templates": [
+        {
+          "category": "Farmer Consent Design",
+          "title": "Farmer Consent Design for Low-Digital-Literacy Contexts",
+          "guidance": "Review consent mechanisms across farmer touchpoints (app, dealer, cooperative, IVR). Assess against DPDP Section 5-6 requirements for regional language and accessibility. Design DPDP-compliant consent approach for low-digital-literacy populations. Produce multilingual consent templates and intermediary consent collection guidelines."
+        },
+        {
+          "category": "Government Scheme API",
+          "title": "Government Scheme API Data Governance and UIDAI Compliance",
+          "guidance": "Review all government scheme API integrations (PM-KISAN, crop insurance, PDS). Assess UIDAI compliance for Aadhaar-linked authentication. Map data use restrictions against DPDP purpose limitation. Design technical controls preventing secondary commercial use of scheme data. Produce scheme data governance policy."
+        },
+        {
+          "category": "Farm IoT Data",
+          "title": "Farm IoT Data Minimisation and Responsible Profiling Framework",
+          "guidance": "Inventory all IoT devices and farm data streams. Design data minimisation standards per device type. Assess financial profiling risk for IoT-derived farm data shared with lenders and insurers. Produce farmer consent framework for financial data sharing and responsible data use policy for AgriTech operations."
+        }
+      ]
+    },
+    "realestate": {
+      "label": "Real Estate / PropTech",
+      "icon": "🏗️",
+      "description": "Builders, developers, real estate agents, PropTech platforms, co-living operators, and property management companies processing buyer/seller KYC, RERA-registered project data, tenant records, and PMLA-mandated transaction documents.",
+      "sensitive_data_types": [
+        "Buyer and seller Aadhaar and PAN data",
+        "Property title documents and ownership records",
+        "Financial transaction records and payment proofs",
+        "Biometric building access logs",
+        "Tenant KYC documents and police verification records",
+        "RERA-registered project data and buyer agreements",
+        "NRI buyer identity and overseas address data",
+        "Beneficial ownership and anti-benami transaction records"
+      ],
+      "applicable_regulations": [
+        "DPDP Act 2023",
+        "Real Estate (Regulation and Development) Act 2016 (RERA)",
+        "Prevention of Money Laundering Act 2002 (PMLA) — property transaction KYC",
+        "Benami Transactions (Prohibition) Act 1988 (amended 2016)",
+        "Registration Act 1908 (property document registration)",
+        "Stamp Act (state-specific)",
+        "FEMA regulations for NRI property transactions"
+      ],
+      "risk_notes": "AMBER: Real estate transactions involve PMLA KYC obligations that mandate 5-year record retention post-transaction — this directly conflicts with DPDP erasure rights for buyer and seller KYC data. Document this conflict and disclose it to data principals. RERA disclosure obligations require project data publication that may contain personal data — assess what is publicly disclosed. PropTech platforms acting as data processors for multiple developers require DPAs with each developer. Biometric access systems in residential buildings require explicit resident consent.",
+      "additional_requirements": [
+        {
+          "ref_code": "DPDP-RE-01",
+          "category": "purpose",
+          "text": "Buyer and seller KYC data (Aadhaar, PAN, financial records) collected under PMLA obligations must be retained for the PMLA-mandated 5-year period post-transaction. After this period, KYC data must be deleted or anonymised. KYC data must not be used for marketing, lead generation, or sold to third parties.",
+          "evidence_expectation": "Transaction KYC retention schedule citing PMLA mandate; evidence of automated deletion or anonymisation after 5-year period; technical controls preventing KYC use for marketing; PMLA compliance officer records",
+          "sector_law": "DPDP Act S.8(3) + PMLA S.12"
+        },
+        {
+          "ref_code": "DPDP-RE-02",
+          "category": "notice",
+          "text": "Real estate developers and agents must provide buyers and sellers with a DPDP-compliant data notice disclosing: KYC data collected, PMLA retention obligations (including disclosure that erasure rights are limited for PMLA data), processors (PropTech platforms, title verification services), and rights available.",
+          "evidence_expectation": "Client data notice in sale agreement or standalone document; PMLA retention carve-out disclosed; notice provided before data collection; RERA registration number referenced in notice",
+          "sector_law": "DPDP Act S.5 + RERA S.4 + PMLA"
+        },
+        {
+          "ref_code": "DPDP-RE-03",
+          "category": "consent",
+          "text": "Biometric access control systems in residential buildings, co-living spaces, and commercial properties must obtain explicit written consent from residents and employees before enrolment. Non-biometric access alternatives must always be available.",
+          "evidence_expectation": "Biometric consent form or digital consent mechanism; evidence non-biometric alternative (card, PIN) available; biometric data deletion process for departed residents; biometric system vendor DPA",
+          "sector_law": "DPDP Act S.6"
+        },
+        {
+          "ref_code": "DPDP-RE-04",
+          "category": "governance",
+          "text": "PropTech platforms acting as data processors for multiple real estate developers must execute separate DPAs with each developer. The platform must not combine client data across developer engagements or use data from one developer's clients for another developer's marketing.",
+          "evidence_expectation": "DPAs with each developer client; data isolation controls between developer engagements; evidence no cross-developer data sharing; audit logs confirming data segregation by developer",
+          "sector_law": "DPDP Act S.8(8)"
+        },
+        {
+          "ref_code": "DPDP-RE-05",
+          "category": "transfer",
+          "text": "NRI buyer and seller transaction data transferred to overseas banks, foreign exchange dealers, or international parent companies must comply with DPDP cross-border transfer requirements and FEMA data handling provisions.",
+          "evidence_expectation": "Inventory of NRI transaction data transferred abroad; DPAs with foreign banks and forex dealers receiving NRI data; FEMA compliance for cross-border property transaction data; data minimisation for international transfers",
+          "sector_law": "DPDP Act S.16 + FEMA"
+        },
+        {
+          "ref_code": "DPDP-RE-06",
+          "category": "purpose",
+          "text": "RERA-mandated project disclosure data published on RERA portals must be reviewed to ensure personal data of buyers, investors, or employees is not unnecessarily included in public disclosures. Personal data in RERA filings must be limited to what the regulation explicitly requires.",
+          "evidence_expectation": "RERA filing data review records; evidence personal data minimised in public RERA disclosures; process for reviewing project disclosure documents before RERA portal submission",
+          "sector_law": "DPDP Act S.8(1) + RERA S.4-11"
+        }
+      ],
+      "intake_questions": [
+        "Does the organisation collect buyer or seller KYC under PMLA obligations? Is the 5-year retention mandate documented and implemented?",
+        "Are buyers and sellers provided a DPDP data notice that discloses PMLA retention obligations and limitation of erasure rights?",
+        "Do residential or commercial properties have biometric access systems? Is explicit resident consent obtained with a non-biometric alternative available?",
+        "Does the PropTech platform process data for multiple developers? Are separate DPAs in place per developer, with data isolation controls?",
+        "Is NRI buyer transaction data transferred to overseas financial institutions? Are DPDP cross-border transfer safeguards and FEMA compliance in place?",
+        "Are RERA project disclosure documents reviewed for personal data minimisation before submission to the RERA portal?"
+      ],
+      "evidence_requests": [
+        {
+          "requirement_ref": "DPDP-RE-ER-01",
+          "title": "Transaction KYC retention schedule and PMLA compliance evidence",
+          "description": "KYC retention schedule citing PMLA mandate; automated deletion evidence post-retention; exclusion from marketing systems"
+        },
+        {
+          "requirement_ref": "DPDP-RE-ER-02",
+          "title": "Client data notice in sale agreement",
+          "description": "Sample client data notice with PMLA retention disclosure; evidence provided before data collection"
+        },
+        {
+          "requirement_ref": "DPDP-RE-ER-03",
+          "title": "Biometric access consent and non-biometric alternative documentation",
+          "description": "Biometric consent forms; evidence non-biometric alternative available; biometric data deletion records for departed residents"
+        },
+        {
+          "requirement_ref": "DPDP-RE-ER-04",
+          "title": "PropTech developer client DPAs and data isolation evidence",
+          "description": "DPAs with each developer client; data segregation controls; audit logs confirming no cross-developer data sharing"
+        }
+      ],
+      "advisory_clinic_templates": [
+        {
+          "category": "PMLA-DPDP Conflict Resolution",
+          "title": "PMLA-DPDP Conflict Resolution for Real Estate Transaction Data",
+          "guidance": "Map all KYC and transaction data categories against PMLA retention mandates and DPDP erasure rights. Design retention schedules with legal citations. Draft disclosure language for client notices. Produce PMLA-DPDP conflict resolution policy and buyer communication template."
+        },
+        {
+          "category": "PropTech Multi-Developer Data",
+          "title": "PropTech Multi-Developer Data Isolation and DPA Governance",
+          "guidance": "Review PropTech platform architecture for data isolation between developer clients. Assess DPA coverage across all developer engagements. Design data isolation controls and DPA standard template for real estate context. Establish developer onboarding privacy checklist."
+        },
+        {
+          "category": "Biometric Building Access",
+          "title": "Biometric Building Access Consent and Resident Data Rights",
+          "guidance": "Review biometric access systems across all properties. Design resident and employee consent architecture with non-biometric alternatives. Train facilities and security teams on DPDP obligations for biometric data. Produce biometric governance policy and resident communication templates."
+        }
+      ]
+    },
+    "energy": {
+      "label": "Energy / Utilities",
+      "icon": "⚡",
+      "description": "Electricity distribution companies (DISCOMs), power generators, oil and gas companies, gas distribution networks, and renewable energy operators processing smart meter data, customer billing records, and employee health and safety data at critical infrastructure facilities.",
+      "sensitive_data_types": [
+        "Smart meter consumption data (granular energy usage patterns)",
+        "Customer billing and payment records",
+        "Employee health, medical fitness, and safety incident data",
+        "Biometric access logs for power plants and critical installations",
+        "Operational technology (OT/SCADA) system access and activity logs",
+        "Pipeline and grid operational data with employee identifiers",
+        "Environmental compliance and incident reporting data",
+        "Renewable energy producer and prosumer data"
+      ],
+      "applicable_regulations": [
+        "DPDP Act 2023",
+        "Electricity Act 2003",
+        "Central Electricity Regulatory Commission (CERC) regulations",
+        "State Electricity Regulatory Commissions (SERC) directives",
+        "Petroleum and Natural Gas Regulatory Board (PNGRB) regulations",
+        "Petroleum Act 1934",
+        "National Smart Grid Mission (NSGM) data security guidelines",
+        "CERT-In Critical Information Infrastructure (CII) security directives"
+      ],
+      "risk_notes": "AMBER: Smart meter data at granular intervals (15-minute reads) reveals intimate details of occupant behaviour, daily routines, and presence/absence at premises — this is personal data requiring consent for processing beyond billing. DISCOMs and energy companies operating Critical Information Infrastructure (CII) have additional CERT-In security obligations that overlap with DPDP security safeguards. Employee monitoring at plant sites (biometric, CCTV, HSE tracking) requires employment-basis justification under DPDP. SCADA/OT system data that incidentally captures personal data must be assessed for DPDP scope.",
+      "additional_requirements": [
+        {
+          "ref_code": "DPDP-ENERGY-01",
+          "category": "consent",
+          "text": "Smart meter consumption data collected at granular intervals (15-minute or hourly reads) must be used primarily for billing and network balancing. Commercial use of granular consumption data for analytics, targeted energy products, or third-party sharing requires explicit customer consent separate from the metering service agreement.",
+          "evidence_expectation": "Smart meter data use policy limiting primary use to billing and network operations; explicit opt-in consent for commercial analytics use; evidence granular consumption data not sold to third parties without consent; NSGM data security compliance assessment",
+          "sector_law": "DPDP Act S.6 + NSGM guidelines + SERC smart metering regulations"
+        },
+        {
+          "ref_code": "DPDP-ENERGY-02",
+          "category": "security",
+          "text": "SCADA and OT systems that interface with employee access control, health and safety monitoring, or customer management systems must be assessed for personal data flows. Personal data must not traverse unsecured OT networks. OT/IT convergence points must have documented data protection controls.",
+          "evidence_expectation": "OT/IT network segmentation assessment; personal data flow mapping for SCADA-connected systems; security controls at OT/IT convergence points; CERT-In CII security assessment records",
+          "sector_law": "DPDP Act S.8(5) + CERT-In CII directives + Electricity Act"
+        },
+        {
+          "ref_code": "DPDP-ENERGY-03",
+          "category": "notice",
+          "text": "Biometric access controls (fingerprint, facial recognition) at power plants, substations, and critical energy installations must be accompanied by employee notice disclosing data collection, purpose, retention period, and access controls. Biometric data must be deleted upon employment termination.",
+          "evidence_expectation": "Biometric notice in employment contract or standalone document; biometric data retention policy; deletion procedure at employment end; biometric system vendor DPA; evidence biometric systems not installed in prohibited areas",
+          "sector_law": "DPDP Act S.5-6"
+        },
+        {
+          "ref_code": "DPDP-ENERGY-04",
+          "category": "purpose",
+          "text": "Employee health, medical fitness, and occupational safety incident data collected under Factories Act and occupational health requirements must be used only for safety and compliance purposes. This data must not be used for performance evaluation, insurance underwriting, or shared with third parties without employee consent.",
+          "evidence_expectation": "Occupational health data use policy; evidence safety/health data excluded from HR performance systems; DPAs with occupational health service providers; employee consent for health data sharing beyond statutory reporting",
+          "sector_law": "DPDP Act S.8(1) + Factories Act 1948 + Mines Act 1952"
+        },
+        {
+          "ref_code": "DPDP-ENERGY-05",
+          "category": "transfer",
+          "text": "Cross-border energy trading data involving customer consumption records or employee data transferred to international power exchanges or joint venture partners must comply with DPDP cross-border transfer requirements.",
+          "evidence_expectation": "Cross-border energy trading data transfer inventory; DPAs with international power exchange partners; data minimisation for cross-border operational data transfers; country compliance assessment",
+          "sector_law": "DPDP Act S.16 + CERC regulations on cross-border electricity trade"
+        },
+        {
+          "ref_code": "DPDP-ENERGY-06",
+          "category": "governance",
+          "text": "Energy companies designated as Critical Information Infrastructure (CII) operators must align their DPDP security safeguards programme with CERT-In CII security directives. The DPO must coordinate with the CISO for CERT-In compliance activities that overlap with DPDP breach notification and security obligations.",
+          "evidence_expectation": "CERT-In CII designation status and compliance assessment; DPO-CISO coordination mechanism; DPDP breach notification integration with CERT-In incident reporting; evidence overlapping security controls are jointly maintained",
+          "sector_law": "DPDP Act S.8(5)-S.8(6) + CERT-In IT Act S.70B"
+        }
+      ],
+      "intake_questions": [
+        "What granularity of smart meter data is collected (15-minute, hourly, daily reads)? Is granular consumption data used for purposes beyond billing, and on what consent basis?",
+        "Do SCADA or OT systems interface with HR, access control, or customer management systems? Have personal data flows from OT systems been assessed?",
+        "Are biometric access systems deployed at critical installations? Are employees notified and is deletion at employment end implemented?",
+        "What occupational health data is collected under Factories Act requirements? Is it separated from HR performance systems?",
+        "Is the organisation designated as Critical Information Infrastructure (CII) by CERT-In? How do CII obligations intersect with DPDP security and breach notification?",
+        "Is customer or employee data transferred to international power exchange partners or joint venture entities abroad?"
+      ],
+      "evidence_requests": [
+        {
+          "requirement_ref": "DPDP-ENERGY-ER-01",
+          "title": "Smart meter data use policy and commercial analytics consent",
+          "description": "Smart meter data use policy limiting primary use to billing; commercial analytics opt-in consent mechanism; NSGM compliance assessment"
+        },
+        {
+          "requirement_ref": "DPDP-ENERGY-ER-02",
+          "title": "OT/SCADA personal data flow assessment and CII security evidence",
+          "description": "OT/IT convergence personal data flow mapping; CERT-In CII security assessment; segmentation evidence"
+        },
+        {
+          "requirement_ref": "DPDP-ENERGY-ER-03",
+          "title": "Employee biometric notice and deletion procedure",
+          "description": "Biometric notice in employment documentation; biometric retention policy; deletion records at employment end; biometric system DPA"
+        },
+        {
+          "requirement_ref": "DPDP-ENERGY-ER-04",
+          "title": "Occupational health data separation controls",
+          "description": "Occupational health data use policy; evidence exclusion from HR performance systems; DPAs with occupational health providers"
+        }
+      ],
+      "advisory_clinic_templates": [
+        {
+          "category": "Smart Meter Data",
+          "title": "Smart Meter Data Privacy and Consent Governance Workshop",
+          "guidance": "Map all smart meter data flows from meter to billing to analytics systems. Assess granularity against DPDP consent requirements. Design consent architecture for commercial analytics use of consumption data. Produce smart metering data governance policy aligned to NSGM and SERC requirements."
+        },
+        {
+          "category": "OT/SCADA Personal Data",
+          "title": "OT/SCADA Personal Data Assessment and CERT-In DPDP Alignment",
+          "guidance": "Conduct personal data flow assessment for all OT-IT convergence points. Map CERT-In CII security obligations against DPDP security safeguards. Design integrated security and privacy controls for critical energy infrastructure. Produce OT personal data governance policy."
+        },
+        {
+          "category": "Employee Health and",
+          "title": "Employee Health and Biometric Data Compliance Briefing",
+          "guidance": "Review biometric access systems and occupational health data handling at plant sites. Assess compliance with DPDP employee data notice obligations. Design biometric data governance policy including deletion at employment end. Produce occupational health data separation controls and DPDP-Factories Act compliance guide."
+        }
+      ]
+    },
+    "logistics": {
+      "label": "Logistics / Supply Chain",
+      "icon": "🚚",
+      "description": "Logistics operators, freight forwarders, e-commerce fulfilment providers, courier companies, and supply chain technology platforms processing shipment tracking data, driver/employee records, customer delivery addresses, and customs KYC documents.",
+      "sensitive_data_types": [
+        "Customer delivery addresses and contact data",
+        "Shipment tracking and delivery route data",
+        "Driver and delivery executive records (ID, location, biometric)",
+        "Customs and EXIM KYC documents (importer/exporter identity)",
+        "Biometric warehouse and depot access logs",
+        "Vehicle telematics and GPS tracking data",
+        "Employee health and safety records",
+        "International freight partner personnel data"
+      ],
+      "applicable_regulations": [
+        "DPDP Act 2023",
+        "Carriage by Road Act 2007",
+        "Multi-Modal Transportation of Goods Act 1993",
+        "DGFT (Directorate General of Foreign Trade) export documentation requirements",
+        "EXIM Bank and customs authority data requirements",
+        "FDI policy for logistics sector",
+        "Motor Vehicles Act 1988 (driver data obligations)",
+        "Customs Act 1962 (importer/exporter data)"
+      ],
+      "risk_notes": "AMBER: Driver and delivery executive tracking (continuous GPS, performance monitoring) creates significant consent and transparency obligations — employees must be informed about monitoring scope and purpose. Customer delivery address data at scale is high-value personal data that must be minimised, retained only as long as needed for delivery, and not shared with marketing partners. Customs and EXIM KYC data retention obligations (typically 5 years under Customs Act) conflict with DPDP erasure rights — document and disclose this conflict. DPAs with international freight partners require careful cross-border transfer assessment.",
+      "additional_requirements": [
+        {
+          "ref_code": "DPDP-LOGI-01",
+          "category": "notice",
+          "text": "Driver and delivery executive continuous GPS tracking and performance monitoring must be disclosed in the employment or service agreement. The notice must specify: what is tracked, when tracking is active, who has access to tracking data, retention period, and the purpose (safety, route optimisation, proof of delivery).",
+          "evidence_expectation": "Employment or service agreement clause disclosing GPS tracking and performance monitoring scope; evidence notice provided before tracking commenced; tracking system vendor DPA; driver access to their own tracking data",
+          "sector_law": "DPDP Act S.5-6 + Motor Vehicles Act"
+        },
+        {
+          "ref_code": "DPDP-LOGI-02",
+          "category": "purpose",
+          "text": "Customer delivery address and contact data must be retained only for the period necessary to complete delivery and handle post-delivery disputes (typically 30-90 days). Delivery addresses must not be used for marketing profiling or sold to third parties. Aggregated delivery route analytics must not be linkable back to individual customer addresses.",
+          "evidence_expectation": "Customer delivery data retention schedule; automated deletion after delivery + dispute window; evidence delivery addresses excluded from marketing systems; anonymisation approach for route analytics",
+          "sector_law": "DPDP Act S.8(1)+S.8(3)"
+        },
+        {
+          "ref_code": "DPDP-LOGI-03",
+          "category": "purpose",
+          "text": "Customs and EXIM documentation KYC data (importer/exporter Aadhaar, PAN, IEC) retained under Customs Act obligations must be retained only for the legally mandated period (5 years post-shipment). After this period, KYC data must be deleted or anonymised. Data must not be used for commercial profiling.",
+          "evidence_expectation": "Customs KYC retention schedule citing Customs Act and DGFT mandates; evidence of automated deletion post-retention; KYC data exclusion from commercial profiling systems; EXIM compliance officer records",
+          "sector_law": "DPDP Act S.8(3) + Customs Act 1962 + DGFT regulations"
+        },
+        {
+          "ref_code": "DPDP-LOGI-04",
+          "category": "consent",
+          "text": "Biometric access control systems at warehouses and distribution centres must obtain explicit consent from warehouse employees before enrolment. Non-biometric access alternatives must be available. Biometric data must be deleted upon employment termination.",
+          "evidence_expectation": "Warehouse biometric consent forms; evidence non-biometric access alternative (card, PIN) available; biometric deletion records at employment end; biometric system vendor DPA",
+          "sector_law": "DPDP Act S.6"
+        },
+        {
+          "ref_code": "DPDP-LOGI-05",
+          "category": "transfer",
+          "text": "International freight and logistics partners (foreign freight forwarders, shipping lines, customs brokers in other countries) that receive Indian shipment tracking data, customer consignee data, or employee data must be bound by DPAs. Cross-border transfers must comply with DPDP cross-border transfer requirements.",
+          "evidence_expectation": "DPAs with all international freight partners and foreign customs brokers; cross-border transfer inventory for shipment and customer data; country compliance assessment; data minimisation for international transfers",
+          "sector_law": "DPDP Act S.16 + Multi-Modal Transportation Act"
+        },
+        {
+          "ref_code": "DPDP-LOGI-06",
+          "category": "security",
+          "text": "Shipment tracking systems, last-mile delivery platforms, and warehouse management systems (WMS) must implement role-based access control and encryption for customer and employee personal data. Driver location data must not be accessible to unauthorised employees beyond dispatchers and safety officers.",
+          "evidence_expectation": "Shipment tracking system RBAC; WMS access controls; driver location data access restriction to authorised roles; encryption of customer delivery data at rest and in transit; security assessment for core logistics platforms",
+          "sector_law": "DPDP Act S.8(5)"
+        },
+        {
+          "ref_code": "DPDP-LOGI-07",
+          "category": "governance",
+          "text": "E-commerce clients and marketplace partners whose customers' delivery data is processed by the logistics provider must be covered by DPAs designating the logistics provider as a data processor. These DPAs must specify purpose limitation to delivery fulfilment only.",
+          "evidence_expectation": "DPAs with all e-commerce clients and marketplace partners; purpose limitation clause restricting use to delivery fulfilment; evidence customer data not used beyond delivery; DPA inventory with renewal dates",
+          "sector_law": "DPDP Act S.8(8)"
+        }
+      ],
+      "intake_questions": [
+        "Are drivers and delivery executives informed of GPS tracking and performance monitoring in their employment or service agreement? What is tracked and for how long is it retained?",
+        "What is the retention period for customer delivery address data after order completion, and is it deleted automatically after the dispute window?",
+        "Is customs and EXIM KYC data retained for the Customs Act 5-year mandate? Is deletion automated after this period, and is KYC data excluded from commercial systems?",
+        "Are biometric access systems deployed at warehouses? Is explicit consent obtained and is a non-biometric alternative available?",
+        "Are all international freight partners and foreign customs brokers bound by DPAs? Have DPDP cross-border transfer safeguards been assessed?",
+        "Are DPAs in place with all e-commerce clients whose customer delivery data is processed by the logistics operation?"
+      ],
+      "evidence_requests": [
+        {
+          "requirement_ref": "DPDP-LOGI-ER-01",
+          "title": "Driver tracking disclosure in employment/service agreement",
+          "description": "Employment or service agreement clause disclosing GPS and performance tracking; evidence provided before tracking commenced; driver DPA or acknowledgement"
+        },
+        {
+          "requirement_ref": "DPDP-LOGI-ER-02",
+          "title": "Customer delivery data retention schedule and deletion evidence",
+          "description": "Retention schedule for delivery addresses; automated deletion after delivery + dispute window; exclusion from marketing systems"
+        },
+        {
+          "requirement_ref": "DPDP-LOGI-ER-03",
+          "title": "International freight partner DPAs and cross-border transfer inventory",
+          "description": "DPAs with all international logistics partners and customs brokers; cross-border transfer inventory; country compliance assessment"
+        },
+        {
+          "requirement_ref": "DPDP-LOGI-ER-04",
+          "title": "E-commerce client DPAs designating logistics provider as data processor",
+          "description": "DPAs with e-commerce and marketplace clients; purpose limitation to delivery fulfilment; DPA inventory"
+        },
+        {
+          "requirement_ref": "DPDP-LOGI-ER-05",
+          "title": "Warehouse biometric consent and non-biometric alternative documentation",
+          "description": "Warehouse biometric consent forms; non-biometric alternative evidence; biometric deletion records at employment end"
+        }
+      ],
+      "advisory_clinic_templates": [
+        {
+          "category": "Driver and Delivery",
+          "title": "Driver and Delivery Executive Monitoring Transparency Workshop",
+          "guidance": "Audit all driver and delivery executive monitoring systems (GPS, performance scoring, idle time tracking, delivery photo capture). Review disclosure adequacy in employment and service agreements. Design DPDP-compliant monitoring transparency framework. Produce driver monitoring policy and service agreement clause templates."
+        },
+        {
+          "category": "Customer Delivery Data",
+          "title": "Customer Delivery Data Minimisation and Retention Design",
+          "guidance": "Map all customer delivery data flows from order receipt through delivery completion and dispute resolution. Design data minimisation standards and automated deletion schedules. Assess exclusion of delivery addresses from marketing and analytics systems. Produce customer delivery data governance policy."
+        },
+        {
+          "category": "International Freight Partner",
+          "title": "International Freight Partner DPDP Compliance Programme",
+          "guidance": "Map all international shipment data flows to foreign freight forwarders, customs brokers, and shipping lines. Assess DPDP cross-border transfer compliance per partner and destination country. Design DPA template for international logistics context. Establish cross-border transfer register and annual partner review process."
+        }
+      ]
+    }
+  }
+}

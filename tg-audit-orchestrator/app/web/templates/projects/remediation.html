@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Remediation — {{ project.id[:8] }}{% endblock %}
+{% block content %}
+<div class="mb-2 text-sm text-gray-500">
+  <a href="/ui/projects/{{ project.id }}" class="hover:underline">← Project</a>
+</div>
+<h1 class="text-xl font-bold text-gray-800 mb-5">Remediation Tracker</h1>
+
+<!-- Create remediation action -->
+<div class="bg-white rounded-lg shadow p-5 mb-6">
+  <h2 class="font-semibold text-gray-700 mb-3">New Remediation Action</h2>
+  <form action="/ui/projects/{{ project.id }}/remediation" method="post"
+        class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1">Finding *</label>
+      <select name="finding_id" required
+        class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+        <option value="">Select finding…</option>
+        {% for f in findings %}
+        <option value="{{ f.id }}">{{ f.title[:50] }} ({{ f.severity }})</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="md:col-span-2">
+      <label class="block text-xs font-medium text-gray-600 mb-1">Action *</label>
+      <input type="text" name="action" required placeholder="Describe the remediation step…"
+        class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+    </div>
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-1">Target Date</label>
+      <input type="date" name="target_date"
+        class="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+    </div>
+    <div class="md:col-span-4 flex justify-end">
+      <button type="submit"
+        class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded text-sm font-medium">
+        Add Action
+      </button>
+    </div>
+  </form>
+</div>
+
+{% if actions %}
+{% set status_colors = {
+  'open':        'bg-yellow-100 text-yellow-700',
+  'in_progress': 'bg-blue-100 text-blue-700',
+  'closed':      'bg-green-100 text-green-700',
+} %}
+<div class="bg-white rounded-lg shadow overflow-hidden">
+  <table class="w-full">
+    <thead class="bg-gray-50 border-b">
+      <tr>
+        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">Action</th>
+        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">Finding</th>
+        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">Status</th>
+        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">Target Date</th>
+        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">Residual Risk</th>
+        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500">Update</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-100">
+      {% for a in actions %}
+      <tr class="hover:bg-gray-50">
+        <td class="px-4 py-3 font-medium max-w-xs">
+          <div class="truncate">{{ a.action }}</div>
+        </td>
+        <td class="px-4 py-3 text-xs text-gray-400 font-mono">{{ a.finding_id[:8] }}…</td>
+        <td class="px-4 py-3">
+          <span class="px-2 py-0.5 rounded-full text-xs {{ status_colors.get(a.status, 'bg-gray-100 text-gray-500') }}">
+            {{ a.status | replace('_', ' ') }}
+          </span>
+        </td>
+        <td class="px-4 py-3 text-gray-400 text-xs">{{ a.target_date or "—" }}</td>
+        <td class="px-4 py-3 text-gray-500 text-xs max-w-xs truncate">{{ a.residual_risk or "—" }}</td>
+        <td class="px-4 py-3">
+          {% if a.status != 'closed' %}
+          <form action="/ui/projects/{{ project.id }}/remediation/{{ a.id }}/status" method="post"
+                class="flex gap-1 items-center">
+            <select name="new_status"
+              class="border rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-blue-400">
+              <option value="open"        {{ 'selected' if a.status == 'open' }}>Open</option>
+              <option value="in_progress" {{ 'selected' if a.status == 'in_progress' }}>In Progress</option>
+              <option value="closed"      {{ 'selected' if a.status == 'closed' }}>Closed</option>
+            </select>
+            <button type="submit"
+              class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-2 py-1 rounded text-xs">Set</button>
+          </form>
+          {% else %}
+          <span class="text-gray-400 text-xs">Closed</span>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p class="text-gray-500">No remediation actions recorded. Add one above after findings are identified.</p>
+{% endif %}
+{% endblock %}

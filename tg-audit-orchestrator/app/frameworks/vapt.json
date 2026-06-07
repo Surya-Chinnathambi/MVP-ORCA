@@ -1,0 +1,168 @@
+{
+  "key": "vapt",
+  "title": "VAPT Combined Framework (TechGuard)",
+  "version": "2024.2",
+  "description": "Meta-framework synthesising OWASP WSTG 4.2, OWASP API Security Top 10 (2023), OWASP ASVS 4.0.3, and PTES v1.1 for unified vulnerability assessment and penetration testing.",
+  "components": [
+    {"key": "owasp_wstg",  "title": "OWASP Web Security Testing Guide",         "version": "4.2"},
+    {"key": "owasp_api10", "title": "OWASP API Security Top 10",                 "version": "2023"},
+    {"key": "owasp_asvs",  "title": "OWASP Application Security Verification Standard", "version": "4.0.3"},
+    {"key": "ptes",        "title": "Penetration Testing Execution Standard",    "version": "1.1"}
+  ],
+  "controls": [
+    {
+      "id": "VAPT-SCOPE",
+      "title": "Pre-engagement: Scope and Authorisation",
+      "text": "Written authorisation, rules of engagement, testing window, and scope definition must be established before any testing begins.",
+      "evidence_expectation": "Signed scope document; written authorisation; RoE document",
+      "assessment_procedure": "Verify all pre-engagement docs signed before testing starts",
+      "risk_theme": "pre_engagement",
+      "related_frameworks": ["ptes"],
+      "cross_framework_refs": {"ptes": ["PTES-PRE-01"]},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "VAPT-RECON",
+      "title": "Information Gathering and Reconnaissance",
+      "text": "Passive OSINT and active reconnaissance to map the complete attack surface including all in-scope assets, technologies, exposed services, and potential entry points.",
+      "evidence_expectation": "OSINT report; DNS enumeration; nmap scan; Shodan/Censys results; technology fingerprinting",
+      "assessment_procedure": "Verify comprehensive coverage of all in-scope assets; cross-check discovered vs declared scope",
+      "risk_theme": "reconnaissance",
+      "related_frameworks": ["ptes", "owasp_wstg"],
+      "cross_framework_refs": {"ptes": ["PTES-INTEL-01"], "owasp_wstg": ["WSTG-INFO-01", "WSTG-INFO-02"]},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "VAPT-CONFIG",
+      "title": "Configuration and Infrastructure Security",
+      "text": "Assessment of server configuration, security headers, TLS/SSL settings, unnecessary services, cloud misconfigurations, and container security.",
+      "evidence_expectation": "Security headers report; TLS scan output; service enumeration; cloud config review",
+      "assessment_procedure": "Review security headers, TLS configuration, exposed services, and infrastructure hardening",
+      "risk_theme": "configuration",
+      "related_frameworks": ["owasp_wstg", "owasp_asvs"],
+      "cross_framework_refs": {"owasp_wstg": ["WSTG-CONF-01", "WSTG-CONF-07"], "owasp_asvs": ["ASVS-V14.4"]},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "VAPT-AUTH",
+      "title": "Authentication and Account Security",
+      "text": "Testing of all authentication mechanisms including password policy, MFA, brute-force protection, account lockout, OAuth/OIDC flows, JWT security, and credential reset processes.",
+      "evidence_expectation": "Authentication test results; MFA bypass attempts; lockout policy verification; JWT analysis",
+      "assessment_procedure": "Test all auth entry points; verify MFA enforced; test credential reset flows; analyse JWT algorithms and secret strength",
+      "risk_theme": "authentication",
+      "related_frameworks": ["owasp_wstg", "owasp_asvs", "owasp_api10"],
+      "cross_framework_refs": {"owasp_wstg": ["WSTG-ATHN-01", "WSTG-ATHN-06"], "owasp_asvs": ["ASVS-V2.1"], "owasp_api10": ["API2-BAU"]},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "VAPT-AUTHZ",
+      "title": "Authorisation and Access Control",
+      "text": "Horizontal and vertical privilege escalation testing including IDOR/BOLA, BFLA, missing object-level authorisation, mass assignment, and role boundary enforcement.",
+      "evidence_expectation": "IDOR test cases; role boundary violation proof; privilege escalation evidence; mass assignment results",
+      "assessment_procedure": "Test all data objects for cross-account access; test function-level authorisation; verify deny-by-default; test mass assignment via extra body parameters",
+      "risk_theme": "access_control",
+      "related_frameworks": ["owasp_wstg", "owasp_asvs", "owasp_api10"],
+      "cross_framework_refs": {"owasp_api10": ["API1-BOLA", "API5-BFLA", "API3-BOPLA"], "owasp_asvs": ["ASVS-V4.1", "ASVS-V4.2"]},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "VAPT-INJECT",
+      "title": "Injection Vulnerabilities",
+      "text": "Testing for all injection classes: SQL, NoSQL, OS command, LDAP, XML/XXE, template injection, expression language injection, and GraphQL injection.",
+      "evidence_expectation": "Injection test payloads and responses; successful injection proof-of-concept; affected endpoints",
+      "assessment_procedure": "Test all input parameters with injection payloads; use automated scanning plus manual verification; test in all contexts (JSON, XML, form data, headers)",
+      "risk_theme": "injection",
+      "related_frameworks": ["owasp_wstg", "owasp_asvs", "owasp_api10"],
+      "cross_framework_refs": {"owasp_wstg": ["WSTG-INPV-05"], "owasp_asvs": ["ASVS-V5.3"], "owasp_api10": ["API8-INJECT"]},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "VAPT-XSS",
+      "title": "Cross-Site Scripting (XSS)",
+      "text": "Testing for reflected, stored, and DOM-based XSS across all user-controlled inputs, with verification of Content Security Policy effectiveness.",
+      "evidence_expectation": "XSS proof-of-concept; CSP bypass attempts; DOM XSS source-sink analysis",
+      "assessment_procedure": "Test all inputs for XSS in HTML/JS/CSS contexts; test CSP bypass; DOM XSS source-to-sink tracing; test stored XSS in all persistent data fields",
+      "risk_theme": "input_validation",
+      "related_frameworks": ["owasp_wstg", "owasp_asvs"],
+      "cross_framework_refs": {"owasp_wstg": ["WSTG-INPV-01", "WSTG-CLNT-01"], "owasp_asvs": ["ASVS-V5.3"]},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "VAPT-SESSION",
+      "title": "Session Management",
+      "text": "Session token entropy, secure/httponly flags, fixation, hijacking, logout invalidation, and concurrent session handling.",
+      "evidence_expectation": "Session token analysis; logout invalidation test; fixation test results",
+      "assessment_procedure": "Analyse token entropy; verify secure/httponly flags; test logout invalidation; test session fixation; verify idle timeout",
+      "risk_theme": "session_management",
+      "related_frameworks": ["owasp_wstg", "owasp_asvs"],
+      "cross_framework_refs": {"owasp_wstg": ["WSTG-SESS-01"], "owasp_asvs": ["ASVS-V3.3"]},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "VAPT-API",
+      "title": "API Security (OWASP API10)",
+      "text": "Full OWASP API Security Top 10 coverage including BOLA, broken auth, property-level authorisation, rate limiting, BFLA, SSRF, misconfiguration, injection, inventory, and unsafe API consumption.",
+      "evidence_expectation": "Full API endpoint inventory; API10 test results per category",
+      "assessment_procedure": "Map all API endpoints; test each OWASP API10 category; verify rate limits; test mass assignment; test CORS policy",
+      "risk_theme": "api_security",
+      "related_frameworks": ["owasp_api10", "owasp_asvs"],
+      "cross_framework_refs": {"owasp_api10": ["API1-BOLA", "API2-BAU", "API3-BOPLA", "API4-URC", "API5-BFLA", "API6-SSRF", "API7-MISC", "API8-INJECT", "API9-IIM", "API10-UAE"]},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "VAPT-SSRF",
+      "title": "Server-Side Request Forgery (SSRF)",
+      "text": "Testing for SSRF vulnerabilities in URL-accepting inputs, file fetch parameters, webhooks, and import functionality that may allow access to internal services or cloud metadata.",
+      "evidence_expectation": "SSRF proof-of-concept; internal service access evidence; cloud metadata access; DNS callback confirmation",
+      "assessment_procedure": "Test all URL-accepting parameters with internal IPs, metadata endpoints, and localhost; test protocol variations; use out-of-band detection; test blind SSRF",
+      "risk_theme": "server_side",
+      "related_frameworks": ["owasp_api10", "owasp_asvs"],
+      "cross_framework_refs": {"owasp_api10": ["API6-SSRF"], "owasp_asvs": ["ASVS-V12.6"]},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "VAPT-CRYPTO",
+      "title": "Cryptography and TLS",
+      "text": "TLS protocol versions, cipher suites, certificate validity, key exchange, HSTS, certificate pinning, and cryptographic implementation quality in the application.",
+      "evidence_expectation": "testssl.sh or SSLyze output; certificate analysis; cipher suite grading",
+      "assessment_procedure": "Test all TLS endpoints; verify no SSL3/TLS1.0/1.1; check cipher suite strength; verify certificate chain; verify HSTS with sufficient max-age",
+      "risk_theme": "cryptography",
+      "related_frameworks": ["owasp_asvs"],
+      "cross_framework_refs": {"owasp_asvs": ["ASVS-V2.7"]},
+      "applicable_packs": ["vapt"]
+    },
+    {
+      "id": "VAPT-SUPPLY",
+      "title": "Third-Party Components and Supply Chain",
+      "text": "Identification and assessment of vulnerable or outdated third-party libraries, frameworks, plugins, and external dependencies, including CVE correlation.",
+      "evidence_expectation": "Dependency scan output; CVE list; technology version inventory; SCA results",
+      "assessment_procedure": "Run SCA tools against discovered technologies; correlate versions with NVD CVE database; identify end-of-life components; verify patch management cadence",
+      "risk_theme": "supply_chain",
+      "related_frameworks": ["owasp_asvs", "owasp_api10"],
+      "cross_framework_refs": {"owasp_asvs": ["ASVS-V14.2"], "owasp_api10": ["API10-UAE"]},
+      "applicable_packs": ["vapt"]
+    }
+  ],
+  "categories": {
+    "recon":          "Information gathering and target enumeration",
+    "config":         "Configuration and deployment management",
+    "auth":           "Authentication mechanism testing",
+    "authz":          "Authorization and access control",
+    "input":          "Input validation — injection, XSS, deserialization",
+    "session":        "Session management and token security",
+    "crypto":         "Cryptography and TLS configuration",
+    "api":            "API-specific security (OWASP API10)",
+    "ssrf":           "Server-side request forgery",
+    "xxe":            "XML external entity injection",
+    "upload":         "File upload security",
+    "cors":           "Cross-origin resource sharing policy",
+    "graphql":        "GraphQL-specific security testing",
+    "websocket":      "WebSocket security",
+    "business_logic": "Business logic flaws and workflow abuse",
+    "infra":          "Infrastructure and network-level findings",
+    "secret":         "Credential and secret exposure",
+    "supply_chain":   "Third-party components and dependency security",
+    "cloud":          "Cloud-specific misconfigurations",
+    "mobile_api":     "Mobile application API security"
+  }
+}

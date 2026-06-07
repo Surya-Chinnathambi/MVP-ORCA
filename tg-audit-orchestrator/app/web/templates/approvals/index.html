@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Approval Queue{% endblock %}
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl font-bold text-gray-800">Approval Queue</h1>
+  {% if approvals %}
+  <span class="bg-yellow-100 text-yellow-700 text-sm font-medium px-3 py-1 rounded-full">
+    {{ approvals | length }} pending
+  </span>
+  {% endif %}
+</div>
+
+{% if user_roles %}
+<div class="mb-4 flex flex-wrap gap-2 items-center">
+  <span class="text-xs text-gray-500">Your roles:</span>
+  {% for role in user_roles %}
+  <span class="px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+    {{ role | replace('_', ' ') | title }}
+  </span>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if approvals %}
+<div class="space-y-4">
+  {% for item in approvals %}
+  {% set a = item.approval %}
+  {% set can_act = item.can_act %}
+  <div id="approval-{{ a.id }}"
+    class="bg-white rounded-lg shadow p-5 border-l-4 {{ 'border-green-400' if can_act else 'border-gray-200' }}">
+    <div class="flex items-start justify-between">
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2 mb-1 flex-wrap">
+          <span class="px-2 py-0.5 rounded bg-yellow-100 text-yellow-700 text-xs font-medium">pending</span>
+          <span class="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
+            {{ a.target_type }}
+          </span>
+          <span class="text-xs text-gray-400 font-mono">{{ a.target_id[:12] if a.target_id else '—' }}…</span>
+          <span class="text-xs text-gray-400">{{ a.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+        </div>
+        <p class="font-medium text-gray-800 mt-1">{{ a.reason }}</p>
+        <div class="flex items-center gap-3 mt-1">
+          <span class="text-xs text-gray-500">
+            Required role:
+            <strong class="text-gray-700">{{ a.approver_role | replace('_', ' ') | title }}</strong>
+          </span>
+          {% if can_act %}
+          <span class="text-xs text-green-600 font-medium">✓ You can act on this</span>
+          {% else %}
+          <span class="text-xs text-gray-400">⊘ Insufficient role</span>
+          {% endif %}
+        </div>
+
+        {% if a.change_before or a.change_after %}
+        <div class="mt-3 grid grid-cols-2 gap-3 text-xs">
+          <div class="bg-red-50 rounded p-2">
+            <div class="font-medium text-gray-500 mb-1">Before</div>
+            <code class="text-red-700 break-all">{{ a.change_before | tojson if a.change_before else "—" }}</code>
+          </div>
+          <div class="bg-green-50 rounded p-2">
+            <div class="font-medium text-gray-500 mb-1">After</div>
+            <code class="text-green-700 break-all">{{ a.change_after | tojson if a.change_after else "—" }}</code>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if can_act %}
+    <!-- Approve / Reject forms — only shown to authorised roles -->
+    <div class="flex gap-3 mt-4">
+      <form action="/ui/approvals/{{ a.id }}/approve" method="post"
+        hx-post="/ui/approvals/{{ a.id }}/approve"
+        hx-target="#approval-{{ a.id }}"
+        hx-swap="outerHTML">
+        <button type="submit"
+          class="bg-green-600 hover:bg-green-700 text-white px-4 py-1.5 rounded text-sm font-medium transition-colors">
+          ✓ Approve
+        </button>
+      </form>
+      <form action="/ui/approvals/{{ a.id }}/reject" method="post"
+        hx-post="/ui/approvals/{{ a.id }}/reject"
+        hx-target="#approval-{{ a.id }}"
+        hx-swap="outerHTML"
+        class="flex gap-2">
+        <input type="text" name="reason" placeholder="Rejection reason (optional)"
+          class="border rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-300 w-52">
+        <button type="submit"
+          class="bg-red-500 hover:bg-red-600 text-white px-4 py-1.5 rounded text-sm font-medium transition-colors">
+          ✕ Reject
+        </button>
+      </form>
+    </div>
+    {% else %}
+    <div class="mt-3 text-xs text-gray-400 italic">
+      Waiting for a user with the <strong>{{ a.approver_role | replace('_', ' ') | title }}</strong> role to act.
+    </div>
+    {% endif %}
+  </div>
+  {% endfor %}
+</div>
+
+{% else %}
+<div class="bg-white rounded-lg shadow p-12 text-center">
+  <div class="text-4xl mb-3">✅</div>
+  <p class="font-medium text-gray-700">All clear — no pending approvals.</p>
+  <p class="text-sm text-gray-400 mt-1">New approvals will appear here as project actions trigger the gateway.</p>
+</div>
+{% endif %}
+{% endblock %}

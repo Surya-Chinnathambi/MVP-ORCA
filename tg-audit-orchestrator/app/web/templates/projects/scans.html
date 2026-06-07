@@ -1,0 +1,355 @@
+{% extends "base.html" %}
+{% block title %}PT-Orc Commands — {{ project.service_type }}{% endblock %}
+{% block content %}
+
+{% set role_colours = {
+  'lead_consultant':'bg-indigo-100 text-indigo-800',
+  'analyst':'bg-teal-100 text-teal-800',
+  'senior_reviewer':'bg-green-100 text-green-800',
+  'pm':'bg-blue-100 text-blue-800',
+} %}
+
+{# ── Header ──────────────────────────────────────────────────────────────── #}
+<div class="flex items-center justify-between mb-5">
+  <div>
+    <h1 class="text-xl font-bold text-gray-800">PT-Orc Command Reference</h1>
+    <p class="text-xs text-gray-500 mt-0.5">
+      Generate the exact terminal commands to run. Copy them to your Kali shell — results import back here.
+    </p>
+  </div>
+  <span class="px-3 py-1 rounded-full text-xs font-semibold {{ role_colours.get(user_role, 'bg-gray-100 text-gray-600') }}">
+    {{ user_role | replace('_',' ') | title }}
+  </span>
+</div>
+
+{# ── Step 1: Target config form ───────────────────────────────────────────── #}
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 mb-6">
+  <h2 class="font-semibold text-gray-700 mb-3 flex items-center gap-2">
+    <span class="bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center shrink-0">1</span>
+    Configure Target
+  </h2>
+  <form method="get" action="" class="flex flex-wrap gap-3 items-end">
+    <div class="flex-1 min-w-48">
+      <label class="block text-xs font-medium text-gray-600 mb-1">Host / IP *</label>
+      <input type="text" name="host" value="{{ host }}" placeholder="target.client.com or 10.0.0.1"
+        class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+    </div>
+    <div class="w-36">
+      <label class="block text-xs font-medium text-gray-600 mb-1">Scan Tier</label>
+      <select name="tier"
+        class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+        {% for t in tiers %}
+        <option value="{{ t }}" {{ 'selected' if t == tier }}>{{ t | title }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit"
+      class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium whitespace-nowrap">
+      Generate Commands ⚡
+    </button>
+    {% if host %}
+    <a href="?" class="text-xs text-gray-400 hover:text-gray-600 self-center">Clear</a>
+    {% endif %}
+  </form>
+</div>
+
+{% if phase_commands %}
+{# ── Step 2: Commands ─────────────────────────────────────────────────────── #}
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
+  <div class="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
+    <h2 class="font-semibold text-gray-700 flex items-center gap-2">
+      <span class="bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center shrink-0">2</span>
+      Commands for <strong class="ml-1">{{ host }}</strong>
+      <span class="text-xs font-normal text-gray-400">(tier: {{ tier }})</span>
+    </h2>
+    <button onclick="copyAllCommands(event)"
+      class="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-1.5 rounded-lg font-medium flex items-center gap-1.5">
+      📋 Copy All
+    </button>
+  </div>
+
+  {% if user_role == 'senior_reviewer' %}
+  <div class="mx-5 mt-4 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 text-sm text-amber-800">
+    <strong>Reviewer role:</strong> Coordinate with your Lead or Analyst to run the commands below. Use the Import panel when results are ready.
+  </div>
+  {% elif user_role == 'pm' %}
+  <div class="mx-5 mt-4 bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 text-sm text-blue-800">
+    <strong>PM role:</strong> Share these commands with your Lead Consultant and Analysts.
+  </div>
+  {% endif %}
+
+  <div class="px-5 pt-3 pb-2 flex gap-2 border-b border-gray-100">
+    <button onclick="filterPhases('all', event)" id="tab-all"
+      class="phase-tab px-3 py-1 rounded-lg text-xs font-medium bg-gray-800 text-white">All phases</button>
+    <button onclick="filterPhases('lead', event)" id="tab-lead"
+      class="phase-tab px-3 py-1 rounded-lg text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200">Lead Consultant</button>
+    <button onclick="filterPhases('analyst', event)" id="tab-analyst"
+      class="phase-tab px-3 py-1 rounded-lg text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200">Analyst</button>
+  </div>
+
+  <div class="divide-y divide-gray-50 px-5 py-2" id="phase-list">
+    {% for pc in phase_commands %}
+    <div class="phase-row py-3 flex items-start gap-3" data-role="{{ pc.role }}">
+      <div class="w-32 shrink-0 pt-0.5">
+        <span class="text-xs font-bold text-gray-500">Phase {{ pc.key }}</span><br>
+        <span class="text-xs text-gray-400">{{ pc.label }}</span><br>
+        {% if pc.role == 'lead' %}
+        <span class="mt-1 inline-block px-1.5 py-0.5 rounded text-xs bg-indigo-50 text-indigo-600 font-medium">Lead</span>
+        {% else %}
+        <span class="mt-1 inline-block px-1.5 py-0.5 rounded text-xs bg-teal-50 text-teal-600 font-medium">Analyst</span>
+        {% endif %}
+      </div>
+      <div class="flex-1 min-w-0">
+        <div class="bg-gray-900 rounded-lg px-4 py-2.5 flex items-center gap-3 group">
+          <code class="flex-1 text-green-400 text-xs font-mono break-all leading-relaxed cmd-text">{{ pc.cmd }}</code>
+          <button onclick="copyCmd(this)" data-cmd="{{ pc.cmd }}"
+            class="shrink-0 text-gray-500 hover:text-white text-xs px-2 py-1 rounded bg-gray-700 hover:bg-gray-600 transition-colors opacity-0 group-hover:opacity-100">
+            Copy
+          </button>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if report_cmd %}
+  <div class="px-5 py-4 border-t border-gray-100 bg-gray-50 rounded-b-xl">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center shrink-0 font-bold">R</span>
+      <span class="text-xs font-semibold text-gray-700">After all phases — Run Report Pack <span class="text-gray-400 font-normal">(Lead Consultant)</span></span>
+    </div>
+    <div class="bg-gray-900 rounded-lg px-4 py-2.5 flex items-center gap-3 group">
+      <code class="flex-1 text-yellow-300 text-xs font-mono break-all">{{ report_cmd }}</code>
+      <button onclick="copyCmd(this)" data-cmd="{{ report_cmd }}"
+        class="shrink-0 text-gray-500 hover:text-white text-xs px-2 py-1 rounded bg-gray-700 hover:bg-gray-600 transition-colors opacity-0 group-hover:opacity-100">
+        Copy
+      </button>
+    </div>
+    <p class="text-xs text-gray-400 mt-2">
+      This creates the <code>./run/</code> directory. Copy that path into the Import form below.
+    </p>
+  </div>
+  {% endif %}
+</div>
+
+{# ── Role cheatsheets ─────────────────────────────────────────────────────── #}
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+  <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-4">
+    <div class="font-semibold text-indigo-800 mb-2">🎯 Lead Consultant</div>
+    <ol class="text-xs text-indigo-700 space-y-1 list-decimal ml-4">
+      <li>Open terminal on Kali</li>
+      <li>Run Phase 03, 08, 09 from above</li>
+      <li>Run Report Pack command</li>
+      <li>Note the <code>./run/…/</code> path</li>
+      <li>Import Results below ↓</li>
+    </ol>
+  </div>
+  <div class="bg-teal-50 border border-teal-100 rounded-xl p-4">
+    <div class="font-semibold text-teal-800 mb-2">🔍 Analyst</div>
+    <ol class="text-xs text-teal-700 space-y-1 list-decimal ml-4">
+      <li>Run assigned phases (01,02,04,05,07)</li>
+      <li>Save output to shared workspace</li>
+      <li>Notify Lead when done</li>
+      <li>Lead runs Report Pack + Import</li>
+    </ol>
+  </div>
+  <div class="bg-gray-800 text-gray-100 rounded-xl p-4">
+    <div class="font-semibold mb-2">⚡ Quick Start</div>
+    <div class="bg-black rounded-lg px-3 py-2 text-xs font-mono text-green-400 space-y-1 select-all">
+      <div class="text-gray-500"># Kali terminal:</div>
+      <div>cd ~/MVP_ORCA/pt-orc/scripts</div>
+      <div class="text-yellow-300"># Paste phase commands</div>
+      <div class="text-yellow-300"># Then report pack</div>
+      <div class="text-gray-500"># Then import here</div>
+    </div>
+  </div>
+</div>
+
+{% else %}
+<div class="bg-blue-50 border border-blue-200 rounded-xl p-8 mb-6 text-center">
+  <div class="text-3xl mb-2">🖥️</div>
+  <p class="text-blue-800 font-medium">Enter a target host above to generate commands</p>
+  <p class="text-blue-600 text-xs mt-1">Commands are tailored to your role and scan tier</p>
+</div>
+{% endif %}
+
+{# ── Import Results ──────────────────────────────────────────────────────── #}
+<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 mb-6">
+  <h2 class="font-semibold text-gray-700 mb-1 flex items-center gap-2">
+    <span class="bg-blue-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center shrink-0">{{ '3' if phase_commands else '2' }}</span>
+    Import PT-Orc Results
+  </h2>
+  <p class="text-xs text-gray-400 mb-4">
+    Paste the full path to the <code>run/&lt;project-id&gt;_…/</code> directory produced by the Report Pack step.
+  </p>
+
+  <form action="/ui/projects/{{ project.id }}/scans/import" method="post" class="space-y-4">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div>
+        <label class="block text-xs font-medium text-gray-600 mb-1">Run Directory Path *</label>
+        <input type="text" name="run_dir" required
+          placeholder="/home/kali/MVP_ORCA/pt-orc/scripts/run/{{ project.id[:8] }}_…"
+          class="w-full border rounded-lg px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-blue-400">
+        <p class="text-xs text-gray-400 mt-1">Must contain <code>findings.json</code> and/or <code>evidence/</code></p>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1">Host Scanned</label>
+          <input type="text" name="host" value="{{ host }}" placeholder="target.com"
+            class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+        </div>
+        <div>
+          <label class="block text-xs font-medium text-gray-600 mb-1">Tier Used</label>
+          <select name="tier"
+            class="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+            {% for t in tiers %}
+            <option value="{{ t }}" {{ 'selected' if t == tier }}>{{ t | title }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <label class="block text-xs font-medium text-gray-600 mb-2">Phases executed</label>
+      <div class="flex flex-wrap gap-3">
+        {% for phase_key, (script, label, role) in all_phases.items() %}
+        <label class="flex items-center gap-1.5 text-xs cursor-pointer select-none">
+          <input type="checkbox" name="phases" value="{{ phase_key }}"
+            {{ 'checked' if phase_key in default_phases }}
+            class="rounded border-gray-300 text-blue-600">
+          <span class="{{ 'text-indigo-700' if role == 'lead' else 'text-teal-700' }} font-medium">
+            {{ phase_key }}
+          </span>
+          <span class="text-gray-400">{{ label }}</span>
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <button type="submit"
+      class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg text-sm font-medium">
+      ↑ Import Results into Project
+    </button>
+  </form>
+</div>
+
+{# ── Import History ──────────────────────────────────────────────────────── #}
+{% if import_jobs %}
+<div class="bg-white rounded-xl shadow-sm border border-gray-200">
+  <div class="px-5 py-3 border-b border-gray-100">
+    <h2 class="font-semibold text-gray-700">Import History</h2>
+  </div>
+  <table class="w-full text-sm">
+    <thead class="bg-gray-50 border-b">
+      <tr>
+        <th class="px-4 py-2.5 text-left text-xs font-semibold text-gray-500">Host</th>
+        <th class="px-4 py-2.5 text-left text-xs font-semibold text-gray-500">Phases</th>
+        <th class="px-4 py-2.5 text-left text-xs font-semibold text-gray-500">Status</th>
+        <th class="px-4 py-2.5 text-left text-xs font-semibold text-gray-500">Results</th>
+        <th class="px-4 py-2.5 text-left text-xs font-semibold text-gray-500">Imported</th>
+        <th class="px-4 py-2.5"></th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-50">
+      {% for job in import_jobs %}
+      <tr class="hover:bg-gray-50">
+        <td class="px-4 py-3 font-mono text-xs">{{ job.host }}</td>
+        <td class="px-4 py-3">
+          <div class="flex flex-wrap gap-1">
+            {% for p in (job.phases or []) %}
+            <span class="px-1 py-0.5 bg-gray-100 rounded text-xs font-mono">{{ p }}</span>
+            {% endfor %}
+          </div>
+        </td>
+        <td class="px-4 py-3">
+          {% if job.status == 'completed' %}
+          <span class="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-xs font-medium">✓ Imported</span>
+          {% elif job.status == 'failed' %}
+          <span class="px-2 py-0.5 rounded-full bg-red-100 text-red-700 text-xs font-medium">✗ Failed</span>
+          {% else %}
+          <span class="px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 text-xs">{{ job.status }}</span>
+          {% endif %}
+        </td>
+        <td class="px-4 py-3">
+          {% if job.import_result %}
+          <div class="text-xs space-y-0.5">
+            <div class="text-red-600 font-medium">{{ job.import_result.get('findings_created', 0) }} new findings</div>
+            <div class="text-blue-600">{{ job.import_result.get('findings_updated', 0) }} updated</div>
+            <div class="text-gray-500">{{ job.import_result.get('evidence_items', 0) }} evidence</div>
+          </div>
+          {% elif job.error_message %}
+          <span class="text-xs text-red-400 truncate block max-w-xs" title="{{ job.error_message }}">
+            {{ job.error_message[:55] }}…
+          </span>
+          {% else %}
+          <span class="text-gray-300 text-xs">—</span>
+          {% endif %}
+        </td>
+        <td class="px-4 py-3 text-xs text-gray-400">
+          {{ job.finished_at.strftime('%d %b %H:%M') if job.finished_at else '—' }}
+        </td>
+        <td class="px-4 py-3 text-right">
+          <a href="/ui/projects/{{ project.id }}/scans/{{ job.id }}"
+            class="text-xs text-blue-500 hover:underline">Detail →</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% else %}
+<div class="bg-white rounded-xl border border-dashed border-gray-200 p-8 text-center text-gray-400 text-sm">
+  No imports yet. Run the PT-Orc commands in your terminal, then import the results above.
+</div>
+{% endif %}
+
+<script>
+function filterPhases(role, evt) {
+  document.querySelectorAll('.phase-row').forEach(row => {
+    row.style.display = (role === 'all' || row.dataset.role === role) ? '' : 'none';
+  });
+  document.querySelectorAll('.phase-tab').forEach(btn => {
+    btn.classList.replace('bg-gray-800','bg-gray-100');
+    btn.classList.replace('text-white','text-gray-600');
+  });
+  const active = document.getElementById('tab-' + role);
+  if (active) {
+    active.classList.replace('bg-gray-100','bg-gray-800');
+    active.classList.replace('text-gray-600','text-white');
+  }
+}
+
+function copyCmd(btn) {
+  navigator.clipboard.writeText(btn.dataset.cmd).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = '✓ Copied';
+    btn.classList.add('bg-green-600','text-white');
+    setTimeout(() => { btn.textContent = orig; btn.classList.remove('bg-green-600','text-white'); }, 1500);
+  });
+}
+
+function copyAllCommands(evt) {
+  const lines = [...document.querySelectorAll('.phase-row')]
+    .filter(r => r.style.display !== 'none')
+    .map(r => r.querySelector('.cmd-text')?.textContent?.trim())
+    .filter(Boolean);
+  {% if report_cmd %}
+  lines.push('', '# Run report pack after all phases:', '{{ report_cmd }}');
+  {% endif %}
+  navigator.clipboard.writeText(lines.join('\n')).then(() => {
+    const btn = evt.target;
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => { btn.textContent = '📋 Copy All'; }, 1800);
+  });
+}
+
+// Auto-select tab by role
+{% if user_role == 'lead_consultant' or user_role == 'pm' %}
+filterPhases('lead');
+{% elif user_role == 'analyst' %}
+filterPhases('analyst');
+{% endif %}
+</script>
+{% endblock %}
